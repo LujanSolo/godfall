@@ -1,44 +1,68 @@
 # ============================================
-# GODFALL - The Ship's Manifest
+# GODFALL - The Ship's Manifest (Pinned)
 # ============================================
-# These are the packages (tools/libraries) our
-# project needs to run. Think of each one as a
-# crew member boarding the Millennium Falcon —
-# everyone has a job.
+# Every package is locked to an exact version.
+# This guarantees that anyone setting up this
+# project gets the same working environment.
+#
+# Like recording hyperspace coordinates —
+# you don't want the navicomputer improvising
+# a new route next time.
 #
 # Install all of them at once with:
 #   pip install -r requirements.txt
 # ============================================
 
+# --- CORE CREW (packages we directly use) ---
+
 # The hyperdrive — our core web framework.
-# Handles routes, requests, and responses.
-fastapi
-starlette==0.46.2
+fastapi==0.136.1
 
-# The pilot — the server that actually flies
-# the ship. [standard] includes auto-reload
-# so the server restarts when you edit code.
-# Like R2 rerouting power on the fly.
-uvicorn[standard]
+# The pilot — flies the ship. [standard]
+# includes auto-reload, like R2 rerouting
+# power on the fly.
+uvicorn[standard]==0.46.0
 
-# The holographic display — takes raw Python
-# data and renders it into HTML pages.
-jinja2
+# The holographic display — renders Python
+# data into HTML pages.
+Jinja2==3.1.6
 
 # The cargo bay — handles form submissions
-# and file uploads (photos, art, etc).
-python-multipart
+# and file uploads.
+python-multipart==0.0.27
 
 # The protocol droid — translates between
-# Python objects and database tables so they
-# understand each other.
-sqlalchemy
+# Python objects and database tables.
+SQLAlchemy==2.0.49
 
-# The astromech — quietly serves your static
-# files (CSS, images) behind the scenes.
-aiofiles
+# The astromech — quietly serves static
+# files behind the scenes.
+aiofiles==25.1.0
 
 # The sealed orders — loads secret config
-# values (passwords, keys) from a hidden
-# .env file so they never end up on GitHub.
-python-dotenv
+# from a hidden .env file.
+python-dotenv==1.2.2
+
+# --- SUB-CREW (dependencies of the above) ---
+# These are pulled in automatically by our
+# core packages. We pin them too so nothing
+# shifts underneath us. The Starlette 1.0.0
+# incident taught us this lesson the hard way.
+
+starlette==0.46.2
+anyio==4.13.0
+click==8.3.3
+h11==0.16.0
+httptools==0.7.1
+idna==3.13
+MarkupSafe==3.0.3
+pydantic==2.13.4
+pydantic_core==2.46.4
+PyYAML==6.0.3
+typing-inspection==0.4.2
+typing_extensions==4.15.0
+uvloop==0.22.1
+watchfiles==1.1.1
+websockets==16.0
+annotated-doc==0.0.4
+annotated-types==0.7.0
