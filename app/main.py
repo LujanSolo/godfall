@@ -127,6 +127,6 @@ async def home(request: Request):
         {
             "request": request,
             "title": "Godfall",
-            "tagline": "Five Flames. One fire. Not kindled, but remembered.",
+            "tagline": "Five Flames. One fire. Not rekindled, but remembered.",
         }
     )
