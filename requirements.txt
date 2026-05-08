@@ -43,6 +43,12 @@ aiofiles==25.1.0
 # from a hidden .env file.
 python-dotenv==1.2.2
 
+# The scribe — converts markdown text into
+# polished HTML. Lets us write recaps in a
+# clean, readable format and have headings,
+# bold, italics, and lists render properly.
+markdown==3.7
+
 # --- SUB-CREW (dependencies of the above) ---
 # These are pulled in automatically by our
 # core packages. We pin them too so nothing

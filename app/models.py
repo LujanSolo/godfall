@@ -29,6 +29,7 @@ from sqlalchemy import (
     String,
     Text,
     DateTime,
+    Date,
     ForeignKey,
 )
 
@@ -255,3 +256,125 @@ class CharacterImage(Base):
 
     def __repr__(self):
         return f"<CharacterImage: {self.caption or 'No caption'} (Character #{self.character_id})>"
+    
+
+# ============================================
+# SESSION RECAP MODEL
+# ============================================
+# Each row represents one session of the
+# Godfall campaign. The DM writes these to
+# create a running narrative of the
+# adventure.
+#
+# Same pattern as Character: an "owner" model
+# that has a one-to-many relationship with
+# its associated images.
+# ============================================
+class SessionRecap(Base):
+    __tablename__ = "session_recaps"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    # --- SESSION NUMBER ---
+    # The numeric position in the campaign
+    # (Session 1, Session 2, etc).
+    #
+    # We're letting this be manually entered
+    # rather than auto-incrementing, which
+    # gives flexibility for retroactive
+    # additions or skipped sessions. Like a
+    # ship's log where the captain decides
+    # what counts as an entry.
+    session_number = Column(Integer, nullable=False)
+
+    # --- TITLE ---
+    # A short, evocative title for the session.
+    # e.g. "The Black Cabin" or "Auril's Wrath"
+    title = Column(String(200), nullable=False)
+
+    # --- DATES ---
+    # real_date: when the session was actually
+    # played. Stored as a proper Date type
+    # (no time component, just the day).
+    #
+    # in_game_date: the date in the world.
+    # Stored as a string because fantasy
+    # calendars (Hammer 12, 1489 DR) don't fit
+    # any standard date format. Trying to
+    # squeeze a Forgotten Realms date into a
+    # PostgreSQL Date column is like trying
+    # to fly a starship into a swamp — wrong
+    # tool, wrong terrain.
+    real_date = Column(Date)
+    in_game_date = Column(String(100))
+
+    # --- CONTENT ---
+    # summary: short bullet-point recap shown
+    # on the adventure log feed. Keep it
+    # punchy — the headline version.
+    #
+    # body: long-form narrative. This is where
+    # markdown formatting lives — headers,
+    # bold, italics, lists, etc.
+    summary = Column(Text)
+    body = Column(Text)
+
+    # --- TIMESTAMPS ---
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow
+    )
+
+    # --- RELATIONSHIP ---
+    # Same one-to-many pattern as Character.
+    # One session has many images. Delete the
+    # session, the images go with it.
+    images = relationship(
+        "SessionImage",
+        back_populates="session",
+        cascade="all, delete-orphan"
+    )
+
+    def __repr__(self):
+        return f"<SessionRecap #{self.session_number}: {self.title}>"
+
+
+# ============================================
+# SESSION IMAGE MODEL
+# ============================================
+# Identical structure to CharacterImage,
+# just pointed at a different parent.
+#
+# is_featured: marks the "hero" image shown
+# on the adventure log list view. Same
+# concept as is_primary for character images,
+# different name because the visual purpose
+# differs (a character HAS a portrait, a
+# session HAS a featured image — different
+# semantic flavor).
+# ============================================
+class SessionImage(Base):
+    __tablename__ = "session_images"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    session_id = Column(
+        Integer,
+        ForeignKey("session_recaps.id"),
+        nullable=False
+    )
+
+    file_path = Column(String(255), nullable=False)
+    caption = Column(String(255))
+    is_featured = Column(Integer, default=0)
+    uploaded_at = Column(DateTime, default=datetime.utcnow)
+
+    session = relationship(
+        "SessionRecap",
+        back_populates="images"
+    )
+
+    def __repr__(self):
+        return f"<SessionImage: {self.caption or 'No caption'} (Session #{self.session_id})>"
