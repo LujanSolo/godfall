@@ -1,0 +1,304 @@
+{#
+    GODFALL - characters/form.html
+    ===============================
+    A dual-purpose template:
+      - When editing=False: blank form for
+        creating a new character.
+      - When editing=True: pre-filled form
+        for updating an existing one.
+
+    One template, two missions. Like a Y-Wing
+    that can fly bombing runs OR escort
+    duty depending on the loadout.
+
+    New concepts here:
+      - Conditional form action URLs
+      - Pre-filling inputs with existing data
+      - Select dropdowns with selected option
+      - Required vs optional field markers
+#}
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="max-w-3xl mx-auto px-6 py-12">
+
+    {# --- BACK LINK --- #}
+    <div class="mb-8">
+        {#
+            If editing, back goes to the
+            character's detail page. If creating,
+            back goes to the roster.
+        #}
+        {% if editing %}
+            <a href="/characters/{{ character.id }}" class="text-ice-300/60 hover:text-ice-300 text-sm tracking-widest uppercase transition-colors inline-flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                Cancel
+            </a>
+        {% else %}
+            <a href="/characters" class="text-ice-300/60 hover:text-ice-300 text-sm tracking-widest uppercase transition-colors inline-flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                Back to Roster
+            </a>
+        {% endif %}
+    </div>
+
+    {# --- HEADING --- #}
+    <h1 class="font-display text-3xl md:text-4xl font-black tracking-wider text-silver-200 frost-glow mb-2">
+        {% if editing %}
+            Edit {{ character.name }}
+        {% else %}
+            New Dossier
+        {% endif %}
+    </h1>
+    <p class="text-ice-300/60 text-sm tracking-wider mb-10">
+        {% if editing %}
+            Modify the dossier records.
+        {% else %}
+            Open a new file in the archive.
+        {% endif %}
+    </p>
+
+    {#
+        --- THE FORM ---
+        The action URL changes based on whether
+        we're editing or creating. Same template,
+        different destination — like the same
+        astromech droid plugging into different
+        ships depending on the mission.
+    #}
+    <form action="{% if editing %}/characters/{{ character.id }}/edit{% else %}/characters/new{% endif %}"
+          method="POST"
+          class="space-y-8">
+
+        {#
+            --- IDENTITY SECTION ---
+            Required fields are marked with a
+            small red asterisk so the user knows
+            they're mandatory.
+
+            "value" attribute pre-fills the input
+            when editing. The | default('') filter
+            ensures we get an empty string if the
+            field is somehow None — without it,
+            "None" would literally appear in the
+            input. Like a droid speaking out loud:
+            "ERROR: NULL VALUE" instead of staying
+            quiet.
+        #}
+        <fieldset class="space-y-6">
+            <legend class="font-display text-sm tracking-[0.3em] uppercase text-ice-300/60 mb-4">Identity</legend>
+
+            {# Name + Player Name (side-by-side on desktop) #}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="name" class="block text-xs tracking-widest uppercase text-silver-400 mb-2">
+                        Character Name <span class="text-red-400">*</span>
+                    </label>
+                    <input type="text"
+                           id="name"
+                           name="name"
+                           required
+                           value="{% if editing %}{{ character.name | default('') }}{% endif %}"
+                           class="w-full px-4 py-2.5 bg-frost-800/60 border border-frost-700 text-silver-200 placeholder:text-silver-400/40 focus:border-ice-500/60 focus:outline-none transition-colors">
+                </div>
+
+                <div>
+                    <label for="player_name" class="block text-xs tracking-widest uppercase text-silver-400 mb-2">
+                        Player Name
+                    </label>
+                    <input type="text"
+                           id="player_name"
+                           name="player_name"
+                           value="{% if editing %}{{ character.player_name | default('') }}{% endif %}"
+                           placeholder="Leave blank for NPCs"
+                           class="w-full px-4 py-2.5 bg-frost-800/60 border border-frost-700 text-silver-200 placeholder:text-silver-400/40 focus:border-ice-500/60 focus:outline-none transition-colors">
+                </div>
+            </div>
+
+            {# Race + Class + Level (three columns on desktop) #}
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <label for="race" class="block text-xs tracking-widest uppercase text-silver-400 mb-2">
+                        Race <span class="text-red-400">*</span>
+                    </label>
+                    <input type="text"
+                           id="race"
+                           name="race"
+                           required
+                           value="{% if editing %}{{ character.race | default('') }}{% endif %}"
+                           placeholder="Tiefling, Half-Elf, etc."
+                           class="w-full px-4 py-2.5 bg-frost-800/60 border border-frost-700 text-silver-200 placeholder:text-silver-400/40 focus:border-ice-500/60 focus:outline-none transition-colors">
+                </div>
+
+                <div>
+                    <label for="character_class" class="block text-xs tracking-widest uppercase text-silver-400 mb-2">
+                        Class <span class="text-red-400">*</span>
+                    </label>
+                    <input type="text"
+                           id="character_class"
+                           name="character_class"
+                           required
+                           value="{% if editing %}{{ character.character_class | default('') }}{% endif %}"
+                           placeholder="Warlock, Barbarian, etc."
+                           class="w-full px-4 py-2.5 bg-frost-800/60 border border-frost-700 text-silver-200 placeholder:text-silver-400/40 focus:border-ice-500/60 focus:outline-none transition-colors">
+                </div>
+
+                <div>
+                    <label for="level" class="block text-xs tracking-widest uppercase text-silver-400 mb-2">
+                        Level
+                    </label>
+                    <input type="number"
+                           id="level"
+                           name="level"
+                           min="1"
+                           max="20"
+                           value="{% if editing %}{{ character.level | default(1) }}{% else %}1{% endif %}"
+                           class="w-full px-4 py-2.5 bg-frost-800/60 border border-frost-700 text-silver-200 focus:border-ice-500/60 focus:outline-none transition-colors">
+                </div>
+            </div>
+
+            {# Age + Status #}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="age" class="block text-xs tracking-widest uppercase text-silver-400 mb-2">
+                        Age
+                    </label>
+                    <input type="text"
+                           id="age"
+                           name="age"
+                           value="{% if editing %}{{ character.age | default('') }}{% endif %}"
+                           placeholder="142, ageless, unknown..."
+                           class="w-full px-4 py-2.5 bg-frost-800/60 border border-frost-700 text-silver-200 placeholder:text-silver-400/40 focus:border-ice-500/60 focus:outline-none transition-colors">
+                </div>
+
+                {#
+                    SELECT DROPDOWN
+                    The "selected" attribute marks
+                    which option should be pre-chosen
+                    when editing. We use Jinja2 to
+                    add it conditionally.
+
+                    Notice how the {% if %} blocks
+                    are tucked INSIDE the option
+                    tag. Looks ugly but is the
+                    cleanest way to handle it.
+                #}
+                <div>
+                    <label for="status" class="block text-xs tracking-widest uppercase text-silver-400 mb-2">
+                        Status
+                    </label>
+                    <select id="status"
+                            name="status"
+                            class="w-full px-4 py-2.5 bg-frost-800/60 border border-frost-700 text-silver-200 focus:border-ice-500/60 focus:outline-none transition-colors">
+                        <option value="Active" {% if editing and character.status == "Active" %}selected{% endif %}>Active</option>
+                        <option value="Dead" {% if editing and character.status == "Dead" %}selected{% endif %}>Dead</option>
+                        <option value="Missing" {% if editing and character.status == "Missing" %}selected{% endif %}>Missing</option>
+                        <option value="Unknown" {% if editing and character.status == "Unknown" %}selected{% endif %}>Unknown</option>
+                    </select>
+                </div>
+            </div>
+        </fieldset>
+
+        {#
+            --- THE ONE-LINER ---
+            Standalone because it's the most
+            important narrative field — the hook.
+        #}
+        <fieldset>
+            <legend class="font-display text-sm tracking-[0.3em] uppercase text-ice-300/60 mb-4">The Hook</legend>
+
+            <div>
+                <label for="one_liner" class="block text-xs tracking-widest uppercase text-silver-400 mb-2">
+                    One-Liner
+                </label>
+                <input type="text"
+                       id="one_liner"
+                       name="one_liner"
+                       maxlength="255"
+                       value="{% if editing %}{{ character.one_liner | default('') }}{% endif %}"
+                       placeholder="A single sentence that captures who they are."
+                       class="w-full px-4 py-2.5 bg-frost-800/60 border border-frost-700 text-silver-200 placeholder:text-silver-400/40 focus:border-ice-500/60 focus:outline-none transition-colors">
+            </div>
+        </fieldset>
+
+        {#
+            --- LONGER NARRATIVE FIELDS ---
+            Textareas instead of single-line inputs.
+            "rows" sets the initial height.
+        #}
+        <fieldset class="space-y-6">
+            <legend class="font-display text-sm tracking-[0.3em] uppercase text-ice-300/60 mb-4">The Story</legend>
+
+            <div>
+                <label for="backstory" class="block text-xs tracking-widest uppercase text-silver-400 mb-2">
+                    Backstory
+                </label>
+                <textarea id="backstory"
+                          name="backstory"
+                          rows="6"
+                          placeholder="Where they come from, what shaped them, what drives them..."
+                          class="w-full px-4 py-2.5 bg-frost-800/60 border border-frost-700 text-silver-200 placeholder:text-silver-400/40 focus:border-ice-500/60 focus:outline-none transition-colors resize-y">{% if editing %}{{ character.backstory | default('') }}{% endif %}</textarea>
+            </div>
+
+            <div>
+                <label for="top_magic_items" class="block text-xs tracking-widest uppercase text-silver-400 mb-2">
+                    Notable Gear
+                </label>
+                <textarea id="top_magic_items"
+                          name="top_magic_items"
+                          rows="3"
+                          placeholder="Top magic items, signature weapons, treasured trinkets..."
+                          class="w-full px-4 py-2.5 bg-frost-800/60 border border-frost-700 text-silver-200 placeholder:text-silver-400/40 focus:border-ice-500/60 focus:outline-none transition-colors resize-y">{% if editing %}{{ character.top_magic_items | default('') }}{% endif %}</textarea>
+            </div>
+
+            <div>
+                <label for="notable_traits" class="block text-xs tracking-widest uppercase text-silver-400 mb-2">
+                    Notable Traits
+                </label>
+                <textarea id="notable_traits"
+                          name="notable_traits"
+                          rows="3"
+                          placeholder="Quirks, habits, defining personality moments..."
+                          class="w-full px-4 py-2.5 bg-frost-800/60 border border-frost-700 text-silver-200 placeholder:text-silver-400/40 focus:border-ice-500/60 focus:outline-none transition-colors resize-y">{% if editing %}{{ character.notable_traits | default('') }}{% endif %}</textarea>
+            </div>
+
+            <div>
+                <label for="pets_companions" class="block text-xs tracking-widest uppercase text-silver-400 mb-2">
+                    Pets &amp; Companions
+                </label>
+                <textarea id="pets_companions"
+                          name="pets_companions"
+                          rows="3"
+                          placeholder="Familiars, animal companions, summoned allies..."
+                          class="w-full px-4 py-2.5 bg-frost-800/60 border border-frost-700 text-silver-200 placeholder:text-silver-400/40 focus:border-ice-500/60 focus:outline-none transition-colors resize-y">{% if editing %}{{ character.pets_companions | default('') }}{% endif %}</textarea>
+            </div>
+        </fieldset>
+
+        {#
+            --- SUBMIT BUTTONS ---
+            Two buttons: save (primary) and cancel
+            (secondary). Cancel is just a link
+            styled like a button — no form submit.
+        #}
+        <div class="flex items-center gap-4 pt-6 border-t border-frost-700">
+            <button type="submit"
+                    class="px-6 py-2.5 border border-ice-500/60 bg-ice-500/10 text-ice-300 hover:bg-ice-500/20 hover:border-ice-300 font-display text-sm tracking-widest uppercase transition-colors">
+                {% if editing %}Save Changes{% else %}Create Dossier{% endif %}
+            </button>
+
+            <a href="{% if editing %}/characters/{{ character.id }}{% else %}/characters{% endif %}"
+               class="px-6 py-2.5 border border-frost-700 text-silver-400 hover:text-ice-300 hover:border-ice-500/40 font-display text-sm tracking-widest uppercase transition-colors">
+                Cancel
+            </a>
+        </div>
+
+    </form>
+
+</section>
+
+{% endblock %}

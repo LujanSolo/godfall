@@ -1,266 +1,271 @@
 {#
-    GODFALL - base.html - The Hull
-    ==============================
-    Master layout template. Every page
-    inherits from this file.
+GODFALL - base.html - The Hull
+==============================
+Master layout template. Every page
+inherits from this file.
 
-    Now with mobile-responsive navigation —
-    horizontal links on desktop, a toggleable
-    overlay menu on mobile.
+Now with mobile-responsive navigation —
+horizontal links on desktop, a toggleable
+overlay menu on mobile.
 #}
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    {#
-        PAGE TITLE
-        The "default" filter is a fallback —
-        if no title is passed, it defaults to
-        "Godfall". Like keeping an escape pod
-        fueled — always have a backup plan.
-    #}
-    <title>{{ title | default('Godfall') }}</title>
+  {#
+  PAGE TITLE
+  The "default" filter is a fallback —
+  if no title is passed, it defaults to
+  "Godfall". Like keeping an escape pod
+  fueled — always have a backup plan.
+  #}
+  <title>{{ title | default('Godfall') }}</title>
 
-    {# TAILWIND CSS via CDN #}
-    <script src="https://cdn.tailwindcss.com"></script>
+  {# TAILWIND CSS via CDN #}
+  <script src="https://cdn.tailwindcss.com"></script>
 
-    {# TAILWIND CONFIG — Frostmaiden color palette #}
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        frost: {
-                            900: '#0a0e17',
-                            800: '#111827',
-                            700: '#1a2332',
-                        },
-                        ice: {
-                            300: '#7dd3fc',
-                            400: '#38bdf8',
-                            500: '#0ea5e9',
-                        },
-                        silver: {
-                            200: '#e2e8f0',
-                            300: '#cbd5e1',
-                            400: '#94a3b8',
-                        }
-                    },
-                    fontFamily: {
-                        display: ['"Cinzel"', 'serif'],
-                        body: ['"Inter"', 'sans-serif'],
-                    }
-                }
+  {# TAILWIND CONFIG — Frostmaiden color palette #}
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            frost: {
+              900: '#0a0e17',
+              800: '#111827',
+              700: '#1a2332',
+            },
+            ice: {
+              300: '#7dd3fc',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+            },
+            silver: {
+              200: '#e2e8f0',
+              300: '#cbd5e1',
+              400: '#94a3b8',
             }
+          },
+          fontFamily: {
+            display: ['"Cinzel"', 'serif'],
+            body: ['"Inter"', 'sans-serif'],
+          }
         }
-    </script>
+      }
+    }
+  </script>
 
-    {# GOOGLE FONTS — Cinzel for titles, Inter for body #}
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  {# GOOGLE FONTS — Cinzel for titles, Inter for body #}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
 
-    {# HTMX — ready when we need interactivity #}
-    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  {# HTMX — ready when we need interactivity #}
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
 
-    {# CUSTOM CSS — frost effects #}
-    <link rel="stylesheet" href="/static/css/custom.css">
+  {# CUSTOM CSS — frost effects #}
+  <link rel="stylesheet" href="/static/css/custom.css">
 </head>
 
 <body class="bg-frost-900 text-silver-200 font-body min-h-screen antialiased">
 
-    {#
-        NAVIGATION
-        Two modes:
-        1. Desktop (md+): horizontal links,
-           always visible.
-        2. Mobile (<md): hamburger button that
-           toggles a full-screen overlay.
+  {#
+  NAVIGATION
+  Two modes:
+  1. Desktop (md+): horizontal links,
+  always visible.
+  2. Mobile (<md): hamburger button that toggles a full-screen overlay. The hamburger icon is a placeholder — we'll
+    replace it with something more thematic in the refinement phase. Look for the REFINEMENT TARGET comment. #} <nav
+    class="border-b border-frost-700 bg-frost-800/50 backdrop-blur-sm relative z-50">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
 
-        The hamburger icon is a placeholder —
-        we'll replace it with something more
-        thematic in the refinement phase.
-        Look for the REFINEMENT TARGET comment.
-    #}
-    <nav class="border-b border-frost-700 bg-frost-800/50 backdrop-blur-sm relative z-50">
-        <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      {# Site logo/title — always visible #}
+      <a href="/"
+        class="font-display text-xl text-ice-300 tracking-widest uppercase hover:text-ice-400 transition-colors">
+        Godfall
+      </a>
 
-            {# Site logo/title — always visible #}
-            <a href="/" class="font-display text-xl text-ice-300 tracking-widest uppercase hover:text-ice-400 transition-colors">
-                Godfall
-            </a>
+      {#
+      DESKTOP NAV LINKS
+      "hidden md:flex" means:
+      - hidden on mobile (below md)
+      - flex layout on medium screens+
+      This is Tailwind's mobile-first
+      approach: base styles = mobile,
+      prefixes scale UP.
+      #}
+      <div class="hidden md:flex gap-8 text-sm tracking-wide uppercase">
+        <a href="#" class="text-silver-400 hover:text-ice-300 transition-colors">Characters</a>
+        <a href="#" class="text-silver-400 hover:text-ice-300 transition-colors">Adventure Log</a>
+        <a href="#" class="text-silver-400 hover:text-ice-300 transition-colors">Timeline</a>
+        <a href="#" class="text-silver-400 hover:text-ice-300 transition-colors">Gallery</a>
+        <a href="#" class="text-silver-400 hover:text-ice-300 transition-colors">World Lore</a>
+      </div>
 
-            {#
-                DESKTOP NAV LINKS
-                "hidden md:flex" means:
-                - hidden on mobile (below md)
-                - flex layout on medium screens+
-                This is Tailwind's mobile-first
-                approach: base styles = mobile,
-                prefixes scale UP.
-            #}
-            <div class="hidden md:flex gap-8 text-sm tracking-wide uppercase">
-                <a href="#" class="text-silver-400 hover:text-ice-300 transition-colors">Characters</a>
-                <a href="#" class="text-silver-400 hover:text-ice-300 transition-colors">Adventure Log</a>
-                <a href="#" class="text-silver-400 hover:text-ice-300 transition-colors">Timeline</a>
-                <a href="#" class="text-silver-400 hover:text-ice-300 transition-colors">Gallery</a>
-                <a href="#" class="text-silver-400 hover:text-ice-300 transition-colors">World Lore</a>
-            </div>
+      {#
+      MOBILE HAMBURGER BUTTON
+      "md:hidden" means: visible on
+      mobile, hidden on desktop.
 
-            {#
-                MOBILE HAMBURGER BUTTON
-                "md:hidden" means: visible on
-                mobile, hidden on desktop.
+      *** REFINEMENT TARGET ***
+      This is the standard three-line
+      hamburger. In the refinement
+      phase, we'll replace this with
+      something more thematic — a
+      frosted rune, a d20, etc.
 
-                *** REFINEMENT TARGET ***
-                This is the standard three-line
-                hamburger. In the refinement
-                phase, we'll replace this with
-                something more thematic — a
-                frosted rune, a d20, etc.
-
-                onclick calls toggleMobileMenu()
-                which we define in the script
-                block at the bottom of the page.
-            #}
-            <button
-                onclick="toggleMobileMenu()"
-                class="md:hidden text-silver-300 hover:text-ice-300 transition-colors"
-                aria-label="Toggle navigation menu"
-            >
-                {# --- REFINEMENT TARGET: Replace this SVG with custom icon --- #}
-                <svg id="menu-icon-open" xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-                <svg id="menu-icon-close" xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-        </div>
+      onclick calls toggleMobileMenu()
+      which we define in the script
+      block at the bottom of the page.
+      #}
+      <button onclick="toggleMobileMenu()" class="md:hidden text-silver-300 hover:text-ice-300 transition-colors"
+        aria-label="Toggle navigation menu">
+        {# --- REFINEMENT TARGET: Replace this SVG with custom icon --- #}
+        <svg id="menu-icon-open" xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+        <svg id="menu-icon-close" xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 hidden" fill="none"
+          viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
     </nav>
 
     {#
-        MOBILE MENU OVERLAY
-        Starts hidden. When the hamburger is
-        tapped, JavaScript removes the "hidden"
-        class and it slides into view.
+    MOBILE MENU OVERLAY
+    Starts hidden. When the hamburger is
+    tapped, JavaScript removes the "hidden"
+    class and it slides into view.
 
-        This sits OUTSIDE the nav but uses
-        fixed positioning to cover the full
-        screen. The frosted glass effect
-        (backdrop-blur-xl + semi-transparent
-        background) keeps it atmospheric.
+    This sits OUTSIDE the nav but uses
+    fixed positioning to cover the full
+    screen. The frosted glass effect
+    (backdrop-blur-xl + semi-transparent
+    background) keeps it atmospheric.
 
-        Links are large with generous padding
-        for easy thumb tapping — because nobody
-        wants to play "hit the tiny link" on
-        their phone. That's not a fun game.
-        Not even in D&D.
+    Links are large with generous padding
+    for easy thumb tapping — because nobody
+    wants to play "hit the tiny link" on
+    their phone. That's not a fun game.
+    Not even in D&D.
     #}
     <div id="mobile-menu" class="fixed inset-0 z-40 hidden">
 
-        {# Dark frosted backdrop #}
-        <div class="absolute inset-0 bg-frost-900/95 backdrop-blur-xl"></div>
+      {# Dark frosted backdrop #}
+      <div class="absolute inset-0 bg-frost-900/95 backdrop-blur-xl"></div>
 
-        {#
-            Menu content — centered vertically
-            and horizontally. Each link is big,
-            spaced out, and easy to tap.
+      {#
+      Menu content — centered vertically
+      and horizontally. Each link is big,
+      spaced out, and easy to tap.
 
-            The font-display class gives them
-            that Cinzel serif treatment so they
-            feel like carved stone inscriptions,
-            not generic nav links.
-        #}
-        <div class="relative z-10 flex flex-col items-center justify-center h-full gap-8">
+      The font-display class gives them
+      that Cinzel serif treatment so they
+      feel like carved stone inscriptions,
+      not generic nav links.
+      #}
+      <div class="relative z-10 flex flex-col items-center justify-center h-full gap-8">
 
-            {# Subtle site name at the top of the menu #}
-            <p class="font-display text-sm tracking-[0.3em] uppercase text-ice-300/30 mb-4">Godfall</p>
+        {# Subtle site name at the top of the menu #}
+        <p class="font-display text-sm tracking-[0.3em] uppercase text-ice-300/30 mb-4">Godfall</p>
 
-            <a href="#" onclick="toggleMobileMenu()" class="font-display text-2xl tracking-widest uppercase text-silver-300 hover:text-ice-300 transition-colors py-2">Characters</a>
-            <a href="#" onclick="toggleMobileMenu()" class="font-display text-2xl tracking-widest uppercase text-silver-300 hover:text-ice-300 transition-colors py-2">Adventure Log</a>
-            <a href="#" onclick="toggleMobileMenu()" class="font-display text-2xl tracking-widest uppercase text-silver-300 hover:text-ice-300 transition-colors py-2">Timeline</a>
-            <a href="#" onclick="toggleMobileMenu()" class="font-display text-2xl tracking-widest uppercase text-silver-300 hover:text-ice-300 transition-colors py-2">Gallery</a>
-            <a href="#" onclick="toggleMobileMenu()" class="font-display text-2xl tracking-widest uppercase text-silver-300 hover:text-ice-300 transition-colors py-2">World Lore</a>
+        <a href="#" onclick="toggleMobileMenu()"
+          class="font-display text-2xl tracking-widest uppercase text-silver-300 hover:text-ice-300 transition-colors py-2">Characters</a>
+        <a href="#" onclick="toggleMobileMenu()"
+          class="font-display text-2xl tracking-widest uppercase text-silver-300 hover:text-ice-300 transition-colors py-2">Adventure
+          Log</a>
+        <a href="#" onclick="toggleMobileMenu()"
+          class="font-display text-2xl tracking-widest uppercase text-silver-300 hover:text-ice-300 transition-colors py-2">Timeline</a>
+        <a href="#" onclick="toggleMobileMenu()"
+          class="font-display text-2xl tracking-widest uppercase text-silver-300 hover:text-ice-300 transition-colors py-2">Gallery</a>
+        <a href="#" onclick="toggleMobileMenu()"
+          class="font-display text-2xl tracking-widest uppercase text-silver-300 hover:text-ice-300 transition-colors py-2">World
+          Lore</a>
 
-            {# Tagline at the bottom — a frosty whisper #}
-            <p class="mt-8 text-sm text-ice-300/20 font-light tracking-wider">Five Flames. One fire.</p>
-        </div>
+        {# Tagline at the bottom — a frosty whisper #}
+        <p class="mt-8 text-sm text-ice-300/20 font-light tracking-wider">Five Flames. One fire.</p>
+      </div>
     </div>
 
     {# MAIN CONTENT BLOCK #}
     <main>
-        {% block content %}{% endblock %}
+      {% block content %}{% endblock %}
     </main>
 
     {# FOOTER #}
     <footer class="border-t border-frost-700 mt-20">
-        <div class="max-w-6xl mx-auto px-6 py-8 text-center text-silver-400 text-sm">
-            <p class="font-display tracking-widest uppercase text-ice-300/40">Godfall</p>
-            <p class="mt-2">Rime of the Frostmaiden Campaign Companion</p>
-        </div>
+      <div class="max-w-6xl mx-auto px-6 py-8 text-center text-silver-400 text-sm">
+        <p class="font-display tracking-widest uppercase text-ice-300/40">Godfall</p>
+        <p class="mt-2">Rime of the Frostmaiden Campaign Companion</p>
+      </div>
     </footer>
 
     {#
-        MOBILE MENU JAVASCRIPT
-        =====================
-        This is the small bit of vanilla JS
-        needed to toggle the mobile menu.
-        About 10 lines — a single blaster bolt,
-        not an orbital strike.
+    MOBILE MENU JAVASCRIPT
+    =====================
+    This is the small bit of vanilla JS
+    needed to toggle the mobile menu.
+    About 10 lines — a single blaster bolt,
+    not an orbital strike.
 
-        We're using plain JavaScript here
-        because this is purely a local UI
-        toggle — no server communication
-        needed, so HTMX isn't the right tool.
+    We're using plain JavaScript here
+    because this is purely a local UI
+    toggle — no server communication
+    needed, so HTMX isn't the right tool.
 
-        Knowing WHEN to use each tool is just
-        as important as knowing HOW.
+    Knowing WHEN to use each tool is just
+    as important as knowing HOW.
 
-        Key concepts:
-        - document.getElementById(): finds an
-          HTML element by its id attribute.
-          Like using the Force to locate a
-          specific presence in a crowded room.
+    Key concepts:
+    - document.getElementById(): finds an
+    HTML element by its id attribute.
+    Like using the Force to locate a
+    specific presence in a crowded room.
 
-        - classList.toggle('hidden'): adds the
-          "hidden" class if it's missing, or
-          removes it if it's there. A light
-          switch — on/off.
+    - classList.toggle('hidden'): adds the
+    "hidden" class if it's missing, or
+    removes it if it's there. A light
+    switch — on/off.
 
-        - classList.contains('hidden'): checks
-          whether an element currently has the
-          "hidden" class. Like sensing whether
-          a door is open or closed.
+    - classList.contains('hidden'): checks
+    whether an element currently has the
+    "hidden" class. Like sensing whether
+    a door is open or closed.
     #}
     <script>
-        function toggleMobileMenu() {
-            // Grab our three targets
-            const menu = document.getElementById('mobile-menu');
-            const iconOpen = document.getElementById('menu-icon-open');
-            const iconClose = document.getElementById('menu-icon-close');
+      function toggleMobileMenu() {
+        // Grab our three targets
+        const menu = document.getElementById('mobile-menu');
+        const iconOpen = document.getElementById('menu-icon-open');
+        const iconClose = document.getElementById('menu-icon-close');
 
-            // Toggle the menu visibility
-            menu.classList.toggle('hidden');
+        // Toggle the menu visibility
+        menu.classList.toggle('hidden');
 
-            // Swap the hamburger icon to an X (and back)
-            iconOpen.classList.toggle('hidden');
-            iconClose.classList.toggle('hidden');
+        // Swap the hamburger icon to an X (and back)
+        iconOpen.classList.toggle('hidden');
+        iconClose.classList.toggle('hidden');
 
-            // Prevent the page from scrolling while
-            // the menu is open — otherwise you'd see
-            // content sliding around behind the overlay.
-            // Like locking the blast doors.
-            if (!menu.classList.contains('hidden')) {
-                document.body.style.overflow = 'hidden';
-            } else {
-                document.body.style.overflow = '';
-            }
+        // Prevent the page from scrolling while
+        // the menu is open — otherwise you'd see
+        // content sliding around behind the overlay.
+        // Like locking the blast doors.
+        if (!menu.classList.contains('hidden')) {
+          document.body.style.overflow = 'hidden';
+        } else {
+          document.body.style.overflow = '';
         }
+      }
     </script>
 
 </body>
+
 </html>

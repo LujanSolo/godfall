@@ -80,7 +80,15 @@ class Character(Base):
     # without a name. Like how you can't
     # register a ship without a designation.
     name = Column(String(100), nullable=False)
-    player_name = Column(String(100), nullable=False)
+    player_name = Column(String(100), nullable=True)
+    character_type = Column(String(20), default="player", nullable=False)
+    # --- IMPORTANCE TIER ---
+    # "major"   = recurring, story-significant
+    # "minor"   = supporting role
+    # "cameo"   = one-off encounter
+    #
+    # Players default to "major" 
+    importance = Column(String(20), default="major", nullable=True)
     race = Column(String(50), nullable=False)
     character_class = Column(String(50), nullable=False)
 
@@ -89,9 +97,6 @@ class Character(Base):
     # keyword in Python — it's how you define
     # classes (like this very model). Using it
     # as a column name would confuse Python.
-    # Like naming your pet Wookiee "Chewbacca"
-    # when there's already a Chewbacca on the
-    # ship — things get confusing fast.
 
     level = Column(Integer, default=1)
     age = Column(String(30))

@@ -1,81 +1,83 @@
 {#
-    GODFALL - home.html - The Landing Page
-    =======================================
-    TEMPLATE INHERITANCE
-    The "extends" tag below says: "I'm built
-    on top of base.html. Give me its nav,
-    footer, styles — everything. I'll just
-    fill in the content block."
+GODFALL - home.html - The Landing Page
+=======================================
+TEMPLATE INHERITANCE
+The "extends" tag below says: "I'm built
+on top of base.html. Give me its nav,
+footer, styles — everything. I'll just
+fill in the content block."
 
-    Like requisitioning a ship hull from the
-    shipyard and fitting it out for a specific
-    mission.
+Like requisitioning a ship hull from the
+shipyard and fitting it out for a specific
+mission.
 #}
 {% extends "base.html" %}
 
 {% block content %}
 
 {#
-    HERO SECTION
-    The first thing players see — a full-
-    viewport dark screen with the campaign
-    name rising out of the frost.
+HERO SECTION
+The first thing players see — a full-
+viewport dark screen with the campaign
+name rising out of the frost.
 
-    min-h-screen: fills the entire browser
-    window height.
+min-h-screen: fills the entire browser
+window height.
 
-    flex + items-center + justify-center:
-    centers everything vertically and
-    horizontally. Flexbox is the Force of
-    CSS layout — invisible, powerful, holds
-    everything in balance.
+flex + items-center + justify-center:
+centers everything vertically and
+horizontally. Flexbox is the Force of
+CSS layout — invisible, powerful, holds
+everything in balance.
 #}
 <section class="min-h-screen flex flex-col items-center justify-center text-center px-6 relative overflow-hidden">
 
-    {#
-        ATMOSPHERIC BACKGROUND GLOW
-        A subtle radial gradient that creates
-        an icy glow behind the title — like
-        cold light emanating from beneath
-        frozen ground.
-    #}
-    <div class="absolute inset-0 bg-gradient-radial from-ice-500/5 via-transparent to-transparent pointer-events-none"></div>
+  {#
+  ATMOSPHERIC BACKGROUND GLOW
+  A subtle radial gradient that creates
+  an icy glow behind the title — like
+  cold light emanating from beneath
+  frozen ground.
+  #}
+  <div class="absolute inset-0 bg-gradient-radial from-ice-500/5 via-transparent to-transparent pointer-events-none">
+  </div>
 
-    {#
-        CAMPAIGN TITLE
-        "title" pulls the value we passed from
-        main.py — Python sends the data, Jinja2
-        places it. The template just says WHERE
-        it goes and HOW it looks.
-    #}
-    <h1 class="font-display text-6xl md:text-8xl font-black tracking-[0.2em] uppercase text-silver-200 relative z-10 frost-glow">
-        {{ title }}
-    </h1>
+  {#
+  CAMPAIGN TITLE
+  "title" pulls the value we passed from
+  main.py — Python sends the data, Jinja2
+  places it. The template just says WHERE
+  it goes and HOW it looks.
+  #}
+  <h1
+    class="font-display text-6xl md:text-8xl font-black tracking-[0.2em] uppercase text-silver-200 relative z-10 frost-glow">
+    {{ title }}
+  </h1>
 
-    {#
-        TAGLINE
-        Pulls "Five Flames. One fire. Not
-        kindled, but remembered." from Python.
+  {#
+  TAGLINE
+  Pulls "Five Flames. One fire. Not
+  kindled, but remembered." from Python.
 
-        Your players see an epic motto.
-        You see the truth about Xylos.
-    #}
-    <p class="mt-8 text-lg md:text-xl text-ice-300/70 font-light tracking-wider max-w-xl relative z-10">
-        {{ tagline }}
-    </p>
+  Your players see an epic motto.
+  You see the truth about Xylos.
+  #}
+  <p class="mt-8 text-lg md:text-xl text-ice-300/70 font-light tracking-wider max-w-xl relative z-10">
+    {{ tagline }}
+  </p>
 
-    {#
-        SCROLL INDICATOR
-        A subtle animated chevron hinting
-        that there's more below. We'll add
-        content sections beneath the hero
-        as the project grows.
-    #}
-    <div class="absolute bottom-12 animate-bounce text-ice-300/30">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 9l-7 7-7-7" />
-        </svg>
-    </div>
+  {#
+  SCROLL INDICATOR
+  A subtle animated chevron hinting
+  that there's more below. We'll add
+  content sections beneath the hero
+  as the project grows.
+  #}
+  <div class="absolute bottom-12 animate-bounce text-ice-300/30">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 9l-7 7-7-7" />
+    </svg>
+  </div>
 
 </section>
 
