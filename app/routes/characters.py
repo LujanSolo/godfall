@@ -56,10 +56,7 @@ from fastapi import (
 # We won't use it much, but it's good to have.
 from fastapi.responses import RedirectResponse, HTMLResponse
 
-# Jinja2Templates: same as in main.py — we
-# need access to the template engine to
-# render HTML pages.
-from fastapi.templating import Jinja2Templates
+from app.templating import templates
 
 # Session: type hint for the database session.
 # This tells Python (and your code editor)
@@ -83,7 +80,7 @@ from app.models import Character, CharacterImage
 
 # Same BASE_DIR / templates pattern as main.py.
 BASE_DIR = Path(__file__).resolve().parent.parent
-templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
+from app.templating import templates
 
 # Where uploaded character images will be
 # stored on disk. We put them in static/ so

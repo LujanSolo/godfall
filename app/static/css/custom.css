@@ -37,3 +37,151 @@
         transparent 70%
     );
 }
+
+/* ----------------------------------------
+   PROSE-FROST
+   ----------------------------------------
+   Styling for markdown-rendered content.
+   When the | markdown filter outputs HTML,
+   we need rules for headings, paragraphs,
+   lists, etc. — Tailwind's reset strips
+   browser defaults, so without these rules
+   <h2> and <p> would all look identical.
+
+   This class wraps any container that
+   holds markdown-rendered HTML. Used on
+   session detail pages and anywhere else
+   long-form formatted text appears.
+   ---------------------------------------- */
+
+.prose-frost {
+    color: rgb(203 213 225 / 0.95);  /* silver-300-ish */
+    font-weight: 300;
+    line-height: 1.75;
+    font-size: 1.0625rem;
+}
+
+.prose-frost h1,
+.prose-frost h2,
+.prose-frost h3,
+.prose-frost h4 {
+    font-family: 'Cinzel', serif;
+    color: rgb(125 211 252);  /* ice-300 */
+    letter-spacing: 0.05em;
+    margin-top: 2.5em;
+    margin-bottom: 0.75em;
+    font-weight: 700;
+}
+
+.prose-frost h2 {
+    font-size: 1.875rem;
+    border-bottom: 1px solid rgb(26 35 50);  /* frost-700 */
+    padding-bottom: 0.5rem;
+}
+
+.prose-frost h3 {
+    font-size: 1.5rem;
+}
+
+.prose-frost h4 {
+    font-size: 1.25rem;
+    color: rgb(226 232 240);  /* silver-200 */
+}
+
+.prose-frost p {
+    margin-top: 1.25em;
+    margin-bottom: 1.25em;
+}
+
+.prose-frost strong {
+    color: rgb(226 232 240);  /* silver-200 */
+    font-weight: 600;
+}
+
+.prose-frost em {
+    color: rgb(125 211 252 / 0.85);  /* ice-300 with alpha */
+    font-style: italic;
+}
+
+.prose-frost a {
+    color: rgb(125 211 252);  /* ice-300 */
+    text-decoration: underline;
+    text-decoration-color: rgb(125 211 252 / 0.4);
+    text-underline-offset: 3px;
+    transition: all 0.2s;
+}
+
+.prose-frost a:hover {
+    color: rgb(56 189 248);  /* ice-400 */
+    text-decoration-color: rgb(56 189 248);
+}
+
+.prose-frost ul,
+.prose-frost ol {
+    margin-top: 1.25em;
+    margin-bottom: 1.25em;
+    padding-left: 1.5em;
+}
+
+.prose-frost ul {
+    list-style-type: disc;
+}
+
+.prose-frost ol {
+    list-style-type: decimal;
+}
+
+.prose-frost li {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+.prose-frost li::marker {
+    color: rgb(125 211 252 / 0.5);  /* ice-300 muted */
+}
+
+.prose-frost blockquote {
+    border-left: 2px solid rgb(125 211 252 / 0.4);  /* ice-300 alpha */
+    padding-left: 1.25rem;
+    margin-left: 0;
+    margin-top: 1.5em;
+    margin-bottom: 1.5em;
+    color: rgb(148 163 184);  /* silver-400 */
+    font-style: italic;
+}
+
+.prose-frost code {
+    background-color: rgb(17 24 39 / 0.6);  /* frost-800 alpha */
+    color: rgb(125 211 252);  /* ice-300 */
+    padding: 0.125rem 0.375rem;
+    border-radius: 2px;
+    font-size: 0.875em;
+}
+
+.prose-frost pre {
+    background-color: rgb(17 24 39 / 0.6);
+    border: 1px solid rgb(26 35 50);
+    padding: 1rem;
+    overflow-x: auto;
+    margin-top: 1.5em;
+    margin-bottom: 1.5em;
+}
+
+.prose-frost pre code {
+    background: none;
+    padding: 0;
+}
+
+.prose-frost hr {
+    border: none;
+    border-top: 1px solid rgb(26 35 50);  /* frost-700 */
+    margin-top: 2.5em;
+    margin-bottom: 2.5em;
+}
+
+.prose-frost img {
+    max-width: 100%;
+    margin-top: 1.5em;
+    margin-bottom: 1.5em;
+    border: 1px solid rgb(26 35 50);
+}

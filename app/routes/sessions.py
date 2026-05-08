@@ -21,7 +21,7 @@ from fastapi import (
     File,
 )
 from fastapi.responses import RedirectResponse, HTMLResponse
-from fastapi.templating import Jinja2Templates
+from app.templating import templates
 from sqlalchemy.orm import Session
 
 from pathlib import Path
@@ -35,7 +35,7 @@ from app.models import SessionRecap, SessionImage
 
 # --- CONFIGURATION ---
 BASE_DIR = Path(__file__).resolve().parent.parent
-templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
+from app.templating import templates
 
 # Different upload folder than characters —
 # keeps things organized. session images go
