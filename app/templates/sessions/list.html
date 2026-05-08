@@ -1,0 +1,150 @@
+{#
+    GODFALL - sessions/list.html
+    =============================
+    The adventure log feed. Sessions are
+    listed newest-first, each with their
+    featured image, dates, title, session
+    number, and short summary.
+
+    Layout: vertical stack of large feed
+    cards, single column on mobile, slightly
+    constrained width on desktop for that
+    "editorial" feel — like reading an
+    illustrated journal.
+#}
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="max-w-4xl mx-auto px-6 py-16">
+
+    {# --- PAGE HEADER --- #}
+    <div class="text-center mb-12">
+        <h1 class="font-display text-4xl md:text-5xl font-black tracking-[0.2em] uppercase text-silver-200 frost-glow">
+            Adventure Log
+        </h1>
+        <p class="mt-4 text-ice-300/60 font-light tracking-wider italic">
+            The chronicle of the Five Flames.
+        </p>
+    </div>
+
+    {# --- ADD NEW BUTTON --- #}
+    <div class="flex justify-end mb-8">
+        <a href="/sessions/new"
+           class="inline-flex items-center gap-2 px-5 py-2 border border-ice-500/40 text-ice-300 hover:bg-ice-500/10 hover:border-ice-300 font-display text-sm tracking-widest uppercase transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            New Session
+        </a>
+    </div>
+
+    {# --- SESSION FEED --- #}
+    {% if sessions %}
+    <div class="space-y-8">
+
+        {% for session in sessions %}
+
+        {#
+            Each session card. The whole card
+            is wrapped in an <a> so clicking
+            anywhere navigates to the detail
+            view.
+
+            Find the featured image (or fall
+            back to the first image, or none).
+        #}
+        {% set ns = namespace(featured=None) %}
+        {% for image in session.images %}
+            {% if image.is_featured == 1 and ns.featured is none %}
+                {% set ns.featured = image %}
+            {% endif %}
+        {% endfor %}
+        {% if ns.featured is none and session.images %}
+            {% set ns.featured = session.images[0] %}
+        {% endif %}
+
+        <a href="/sessions/{{ session.id }}"
+           class="group block bg-frost-800/40 border border-frost-700 hover:border-ice-500/40 transition-all overflow-hidden">
+
+            {# --- FEATURED IMAGE --- #}
+            {% if ns.featured %}
+            <div class="aspect-[21/9] bg-frost-900 overflow-hidden">
+                <img src="{{ ns.featured.file_path }}"
+                     alt="{{ session.title }}"
+                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+            </div>
+            {% endif %}
+
+            {# --- TEXT CONTENT --- #}
+            <div class="p-6 md:p-8">
+
+                {# Session number + dates row #}
+                <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs tracking-widest uppercase text-ice-300/60 mb-3">
+                    <span class="font-display">Session {{ session.session_number }}</span>
+
+                    {#
+                        REAL DATE FORMATTING
+                        | strftime is a custom filter
+                        we'll register in main.py.
+                        It converts a Python date into
+                        a string like "May 8, 2026".
+
+                        Wrapped in {% if %} so it only
+                        shows when we have a date.
+                    #}
+                    {% if session.real_date %}
+                    <span class="text-silver-400">
+                        {{ session.real_date | strftime('%B %-d, %Y') }}
+                    </span>
+                    {% endif %}
+
+                    {% if session.in_game_date %}
+                    <span class="text-silver-400 italic normal-case">
+                        {{ session.in_game_date }}
+                    </span>
+                    {% endif %}
+                </div>
+
+                {# Title #}
+                <h2 class="font-display text-2xl md:text-3xl tracking-wider text-silver-200 group-hover:text-ice-300 transition-colors leading-tight">
+                    {{ session.title }}
+                </h2>
+
+                {# Short summary #}
+                {% if session.summary %}
+                <p class="mt-4 text-silver-400 leading-relaxed font-light">
+                    {{ session.summary | truncate(200) }}
+                </p>
+                {% endif %}
+
+                {# Read more cue #}
+                <div class="mt-5 inline-flex items-center gap-2 text-xs tracking-widest uppercase text-ice-300/60 group-hover:text-ice-300 transition-colors">
+                    Read the full account
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </div>
+            </div>
+        </a>
+
+        {% endfor %}
+
+    </div>
+
+    {% else %}
+
+    {# --- EMPTY STATE --- #}
+    <div class="text-center py-20 border border-frost-700 border-dashed">
+        <p class="text-silver-400 mb-6 italic">The chronicle is unwritten. The journey awaits its first entry.</p>
+        <a href="/sessions/new"
+           class="inline-flex items-center gap-2 px-5 py-2 border border-ice-500/40 text-ice-300 hover:bg-ice-500/10 hover:border-ice-300 font-display text-sm tracking-widest uppercase transition-colors">
+            Begin the Chronicle
+        </a>
+    </div>
+
+    {% endif %}
+
+</section>
+
+{% endblock %}
