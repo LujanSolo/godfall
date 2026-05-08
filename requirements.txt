@@ -1,0 +1,43 @@
+# ============================================
+# GODFALL - The Ship's Manifest
+# ============================================
+# These are the packages (tools/libraries) our
+# project needs to run. Think of each one as a
+# crew member boarding the Millennium Falcon —
+# everyone has a job.
+#
+# Install all of them at once with:
+#   pip install -r requirements.txt
+# ============================================
+
+# The hyperdrive — our core web framework.
+# Handles routes, requests, and responses.
+fastapi
+
+# The pilot — the server that actually flies
+# the ship. [standard] includes auto-reload
+# so the server restarts when you edit code.
+# Like R2 rerouting power on the fly.
+uvicorn[standard]
+
+# The holographic display — takes raw Python
+# data and renders it into HTML pages.
+jinja2
+
+# The cargo bay — handles form submissions
+# and file uploads (photos, art, etc).
+python-multipart
+
+# The protocol droid — translates between
+# Python objects and database tables so they
+# understand each other.
+sqlalchemy
+
+# The astromech — quietly serves your static
+# files (CSS, images) behind the scenes.
+aiofiles
+
+# The sealed orders — loads secret config
+# values (passwords, keys) from a hidden
+# .env file so they never end up on GitHub.
+python-dotenv
