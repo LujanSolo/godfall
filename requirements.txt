@@ -13,6 +13,7 @@
 # The hyperdrive — our core web framework.
 # Handles routes, requests, and responses.
 fastapi
+starlette==0.46.2
 
 # The pilot — the server that actually flies
 # the ship. [standard] includes auto-reload
