@@ -1,0 +1,62 @@
+{#
+    GODFALL - timeline/_cast_card.html
+    ====================================
+    A small reusable card for the Cast
+    section. Expects a "character" variable
+    in scope (set by the parent template's
+    {% set character = link.character %}).
+
+    Why a fragment for this?
+    Because we render this card layout in
+    two places (PCs section, NPCs section)
+    and a third would be a code smell.
+    Better to factor it out once and
+    include it where needed.
+
+    DRY principle in action: Don't
+    Repeat Yourself. The same lesson Yoda
+    might give Luke about lifting X-wings:
+    do, or do not — but only write it once.
+#}
+
+{# Find character's primary image #}
+{% set ns2 = namespace(primary=None) %}
+{% for image in character.images %}
+    {% if image.is_primary == 1 and ns2.primary is none %}
+        {% set ns2.primary = image %}
+    {% endif %}
+{% endfor %}
+{% if ns2.primary is none and character.images %}
+    {% set ns2.primary = character.images[0] %}
+{% endif %}
+
+<a href="/characters/{{ character.id }}"
+   class="group block bg-frost-800/40 border border-frost-700 hover:border-ice-500/40 transition-all overflow-hidden">
+
+    {# Portrait #}
+    <div class="aspect-square bg-frost-900 overflow-hidden">
+        {% if ns2.primary %}
+            <img src="{{ ns2.primary.file_path }}"
+                 alt="{{ character.name }}"
+                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+        {% else %}
+            <div class="w-full h-full flex items-center justify-center text-ice-300/20">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+            </div>
+        {% endif %}
+    </div>
+
+    {# Name + brief #}
+    <div class="p-3">
+        <p class="font-display text-sm tracking-wider text-silver-200 group-hover:text-ice-300 transition-colors leading-tight truncate">
+            {{ character.name }}
+        </p>
+        {% if character.race or character.character_class %}
+        <p class="text-[11px] text-silver-400/60 tracking-wide mt-1 truncate">
+            {{ character.race }}{% if character.character_class %} {{ character.character_class }}{% endif %}
+        </p>
+        {% endif %}
+    </div>
+</a>

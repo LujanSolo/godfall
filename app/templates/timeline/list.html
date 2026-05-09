@@ -1,0 +1,276 @@
+{#
+    GODFALL - timeline/list.html
+    =============================
+    The interactive timeline.
+
+    Two layouts, one template:
+      - Desktop (md+): horizontal scroll
+      - Mobile: vertical stack
+
+    Tailwind's responsive prefixes do all
+    the layout switching. No JavaScript.
+
+    Hover preview powered by HTMX:
+      - Each node fires a request on hover
+      - Server returns rendered tooltip HTML
+      - Tooltip element receives the swap
+
+    For now, both layouts use the same node
+    markup; we just rearrange the container.
+#}
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="px-6 py-12 max-w-7xl mx-auto">
+
+    {# --- PAGE HEADER --- #}
+    <div class="text-center mb-12">
+        <h1 class="font-display text-4xl md:text-5xl font-black tracking-[0.2em] uppercase text-silver-200 frost-glow">
+            Timeline
+        </h1>
+        <p class="mt-4 text-ice-300/60 font-light tracking-wider italic">
+            The story of the Five Flames, marked in ice.
+        </p>
+    </div>
+
+    {# --- ADD NEW BUTTON --- #}
+    <div class="flex justify-end mb-8">
+        <a href="/timeline/new"
+           class="inline-flex items-center gap-2 px-5 py-2 border border-ice-500/40 text-ice-300 hover:bg-ice-500/10 hover:border-ice-300 font-display text-sm tracking-widest uppercase transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            New Event
+        </a>
+    </div>
+
+    {% if events %}
+
+    {#
+        ============================================
+        DESKTOP TIMELINE (md and up)
+        ============================================
+        Horizontal scrolling track. Events alternate
+        above/below the central line.
+
+        - "hidden md:block" makes this version only
+          visible on medium screens and up.
+        - "overflow-x-auto" enables horizontal scroll.
+        - Each event node is positioned relative to
+          the central line via flex layout.
+    #}
+    <div class="hidden md:block">
+        <div class="overflow-x-auto pb-8 timeline-scroll">
+
+            {#
+                The track itself is a flex row.
+                Each "tick" is a flex item with a
+                fixed width to control spacing.
+                The central line is a 1px tall
+                element that spans the whole track.
+            #}
+            <div class="relative flex items-center min-w-max px-8 py-32">
+
+                {# The central line #}
+                <div class="absolute left-0 right-0 top-1/2 h-px bg-gradient-to-r from-transparent via-ice-500/40 to-transparent"></div>
+
+                {# Event nodes #}
+                {% for event in events %}
+                <div class="relative flex flex-col items-center justify-center mx-12 first:ml-0 last:mr-0">
+
+                    {#
+                        ALTERNATING POSITIONS
+                        loop.index is 1-based. We use
+                        modulo (%) to alternate above
+                        and below.
+
+                        odd events go above, even
+                        events go below.
+                    #}
+                    {% if loop.index is odd %}
+                        {# Content above the line #}
+                        <div class="absolute bottom-full mb-6 w-48 text-center">
+                            {% if event.event_date %}
+                            <p class="text-[10px] tracking-[0.2em] uppercase text-ice-300/40 italic mb-1">
+                                {{ event.event_date }}
+                            </p>
+                            {% endif %}
+                            <p class="font-display text-sm tracking-wider text-silver-300 leading-tight">
+                                {{ event.title }}
+                            </p>
+                        </div>
+                        {# Tick mark connecting node to label #}
+                        <div class="absolute bottom-1/2 w-px h-6 bg-ice-500/40"></div>
+                    {% else %}
+                        {# Tick mark connecting node to label #}
+                        <div class="absolute top-1/2 w-px h-6 bg-ice-500/40"></div>
+                        {# Content below the line #}
+                        <div class="absolute top-full mt-6 w-48 text-center">
+                            {% if event.event_date %}
+                            <p class="text-[10px] tracking-[0.2em] uppercase text-ice-300/40 italic mb-1">
+                                {{ event.event_date }}
+                            </p>
+                            {% endif %}
+                            <p class="font-display text-sm tracking-wider text-silver-300 leading-tight">
+                                {{ event.title }}
+                            </p>
+                        </div>
+                    {% endif %}
+
+                    {#
+                        THE NODE
+                        This is the clickable circle
+                        on the line. Milestones get
+                        a larger size and brighter
+                        styling.
+
+                        HTMX attributes here:
+                        - hx-get fetches the preview
+                        - hx-trigger fires on hover
+                          with a 200ms delay
+                        - hx-target picks where to
+                          drop the response
+                        - hx-swap controls how
+                    #}
+                    <a href="/timeline/{{ event.id }}"
+                       hx-get="/timeline/{{ event.id }}/preview"
+                       hx-trigger="mouseenter delay:200ms"
+                       hx-target="#tooltip-content"
+                       hx-swap="innerHTML"
+                       onmouseenter="showTooltip(event)"
+                       onmouseleave="hideTooltip()"
+                       class="relative z-10 group">
+
+                        {% if event.is_milestone == 1 %}
+                            {# Larger milestone node #}
+                            <div class="w-5 h-5 bg-ice-300 border-2 border-frost-900 rounded-full shadow-lg shadow-ice-300/40 group-hover:scale-125 group-hover:shadow-ice-300/60 transition-all"></div>
+                        {% else %}
+                            {# Standard node #}
+                            <div class="w-3 h-3 bg-ice-500/80 border border-frost-900 rounded-full group-hover:bg-ice-300 group-hover:scale-150 transition-all"></div>
+                        {% endif %}
+                    </a>
+                </div>
+                {% endfor %}
+
+            </div>
+        </div>
+
+        {# Scroll hint #}
+        <p class="text-center text-xs text-silver-400/50 italic tracking-wider mt-2">
+            Scroll horizontally to traverse the chronicle
+        </p>
+    </div>
+
+    {#
+        ============================================
+        MOBILE TIMELINE (below md)
+        ============================================
+        Vertical stack. The line runs down the left
+        side. Each event sits to the right with a
+        short horizontal tick connecting it.
+
+        On mobile we use tap-to-navigate (the link)
+        rather than hover preview. The preview UI
+        is desktop-only — phones simply tap through
+        to the full detail page.
+    #}
+    <div class="md:hidden relative pl-8">
+
+        {# Vertical line down the left #}
+        <div class="absolute left-2 top-2 bottom-2 w-px bg-gradient-to-b from-transparent via-ice-500/40 to-transparent"></div>
+
+        <div class="space-y-8">
+            {% for event in events %}
+            <a href="/timeline/{{ event.id }}"
+               class="relative block group">
+
+                {# Tick mark + node #}
+                <div class="absolute -left-8 top-3 flex items-center">
+                    {# Horizontal tick #}
+                    <div class="w-5 h-px bg-ice-500/40"></div>
+                    {# Node (sits at the line's intersection) #}
+                    <div class="absolute -left-1 {% if event.is_milestone == 1 %}w-4 h-4 bg-ice-300 shadow-lg shadow-ice-300/40{% else %}w-2.5 h-2.5 bg-ice-500/80{% endif %} border border-frost-900 rounded-full group-hover:scale-125 transition-transform"></div>
+                </div>
+
+                {# Event content card #}
+                <div class="bg-frost-800/40 border border-frost-700 group-hover:border-ice-500/40 transition-colors p-4">
+                    {% if event.event_date %}
+                    <p class="text-[10px] tracking-[0.2em] uppercase text-ice-300/50 italic mb-1">
+                        {{ event.event_date }}
+                    </p>
+                    {% endif %}
+                    <h3 class="font-display text-base tracking-wider text-silver-200 group-hover:text-ice-300 transition-colors leading-tight">
+                        {{ event.title }}
+                    </h3>
+                    {% if event.summary %}
+                    <p class="mt-2 text-xs text-silver-400 leading-relaxed font-light">
+                        {{ event.summary | truncate(120) }}
+                    </p>
+                    {% endif %}
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% else %}
+
+    {# --- EMPTY STATE --- #}
+    <div class="text-center py-20 border border-frost-700 border-dashed">
+        <p class="text-silver-400 mb-6 italic">No events recorded yet. The timeline awaits its first mark.</p>
+        <a href="/timeline/new"
+           class="inline-flex items-center gap-2 px-5 py-2 border border-ice-500/40 text-ice-300 hover:bg-ice-500/10 hover:border-ice-300 font-display text-sm tracking-widest uppercase transition-colors">
+            Mark the First Event
+        </a>
+    </div>
+
+    {% endif %}
+
+</section>
+
+{#
+    ============================================
+    HOVER TOOLTIP (desktop only)
+    ============================================
+    A fixed-position element near the bottom of
+    the viewport. Starts hidden. When HTMX
+    populates it with content, our JS shows it.
+
+    The tooltip moves with the cursor for the
+    classic "follow the mouse" tooltip feel.
+    Cleaner than anchoring it to each node
+    because we don't have to deal with edge-of-
+    screen clipping logic — it just lives at
+    the bottom and the user always sees it.
+#}
+<div id="timeline-tooltip"
+     class="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 hidden pointer-events-none">
+    <div id="tooltip-content"></div>
+</div>
+
+{#
+    Tiny JavaScript for tooltip show/hide.
+    HTMX handles the fetch — we just toggle
+    visibility based on hover events.
+#}
+<script>
+    function showTooltip(event) {
+        const tooltip = document.getElementById('timeline-tooltip');
+        // We delay slightly so HTMX has a chance
+        // to populate content before showing.
+        setTimeout(() => {
+            const content = document.getElementById('tooltip-content');
+            if (content.innerHTML.trim()) {
+                tooltip.classList.remove('hidden');
+            }
+        }, 250);
+    }
+
+    function hideTooltip() {
+        const tooltip = document.getElementById('timeline-tooltip');
+        tooltip.classList.add('hidden');
+    }
+</script>
+
+{% endblock %}
