@@ -805,3 +805,60 @@ class LoreEvent(Base):
 
     def __repr__(self):
         return f"<LoreEvent: Lore #{self.lore_id} ↔ Event #{self.event_id}>"
+    
+
+# ============================================
+# USER MODEL
+# ============================================
+# A single row will ever exist in this table:
+# the DM. We use a real database table rather
+# than just an environment variable so:
+#
+#   1. The password can be changed via UI
+#      (later refinement — change-password
+#      page) without a server restart.
+#   2. We have flexibility to add more users
+#      later if we ever decide to.
+#   3. The pattern matches how real auth
+#      systems work, so the code teaches a
+#      reusable concept.
+#
+# Like having an Imperial credentials
+# database with one chip in it. Could grow
+# to thousands. Doesn't have to.
+# ============================================
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    # --- IDENTITY ---
+    # Email address (also serves as the login
+    # identifier). Marked unique because two
+    # users can't share the same email.
+    email = Column(String(255), unique=True, nullable=False, index=True)
+
+    # --- PASSWORD HASH ---
+    # We NEVER store the password itself.
+    # Only the bcrypt hash. bcrypt hashes are
+    # one-way — you can verify a password
+    # against a hash, but you can't reverse a
+    # hash back to a password.
+    #
+    # The String length is 60 because that's
+    # the standard length of a bcrypt hash.
+    password_hash = Column(String(60), nullable=False)
+
+    # --- ROLE ---
+    # Currently only "dm" exists, but having
+    # a role field means we can later add
+    # "player" or other roles without a
+    # schema change.
+    role = Column(String(20), default="dm", nullable=False)
+
+    # --- TIMESTAMPS ---
+    created_at = Column(DateTime, default=utc_now)
+    last_login_at = Column(DateTime)
+
+    def __repr__(self):
+        return f"<User: {self.email} ({self.role})>"

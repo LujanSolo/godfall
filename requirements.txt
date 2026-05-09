@@ -49,6 +49,17 @@ python-dotenv==1.2.2
 # bold, italics, and lists render properly.
 markdown==3.7
 
+# The locksmith — hashes passwords so we
+# never store them in plain text. Even if
+# someone got a copy of our database, they'd
+# see scrambled hashes, not the actual passwords.
+bcrypt==4.2.1
+
+# The royal seal — signs and verifies the
+# session cookies so they can't be forged
+# or tampered with by clients.
+itsdangerous==2.2.0
+
 # --- SUB-CREW (dependencies of the above) ---
 # These are pulled in automatically by our
 # core packages. We pin them too so nothing

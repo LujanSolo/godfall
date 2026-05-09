@@ -98,6 +98,38 @@ lost in the snowstorm.
   This is a fuller mobile polish pass for the map page in particular,
   since it's the most visually demanding page on the site.
 
+- **"Previously on..." home page feature** — TTRPG sessions often
+  have a week or more between play, and players (and the DM) forget
+  where things stood. Add a recap section to the home page that
+  bridges the gap between sessions.
+
+  Hybrid approach:
+
+  1. New small DB model — `PreviouslyOn` — with fields for a
+     custom narrative blurb (markdown-supported), an optional
+     pinned session reference, and an optional pinned timeline
+     event reference. Plus timestamps.
+  2. Only one entry is "active" at a time; updating it replaces
+     the previous one (or archives it for history if we want to
+     get fancy later).
+  3. A small DM-only edit form somewhere accessible (e.g.
+     `/previously-on/edit`) lets the DM write a fresh blurb
+     between sessions. The form lets them link to recent
+     content (a session, an event, or both).
+  4. The home page renders the active entry below the "Five
+     Flames" hero — title like "Previously on Godfall...",
+     the DM's blurb, optional thumbnails of the linked session/
+     event, and a "Read more" CTA pointing to the linked content.
+  5. If no entry exists, the home page just shows the hero as
+     it does now. Graceful fallback.
+
+  This pairs well with the auth phase — the edit form should be
+  DM-only, but the display is for everyone visiting the site.
+
+  It also makes the home page feel alive instead of just being a
+  beautiful but static landing screen. Genuinely useful between
+  sessions, especially for groups with longer gaps between plays.
+
 ## Architecture & Story Features
 
 - **NPC separation** — NPCs need their own page or a clearly distinct
@@ -241,6 +273,14 @@ lost in the snowstorm.
   progressive NPC reveal and town-level maps — clicking a pin during
   play could surface newly-learned info live, then drill down into
   a town map when the party arrives at a settlement.
+
+- **"Previously On" history archive** — extension of the home page
+  recap feature. Once the basic version is in place, consider
+  archiving past recap blurbs so players can scroll back through
+  the "story so far" as a series of bite-sized summaries. Could
+  work as a small archive page, or as a vertical stack on the home
+  page showing the last 3-5 recaps. Useful for new players joining
+  mid-campaign.
 
 ---
 
