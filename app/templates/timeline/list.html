@@ -35,6 +35,7 @@
     </div>
 
     {# --- ADD NEW BUTTON --- #}
+    {% if request.state.user %}
     <div class="flex justify-end mb-8">
         <a href="/timeline/new"
            class="inline-flex items-center gap-2 px-5 py-2 border border-ice-500/40 text-ice-300 hover:bg-ice-500/10 hover:border-ice-300 font-display text-sm tracking-widest uppercase transition-colors">
@@ -44,6 +45,7 @@
             New Event
         </a>
     </div>
+    {% endif %}
 
     {% if events %}
 
@@ -219,10 +221,12 @@
     {# --- EMPTY STATE --- #}
     <div class="text-center py-20 border border-frost-700 border-dashed">
         <p class="text-silver-400 mb-6 italic">No events recorded yet. The timeline awaits its first mark.</p>
+        {% if request.state.user %}
         <a href="/timeline/new"
            class="inline-flex items-center gap-2 px-5 py-2 border border-ice-500/40 text-ice-300 hover:bg-ice-500/10 hover:border-ice-300 font-display text-sm tracking-widest uppercase transition-colors">
             Mark the First Event
         </a>
+        {% endif %}
     </div>
 
     {% endif %}

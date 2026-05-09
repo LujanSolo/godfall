@@ -80,6 +80,7 @@ we benefit from URL-based state.
   </a>
 
   {# --- ADD NEW BUTTON --- #}
+  {% if request.state.user %}
   <div class="flex justify-end mb-8">
     {#
     We pass the current category as a
@@ -96,6 +97,7 @@ we benefit from URL-based state.
       New Entry
     </a>
   </div>
+  {% endif %}
 
   {#
   --- FILTER CHIPS ---
@@ -172,17 +174,21 @@ we benefit from URL-based state.
         class="inline-flex items-center gap-2 px-5 py-2 border border-frost-700 text-silver-400 hover:border-ice-500/40 hover:text-ice-300 font-display text-sm tracking-widest uppercase transition-colors">
         View All Entries
       </a>
+      {% if request.state.user %}
       <a href="/lore/new?category={{ active_category }}"
         class="inline-flex items-center gap-2 px-5 py-2 border border-ice-500/40 text-ice-300 hover:bg-ice-500/10 hover:border-ice-300 font-display text-sm tracking-widest uppercase transition-colors">
         Add the First {{ active_category }}
       </a>
+      {% endif %}
     </div>
     {% else %}
     <p class="text-silver-400 mb-6 italic">The archive is empty. The world awaits its first inscription.</p>
+    {% if request.state.user %}
     <a href="/lore/new"
       class="inline-flex items-center gap-2 px-5 py-2 border border-ice-500/40 text-ice-300 hover:bg-ice-500/10 hover:border-ice-300 font-display text-sm tracking-widest uppercase transition-colors">
       Begin the Archive
     </a>
+    {% endif %}
     {% endif %}
   </div>
 

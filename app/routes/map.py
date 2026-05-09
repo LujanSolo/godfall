@@ -17,10 +17,11 @@
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
-
+from app.auth import require_dm, get_current_user
 from app.database import get_db
-from app.models import LoreEntry
+from app.models import LoreEntry, User
 from app.templating import templates
+from typing import Optional
 
 # --- CREATE THE ROUTER ---
 router = APIRouter(
@@ -46,15 +47,21 @@ router = APIRouter(
 @router.get("/")
 async def map_view(
     request: Request,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    user: Optional[User] = Depends(get_current_user),
 ):
-    pins = (
+    query = (
         db.query(LoreEntry)
         .filter(LoreEntry.category == "Location")
         .filter(LoreEntry.lat.is_not(None))
         .filter(LoreEntry.lng.is_not(None))
-        .all()
     )
+
+    # Hide secret-pinned locations from non-DM visitors
+    if user is None or user.role != "dm":
+        query = query.filter(LoreEntry.is_secret == 0)
+
+    pins = query.all()
 
     return templates.TemplateResponse(
         "map/view.html",
@@ -62,7 +69,7 @@ async def map_view(
             "request": request,
             "title": "World Map — Godfall",
             "pins": pins,
-        }
+        },
     )
 
 
@@ -78,13 +85,14 @@ async def map_view(
 async def pin_preview(
     request: Request,
     id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    user: Optional[User] = Depends(get_current_user),
 ):
-    entry = (
-        db.query(LoreEntry)
-        .filter(LoreEntry.id == id)
-        .first()
-    )
+    entry = db.query(LoreEntry).filter(LoreEntry.id == id).first()
+
+    if entry and entry.is_secret == 1:
+        if user is None or user.role != "dm":
+            entry = None
 
     if not entry:
         return HTMLResponse(content="", status_code=404)
@@ -94,5 +102,5 @@ async def pin_preview(
         {
             "request": request,
             "entry": entry,
-        }
+        },
     )

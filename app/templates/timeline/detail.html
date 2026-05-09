@@ -68,6 +68,7 @@ a small list it's perfectly clean.
     </div>
 
     {# DM action buttons #}
+    {% if request.state.user %}
     <div class="flex gap-2">
       <a href="/timeline/{{ event.id }}/edit"
         class="px-4 py-1.5 border border-frost-700 text-silver-400 hover:text-ice-300 hover:border-ice-500/40 text-xs tracking-widest uppercase transition-colors">
@@ -82,6 +83,7 @@ a small list it's perfectly clean.
         </button>
       </form>
     </div>
+    {% endif %}
   </div>
 
   {# --- TITLE --- #}
@@ -263,6 +265,7 @@ a small list it's perfectly clean.
   {% endif %}
 
   {# --- IMAGE UPLOAD FORM --- #}
+  {% if request.state.user %}
   <div class="mt-8 border border-frost-700 border-dashed p-6">
     <h3 class="font-display text-sm tracking-[0.3em] uppercase text-ice-300/60 mb-4">Add Images</h3>
 
@@ -290,7 +293,7 @@ a small list it's perfectly clean.
       </button>
     </form>
   </div>
-
+  {% endif %}
 </article>
 
 {% endblock %}

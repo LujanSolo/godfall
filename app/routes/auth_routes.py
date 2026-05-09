@@ -21,7 +21,6 @@
 # cookie, and our get_current_user dependency
 # can identify the DM.
 # ============================================
-
 from fastapi import APIRouter, Request, Depends, Form
 from fastapi.responses import RedirectResponse, HTMLResponse
 from sqlalchemy.orm import Session
@@ -34,6 +33,7 @@ from app.auth import (
     verify_password,
     create_session_token,
     SESSION_COOKIE_NAME,
+    require_dm,
 )
 from app.templating import templates
 

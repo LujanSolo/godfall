@@ -17,6 +17,7 @@
 # ============================================
 
 # --- IMPORTS ---
+from app.auth import require_dm, get_current_user
 from fastapi import (
     APIRouter,
     Request,
@@ -41,6 +42,7 @@ from app.models import (
     LoreEvent,
     Character,
     TimelineEvent,
+    User,
 )
 from app.templating import templates
 
@@ -99,16 +101,18 @@ async def lore_list(
     request: Request,
     db: Session = Depends(get_db),
     category: Optional[str] = None,
+    user: Optional[User] = Depends(get_current_user),
 ):
-    # Build the base query
     query = db.query(LoreEntry)
 
-    # Apply category filter if provided
     if category and category != "all":
         query = query.filter(LoreEntry.category == category)
 
-    # Always sort alphabetically — predictable,
-    # easy to scan visually.
+    # Hide secret entries from non-DM visitors.
+    # Players never know they exist.
+    if user is None or user.role != "dm":
+        query = query.filter(LoreEntry.is_secret == 0)
+
     entries = query.order_by(LoreEntry.title).all()
 
     return templates.TemplateResponse(
@@ -141,6 +145,7 @@ async def lore_list(
 async def lore_new_form(
     request: Request,
     db: Session = Depends(get_db),
+    _dm: User = Depends(require_dm),
     category: Optional[str] = None,
 ):
     pcs = (
@@ -194,6 +199,7 @@ async def lore_new_form(
 async def lore_create(
     request: Request,
     db: Session = Depends(get_db),
+    _dm: User = Depends(require_dm),
     title: str = Form(...),
     category: str = Form(...),
     subtitle: Optional[str] = Form(None),
@@ -243,15 +249,33 @@ async def lore_create(
 # GET /lore/{id}
 # ============================================
 @router.get("/{id}")
-async def lore_detail(request: Request, id: int, db: Session = Depends(get_db)):
-    entry = db.query(LoreEntry).filter(LoreEntry.id == id).first()
+async def lore_detail(
+    request: Request,
+    id: int,
+    db: Session = Depends(get_db),
+    user: Optional[User] = Depends(get_current_user),
+):
+    entry = (
+        db.query(LoreEntry)
+        .filter(LoreEntry.id == id)
+        .first()
+    )
+
+    # Treat secret entries as if they don't exist
+    # for non-DM visitors. We return the same
+    # "not found" response — never a different
+    # error — so players can't tell whether the
+    # entry exists at all.
+    if entry and entry.is_secret == 1:
+        if user is None or user.role != "dm":
+            entry = None
 
     if not entry:
         return HTMLResponse(
             content="<h1>Lore not found</h1>"
-            "<p>This entry has been lost to the "
-            "frozen ages.</p>",
-            status_code=404,
+                    "<p>This entry has been lost to the "
+                    "frozen ages.</p>",
+            status_code=404
         )
 
     return templates.TemplateResponse(
@@ -260,16 +284,20 @@ async def lore_detail(request: Request, id: int, db: Session = Depends(get_db)):
             "request": request,
             "title": f"{entry.title} — Godfall",
             "entry": entry,
-        },
+        }
     )
-
 
 # ============================================
 # ROUTE: EDIT LORE FORM
 # GET /lore/{id}/edit
 # ============================================
 @router.get("/{id}/edit")
-async def lore_edit_form(request: Request, id: int, db: Session = Depends(get_db)):
+async def lore_edit_form(
+    request: Request,
+    id: int,
+    db: Session = Depends(get_db),
+    _dm: User = Depends(require_dm),
+):
     entry = db.query(LoreEntry).filter(LoreEntry.id == id).first()
 
     if not entry:
@@ -321,6 +349,7 @@ async def lore_update(
     request: Request,
     id: int,
     db: Session = Depends(get_db),
+    _dm: User = Depends(require_dm),
     title: str = Form(...),
     category: str = Form(...),
     subtitle: Optional[str] = Form(None),
@@ -373,7 +402,9 @@ async def lore_update(
 # POST /lore/{id}/delete
 # ============================================
 @router.post("/{id}/delete")
-async def lore_delete(id: int, db: Session = Depends(get_db)):
+async def lore_delete(
+    id: int, db: Session = Depends(get_db), _dm: User = Depends(require_dm)
+):
     entry = db.query(LoreEntry).filter(LoreEntry.id == id).first()
 
     if not entry:
@@ -399,6 +430,7 @@ async def lore_delete(id: int, db: Session = Depends(get_db)):
 async def lore_upload_images(
     id: int,
     db: Session = Depends(get_db),
+    _dm: User = Depends(require_dm),
     files: List[UploadFile] = File(...),
     caption: Optional[str] = Form(None),
     is_featured: int = Form(0),
@@ -439,7 +471,12 @@ async def lore_upload_images(
 # POST /lore/{id}/images/{image_id}/delete
 # ============================================
 @router.post("/{id}/images/{image_id}/delete")
-async def lore_image_delete(id: int, image_id: int, db: Session = Depends(get_db)):
+async def lore_image_delete(
+    id: int,
+    image_id: int,
+    db: Session = Depends(get_db),
+    _dm: User = Depends(require_dm),
+):
     image = (
         db.query(LoreImage)
         .filter(

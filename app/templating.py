@@ -6,23 +6,21 @@
 #
 # Why this file exists:
 # Every route file used to create its own
-# Jinja2Templates() instance. That meant
+# Jinja2Templates() instance, which meant
 # filters registered in main.py weren't
-# available in routers. Each instance was
-# its own isolated bridge — same blueprint,
-# but no shared crew.
+# available in routers. Now there's ONE
+# templates object that every route imports.
 #
-# Now there's ONE templates object that
-# every route imports. Register a filter
-# here once, and it works everywhere.
+# This file also defines our custom filters
+# and a context-processor mechanism for
+# making variables available to ALL templates
+# without explicitly passing them per-route.
 # ============================================
 
 from fastapi.templating import Jinja2Templates
 from pathlib import Path
 import markdown as md_lib
 
-# Path to the templates folder (one level
-# up from this file, then into templates/).
 BASE_DIR = Path(__file__).resolve().parent
 templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 

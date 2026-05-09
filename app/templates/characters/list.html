@@ -29,6 +29,7 @@
     </div>
 
     {# --- ADD NEW BUTTON --- #}
+    {% if request.state.user %}
     <div class="flex justify-end mb-8">
         <a href="/characters/new"
            class="inline-flex items-center gap-2 px-5 py-2 border border-ice-500/40 text-ice-300 hover:bg-ice-500/10 hover:border-ice-300 font-display text-sm tracking-widest uppercase transition-colors">
@@ -38,6 +39,7 @@
             Add Character
         </a>
     </div>
+    {% endif %}
 
     {#
         --- CHARACTER GRID ---
@@ -196,10 +198,12 @@
     #}
     <div class="text-center py-20 border border-frost-700 border-dashed">
         <p class="text-silver-400 mb-6">The roster is empty. The flames have not yet been lit.</p>
+        {% if request.state.user %}
         <a href="/characters/new"
            class="inline-flex items-center gap-2 px-5 py-2 border border-ice-500/40 text-ice-300 hover:bg-ice-500/10 hover:border-ice-300 font-display text-sm tracking-widest uppercase transition-colors">
             Add the First Character
         </a>
+        {% endif %}
     </div>
 
     {% endif %}

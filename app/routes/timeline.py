@@ -20,6 +20,7 @@
 # ============================================
 
 # --- IMPORTS ---
+from app.auth import require_dm
 from fastapi import (
     APIRouter,
     Request,
@@ -42,6 +43,7 @@ from app.models import (
     EventImage,
     EventCharacter,
     Character,
+    User
 )
 
 # --- USE THE CENTRAL TEMPLATES INSTANCE ---
@@ -114,7 +116,8 @@ async def timeline_view(
 @router.get("/new")
 async def event_new_form(
     request: Request,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    _dm: User = Depends(require_dm)
 ):
     last_event = (
         db.query(TimelineEvent)
@@ -174,6 +177,7 @@ async def event_new_form(
 async def event_create(
     request: Request,
     db: Session = Depends(get_db),
+    _dm: User = Depends(require_dm),
     title: str = Form(...),
     event_date: Optional[str] = Form(None),
     event_end_date: Optional[str] = Form(None),
@@ -332,7 +336,8 @@ async def event_preview(
 async def event_edit_form(
     request: Request,
     id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    _dm: User = Depends(require_dm)
 ):
     event = (
         db.query(TimelineEvent)
@@ -407,6 +412,7 @@ async def event_update(
     request: Request,
     id: int,
     db: Session = Depends(get_db),
+    _dm: User = Depends(require_dm),
     title: str = Form(...),
     event_date: Optional[str] = Form(None),
     event_end_date: Optional[str] = Form(None),
@@ -476,7 +482,8 @@ async def event_update(
 @router.post("/{id}/delete")
 async def event_delete(
     id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    _dm: User = Depends(require_dm)
 ):
     event = (
         db.query(TimelineEvent)
@@ -512,6 +519,7 @@ async def event_delete(
 async def event_upload_images(
     id: int,
     db: Session = Depends(get_db),
+    _dm: User = Depends(require_dm),
     files: List[UploadFile] = File(...),
     caption: Optional[str] = Form(None),
     is_featured: int = Form(0),
@@ -566,7 +574,8 @@ async def event_upload_images(
 async def event_image_delete(
     id: int,
     image_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    _dm: User = Depends(require_dm)
 ):
     image = (
         db.query(EventImage)

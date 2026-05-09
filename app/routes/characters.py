@@ -38,6 +38,8 @@
 #
 # File: marker that tells FastAPI "this
 # parameter is an uploaded file."
+from app.auth import require_dm
+
 from fastapi import (
     APIRouter,
     Request,
@@ -74,7 +76,7 @@ import uuid
 # get_db: the database session generator.
 # Character, CharacterImage: our data models.
 from app.database import get_db
-from app.models import Character, CharacterImage
+from app.models import Character, CharacterImage, User
 from app.templating import templates
 
 # --- CONFIGURATION ---
@@ -127,19 +129,12 @@ router = APIRouter(
 # Protocol droid doing its job.
 # ============================================
 @router.get("/")
-async def character_list(
-    request: Request,
-    db: Session = Depends(get_db)
-):
+async def character_list(request: Request, db: Session = Depends(get_db)):
     # Query all characters from the database,
     # ordered by name alphabetically.
     # .order_by() is like adding
     # "ORDER BY name" in SQL.
-    characters = (
-        db.query(Character)
-        .order_by(Character.name)
-        .all()
-    )
+    characters = db.query(Character).order_by(Character.name).all()
 
     return templates.TemplateResponse(
         "characters/list.html",
@@ -147,7 +142,7 @@ async def character_list(
             "request": request,
             "title": "The Roster — Godfall",
             "characters": characters,
-        }
+        },
     )
 
 
@@ -173,7 +168,10 @@ async def character_list(
 # the wrong line.
 # ============================================
 @router.get("/new")
-async def character_new_form(request: Request):
+async def character_new_form(
+    request: Request,
+    _dm: User = Depends(require_dm),
+):
     return templates.TemplateResponse(
         "characters/form.html",
         {
@@ -181,7 +179,7 @@ async def character_new_form(request: Request):
             "title": "New Character — Godfall",
             "character": None,
             "editing": False,
-        }
+        },
     )
 
 
@@ -216,6 +214,7 @@ async def character_new_form(request: Request):
 async def character_create(
     request: Request,
     db: Session = Depends(get_db),
+    _dm: User = Depends(require_dm),
     name: str = Form(...),
     player_name: str = Form(...),
     race: str = Form(...),
@@ -264,10 +263,7 @@ async def character_create(
     # GET for the redirect, preventing the
     # "resubmit form?" popup if the user
     # refreshes the page.
-    return RedirectResponse(
-        url=f"/characters/{character.id}",
-        status_code=303
-    )
+    return RedirectResponse(url=f"/characters/{character.id}", status_code=303)
 
 
 # ============================================
@@ -290,16 +286,8 @@ async def character_create(
 # if no match is found.
 # ============================================
 @router.get("/{id}")
-async def character_detail(
-    request: Request,
-    id: int,
-    db: Session = Depends(get_db)
-):
-    character = (
-        db.query(Character)
-        .filter(Character.id == id)
-        .first()
-    )
+async def character_detail(request: Request, id: int, db: Session = Depends(get_db)):
+    character = db.query(Character).filter(Character.id == id).first()
 
     # If no character was found with that id,
     # show a 404 page. In a real production
@@ -308,10 +296,10 @@ async def character_detail(
     if not character:
         return HTMLResponse(
             content="<h1>Character not found</h1>"
-                    "<p>This dossier doesn't exist. "
-                    "Perhaps they vanished into the "
-                    "frozen wastes...</p>",
-            status_code=404
+            "<p>This dossier doesn't exist. "
+            "Perhaps they vanished into the "
+            "frozen wastes...</p>",
+            status_code=404,
         )
 
     return templates.TemplateResponse(
@@ -320,7 +308,7 @@ async def character_detail(
             "request": request,
             "title": f"{character.name} — Godfall",
             "character": character,
-        }
+        },
     )
 
 
@@ -343,19 +331,13 @@ async def character_detail(
 async def character_edit_form(
     request: Request,
     id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    _dm: User = Depends(require_dm),
 ):
-    character = (
-        db.query(Character)
-        .filter(Character.id == id)
-        .first()
-    )
+    character = db.query(Character).filter(Character.id == id).first()
 
     if not character:
-        return HTMLResponse(
-            content="<h1>Character not found</h1>",
-            status_code=404
-        )
+        return HTMLResponse(content="<h1>Character not found</h1>", status_code=404)
 
     return templates.TemplateResponse(
         "characters/form.html",
@@ -364,7 +346,7 @@ async def character_edit_form(
             "title": f"Edit {character.name} — Godfall",
             "character": character,
             "editing": True,
-        }
+        },
     )
 
 
@@ -389,6 +371,7 @@ async def character_update(
     request: Request,
     id: int,
     db: Session = Depends(get_db),
+    _dm: User = Depends(require_dm),
     name: str = Form(...),
     player_name: str = Form(...),
     race: str = Form(...),
@@ -402,17 +385,10 @@ async def character_update(
     pets_companions: str = Form(None),
     status: str = Form("Active"),
 ):
-    character = (
-        db.query(Character)
-        .filter(Character.id == id)
-        .first()
-    )
+    character = db.query(Character).filter(Character.id == id).first()
 
     if not character:
-        return HTMLResponse(
-            content="<h1>Character not found</h1>",
-            status_code=404
-        )
+        return HTMLResponse(content="<h1>Character not found</h1>", status_code=404)
 
     # Update each field. SQLAlchemy detects
     # the changes automatically.
@@ -432,10 +408,7 @@ async def character_update(
     # Commit the changes.
     db.commit()
 
-    return RedirectResponse(
-        url=f"/characters/{character.id}",
-        status_code=303
-    )
+    return RedirectResponse(url=f"/characters/{character.id}", status_code=303)
 
 
 # ============================================
@@ -455,19 +428,13 @@ async def character_update(
 @router.post("/{id}/delete")
 async def character_delete(
     id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    _dm: User = Depends(require_dm),
 ):
-    character = (
-        db.query(Character)
-        .filter(Character.id == id)
-        .first()
-    )
+    character = db.query(Character).filter(Character.id == id).first()
 
     if not character:
-        return HTMLResponse(
-            content="<h1>Character not found</h1>",
-            status_code=404
-        )
+        return HTMLResponse(content="<h1>Character not found</h1>", status_code=404)
 
     # Delete actual image files from disk
     for image in character.images:
@@ -481,10 +448,7 @@ async def character_delete(
     db.commit()
 
     # Redirect back to the roster.
-    return RedirectResponse(
-        url="/characters",
-        status_code=303
-    )
+    return RedirectResponse(url="/characters", status_code=303)
 
 
 # ============================================
@@ -514,25 +478,20 @@ async def character_delete(
 # ============================================
 from typing import List, Optional
 
+
 @router.post("/{id}/upload")
 async def character_upload_images(
     id: int,
     db: Session = Depends(get_db),
+    _dm: User = Depends(require_dm),
     files: List[UploadFile] = File(...),
     caption: Optional[str] = Form(None),
     is_primary: int = Form(0),
 ):
-    character = (
-        db.query(Character)
-        .filter(Character.id == id)
-        .first()
-    )
+    character = db.query(Character).filter(Character.id == id).first()
 
     if not character:
-        return HTMLResponse(
-            content="<h1>Character not found</h1>",
-            status_code=404
-        )
+        return HTMLResponse(content="<h1>Character not found</h1>", status_code=404)
 
     for uploaded_file in files:
         # Generate a unique filename to prevent
@@ -552,7 +511,7 @@ async def character_upload_images(
         if is_primary:
             db.query(CharacterImage).filter(
                 CharacterImage.character_id == character.id,
-                CharacterImage.is_primary == 1
+                CharacterImage.is_primary == 1,
             ).update({"is_primary": 0})
 
         # Create a database record for the image.
@@ -569,10 +528,7 @@ async def character_upload_images(
 
     db.commit()
 
-    return RedirectResponse(
-        url=f"/characters/{character.id}",
-        status_code=303
-    )
+    return RedirectResponse(url=f"/characters/{character.id}", status_code=303)
 
 
 # ============================================
@@ -586,7 +542,8 @@ async def character_upload_images(
 async def character_image_delete(
     id: int,
     image_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    _dm: User = Depends(require_dm),
 ):
     image = (
         db.query(CharacterImage)
@@ -598,10 +555,7 @@ async def character_image_delete(
     )
 
     if not image:
-        return HTMLResponse(
-            content="<h1>Image not found</h1>",
-            status_code=404
-        )
+        return HTMLResponse(content="<h1>Image not found</h1>", status_code=404)
 
     # Delete the file from disk.
     file_path = BASE_DIR / image.file_path.lstrip("/")
@@ -612,7 +566,4 @@ async def character_image_delete(
     db.delete(image)
     db.commit()
 
-    return RedirectResponse(
-        url=f"/characters/{id}",
-        status_code=303
-    )
+    return RedirectResponse(url=f"/characters/{id}", status_code=303)

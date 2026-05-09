@@ -141,7 +141,7 @@
         If no pins exist yet, show a small
         helpful message at the bottom.
     #}
-    {% if not pins %}
+    {% if not pins and request.state.user %}
     <div class="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 text-center pointer-events-auto">
         <div class="px-6 py-4 bg-frost-900/80 backdrop-blur-md border border-frost-700/60 max-w-md">
             <p class="text-silver-300 text-sm font-light leading-relaxed mb-3">

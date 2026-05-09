@@ -12,6 +12,7 @@
 # ============================================
 
 # --- IMPORTS ---
+from app.auth import require_dm
 from fastapi import (
     APIRouter,
     Request,
@@ -31,7 +32,7 @@ import shutil
 import uuid
 
 from app.database import get_db
-from app.models import SessionRecap, SessionImage
+from app.models import SessionRecap, SessionImage, User
 from app.templating import templates
 
 # --- CONFIGURATION ---
@@ -117,7 +118,8 @@ async def session_list(
 @router.get("/new")
 async def session_new_form(
     request: Request,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    _dm: User = Depends(require_dm)
 ):
     # Suggest the next session number based on
     # what's already in the database. Convenience
@@ -149,6 +151,7 @@ async def session_new_form(
 async def session_create(
     request: Request,
     db: Session = Depends(get_db),
+    _dm: User = Depends(require_dm),
     session_number: int = Form(...),
     title: str = Form(...),
     real_date: Optional[str] = Form(None),
@@ -217,7 +220,8 @@ async def session_detail(
 async def session_edit_form(
     request: Request,
     id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    _dm: User = Depends(require_dm)
 ):
     session_recap = (
         db.query(SessionRecap)
@@ -252,6 +256,7 @@ async def session_update(
     request: Request,
     id: int,
     db: Session = Depends(get_db),
+    _dm: User = Depends(require_dm),
     session_number: int = Form(...),
     title: str = Form(...),
     real_date: Optional[str] = Form(None),
@@ -293,7 +298,8 @@ async def session_update(
 @router.post("/{id}/delete")
 async def session_delete(
     id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    _dm: User = Depends(require_dm)
 ):
     session_recap = (
         db.query(SessionRecap)
@@ -330,6 +336,7 @@ async def session_delete(
 async def session_upload_images(
     id: int,
     db: Session = Depends(get_db),
+    _dm: User = Depends(require_dm),
     files: List[UploadFile] = File(...),
     caption: Optional[str] = Form(None),
     is_featured: int = Form(0),
@@ -387,7 +394,8 @@ async def session_upload_images(
 async def session_image_delete(
     id: int,
     image_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    _dm: User = Depends(require_dm)
 ):
     image = (
         db.query(SessionImage)
