@@ -176,6 +176,7 @@ async def event_create(
     db: Session = Depends(get_db),
     title: str = Form(...),
     event_date: Optional[str] = Form(None),
+    event_end_date: Optional[str] = Form(None),
     sort_order: int = Form(...),
     summary: Optional[str] = Form(None),
     body: Optional[str] = Form(None),
@@ -186,6 +187,7 @@ async def event_create(
     new_event = TimelineEvent(
         title=title,
         event_date=event_date,
+        event_end_date=event_end_date,
         sort_order=sort_order,
         summary=summary,
         body=body,
@@ -428,6 +430,7 @@ async def event_update(
     # Update event fields
     event.title = title
     event.event_date = event_date
+    event.event_end_date = event_end_date
     event.sort_order = sort_order
     event.summary = summary
     event.body = body

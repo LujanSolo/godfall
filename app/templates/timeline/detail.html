@@ -63,7 +63,7 @@
 
             {% if event.event_date %}
             <span class="text-silver-400 italic normal-case">
-                {{ event.event_date }}
+                {{ event.event_date }}{% if event.event_end_date %} – {{ event.event_end_date }}{% endif %}
             </span>
             {% endif %}
         </div>

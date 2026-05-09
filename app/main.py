@@ -8,7 +8,7 @@ from pathlib import Path
 
 from app.database import engine, Base
 from app import models  # noqa: F401  (registers models with Base)
-from app.routes import characters, sessions
+from app.routes import characters, sessions, timeline
 
 # Centralized templates instance — single
 # source of truth, filters already attached.
@@ -33,6 +33,7 @@ app.mount(
 # --- INCLUDE ROUTERS ---
 app.include_router(characters.router)
 app.include_router(sessions.router)
+app.include_router(timeline.router)
 
 
 # --- HOMEPAGE ROUTE ---

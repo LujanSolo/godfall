@@ -32,6 +32,27 @@ lost in the snowstorm.
   Note: this is a UX upgrade, not a security fix. Real authorization
   lives on the server (added in the auth phase).
 
+- **Auto-adjusting images for galleries and previews** — when an image
+  is uploaded, generate multiple sized/cropped variants on the server
+  rather than relying on browser CSS cropping. Currently we use
+  `object-cover` to fit any image into any container, which crops
+  unpredictably (faces or key details can get cut off). Better
+  approach:
+
+  1. Add Pillow (Python's image library) to dependencies.
+  2. On upload, generate optimized versions: thumbnail (square, ~400px)
+     for gallery grids, landscape crop (~1200x675) for hero/featured
+     spots, full-size (resized to ~2000px max dimension) for detail
+     views.
+  3. Optionally, allow the uploader to set a focal point (click-to-set
+     coordinates) so cropping respects what's important.
+  4. Apply across all image displays: character galleries, session
+     galleries, timeline event galleries, hover previews.
+
+  This dramatically improves visual quality and reduces page weight
+  (no more loading full-resolution images for tiny thumbnails). Worth
+  doing once we have enough images uploaded to feel the pain.
+
 ## Architecture
 
 - **NPC separation** — NPCs need their own page or a clearly distinct
@@ -49,8 +70,9 @@ lost in the snowstorm.
   reduces page weight.
 
 - **Database migrations (Alembic)** — install Alembic so we can change
-  the schema without nuking `godfall.db`. Add this once we have real
-  character data we care about preserving.
+  the schema without nuking `godfall.db` or doing manual ALTER TABLE
+  commands. Add this once we have real character data we care about
+  preserving.
 
 - **Pin Python version** — note in README that the project targets
   Python 3.12. Future-proofs setup if 3.13/3.14 introduce more breaking
@@ -92,6 +114,14 @@ lost in the snowstorm.
   or a toggle that swaps which timeline is shown. Story-rich feature,
   but only meaningful once players are deep enough into the campaign
   to encounter the truth.
+
+- **Visual time-spans on the timeline** — currently multi-day events
+  show as a single node with a date range label. A more expressive
+  version would render them as bars spanning a section of the
+  timeline. Requires real date-based positioning (vs. our current
+  sort_order approach), which means parsing fantasy calendar strings.
+  Significant effort. Build only if event durations become a major
+  storytelling element.
 
 ---
 

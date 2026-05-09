@@ -439,6 +439,16 @@ class TimelineEvent(Base):
     # fit standard date types.
     event_date = Column(String(100))
 
+    # --- OPTIONAL END DATE ---
+    # For multi-day events. If left empty, the
+    # event is treated as a single point in time.
+    # When set, the detail and timeline render
+    # the event as a span (e.g. "Hammer 12-18").
+    #
+    # Like a stardate range vs. a single stardate.
+    # Some missions take a day. Some take a week.
+    event_end_date = Column(String(100))
+
     # --- SORT ORDER ---
     # Integer that controls the timeline's
     # left-to-right ordering. We use this
@@ -531,3 +541,100 @@ class TimelineEvent(Base):
 # rather than one universal one with a
 # bunch of conditional branches.
 # =======================================
+class EventImage(Base):
+    __tablename__ = "event_images"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    event_id = Column(
+        Integer,
+        ForeignKey("timeline_events.id"),
+        nullable=False
+    )
+
+    file_path = Column(String(255), nullable=False)
+    caption = Column(String(255))
+    is_featured = Column(Integer, default=0)
+    uploaded_at = Column(DateTime, default=datetime.utcnow)
+
+    event = relationship(
+        "TimelineEvent",
+        back_populates="images"
+    )
+
+    def __repr__(self):
+        return f"<EventImage: {self.caption or 'No caption'} (Event #{self.event_id})>"
+
+
+# ============================================
+# EVENT-CHARACTER JOIN TABLE
+# ============================================
+# This is the new structural concept:
+# many-to-many relationships.
+#
+# One event can include many characters.
+# One character can appear in many events.
+# Neither table can hold the relationship
+# directly — there's no good way to put
+# "many things" in a single column.
+#
+# So we create a third table that sits in
+# the middle. Each row says "Event X is
+# linked to Character Y." Add 50 such rows
+# and you've described 50 connections.
+#
+# Star Wars parallel: think of it like
+# pilot rosters. The Pilot table doesn't
+# list which Squadrons each pilot has been
+# in, and the Squadron table doesn't list
+# every pilot. Instead, there's a separate
+# "PilotAssignments" log: each entry pairs
+# one pilot with one squadron and the dates
+# they served. Same idea here.
+#
+# We're adding an extra field — "role" —
+# to enrich the connection. This is a
+# powerful pattern: join tables can hold
+# their own data describing the nature of
+# the relationship.
+# ============================================
+class EventCharacter(Base):
+    __tablename__ = "event_characters"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    # --- THE TWO LINKS ---
+    event_id = Column(
+        Integer,
+        ForeignKey("timeline_events.id"),
+        nullable=False
+    )
+    character_id = Column(
+        Integer,
+        ForeignKey("characters.id"),
+        nullable=False
+    )
+
+    # --- ROLE ---
+    # Optional text describing how the
+    # character relates to this event.
+    # e.g. "Witness," "Antagonist,"
+    # "Saved by the party," "Casualty"
+    role = Column(String(100))
+
+    # --- TIMESTAMP ---
+    # When this connection was created.
+    # Useful for an audit trail.
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # --- BACK-LINKS ---
+    # Each row in this join table can navigate
+    # to its event and its character.
+    event = relationship(
+        "TimelineEvent",
+        back_populates="character_links"
+    )
+    character = relationship("Character")
+
+    def __repr__(self):
+        return f"<EventCharacter: Event #{self.event_id} ↔ Character #{self.character_id}>"

@@ -93,7 +93,7 @@
                         <div class="absolute bottom-full mb-6 w-48 text-center">
                             {% if event.event_date %}
                             <p class="text-[10px] tracking-[0.2em] uppercase text-ice-300/40 italic mb-1">
-                                {{ event.event_date }}
+                                {{ event.event_date }}{% if event.event_end_date %} – {{ event.event_end_date }}{% endif %}
                             </p>
                             {% endif %}
                             <p class="font-display text-sm tracking-wider text-silver-300 leading-tight">
@@ -197,7 +197,7 @@
                 <div class="bg-frost-800/40 border border-frost-700 group-hover:border-ice-500/40 transition-colors p-4">
                     {% if event.event_date %}
                     <p class="text-[10px] tracking-[0.2em] uppercase text-ice-300/50 italic mb-1">
-                        {{ event.event_date }}
+                        {{ event.event_date }}{% if event.event_end_date %} – {{ event.event_end_date }}{% endif %}
                     </p>
                     {% endif %}
                     <h3 class="font-display text-base tracking-wider text-silver-200 group-hover:text-ice-300 transition-colors leading-tight">
