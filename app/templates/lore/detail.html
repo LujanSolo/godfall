@@ -1,0 +1,316 @@
+{#
+    GODFALL - lore/detail.html
+    ===========================
+    Full lore entry view.
+
+    Two connection sections:
+      - Connected Characters (PCs + NPCs)
+      - Connected Events
+
+    Each section follows the pattern from
+    timeline/detail.html, just queried from
+    different join tables.
+
+    Secret entries (is_secret == 1) get a
+    visible indicator at the top so the DM
+    knows at a glance that players don't see
+    this. Once auth is in, this entry will
+    only be reachable for the DM.
+#}
+{% extends "base.html" %}
+
+{% block content %}
+
+<article class="max-w-4xl mx-auto px-6 py-12">
+
+    {# --- BACK LINK --- #}
+    <div class="mb-8">
+        <a href="/lore" class="text-ice-300/60 hover:text-ice-300 text-sm tracking-widest uppercase transition-colors inline-flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Lore
+        </a>
+    </div>
+
+    {#
+        --- SECRET BANNER ---
+        Visible warning that this entry is
+        DM-only. Once auth is added, this
+        view won't even load for players —
+        but until then, the banner reminds
+        the DM not to share their screen.
+    #}
+    {% if entry.is_secret == 1 %}
+    <div class="mb-8 px-4 py-3 border border-amber-400/40 bg-amber-900/20 flex items-center gap-3">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-amber-300 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+        </svg>
+        <div>
+            <p class="text-xs tracking-widest uppercase text-amber-300 font-display">Hidden Entry — DM Only</p>
+            <p class="text-xs text-amber-200/70 mt-0.5">Players don't see this. Once authentication is enabled, the entry will be inaccessible to them.</p>
+        </div>
+    </div>
+    {% endif %}
+
+    {#
+        --- FEATURED IMAGE ---
+        Same featured-image-or-first-image
+        pattern as everywhere else.
+    #}
+    {% set ns = namespace(featured=None) %}
+    {% for image in entry.images %}
+        {% if image.is_featured == 1 and ns.featured is none %}
+            {% set ns.featured = image %}
+        {% endif %}
+    {% endfor %}
+    {% if ns.featured is none and entry.images %}
+        {% set ns.featured = entry.images[0] %}
+    {% endif %}
+
+    {% if ns.featured %}
+    <div class="aspect-[21/9] bg-frost-900 border border-frost-700 mb-10 overflow-hidden">
+        <img src="{{ ns.featured.file_path }}"
+             alt="{{ entry.title }}"
+             class="w-full h-full object-cover">
+    </div>
+    {% endif %}
+
+    {# --- HEADER ROW: METADATA + EDIT/DELETE --- #}
+    <div class="flex items-start justify-between gap-4 mb-6 flex-wrap">
+
+        {# Category + subtitle #}
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs tracking-widest uppercase">
+            <span class="px-2 py-1 bg-ice-500/20 text-ice-300 border border-ice-500/40 font-display">
+                {{ entry.category }}
+            </span>
+        </div>
+
+        {# DM action buttons #}
+        <div class="flex gap-2">
+            <a href="/lore/{{ entry.id }}/edit"
+               class="px-4 py-1.5 border border-frost-700 text-silver-400 hover:text-ice-300 hover:border-ice-500/40 text-xs tracking-widest uppercase transition-colors">
+                Edit
+            </a>
+
+            <form action="/lore/{{ entry.id }}/delete"
+                  method="POST"
+                  onsubmit="return confirm('Delete entry: {{ entry.title }}? This cannot be undone.');"
+                  class="inline">
+                <button type="submit"
+                        class="px-4 py-1.5 border border-frost-700 text-silver-400 hover:text-red-400 hover:border-red-700/40 text-xs tracking-widest uppercase transition-colors">
+                    Delete
+                </button>
+            </form>
+        </div>
+    </div>
+
+    {# --- TITLE + SUBTITLE --- #}
+    <h1 class="font-display text-4xl md:text-5xl font-black tracking-wider text-silver-200 frost-glow leading-tight mb-2">
+        {{ entry.title }}
+    </h1>
+    {% if entry.subtitle %}
+    <p class="text-lg md:text-xl text-ice-300/70 italic font-light tracking-wide mb-8">
+        {{ entry.subtitle }}
+    </p>
+    {% else %}
+    <div class="mb-8"></div>
+    {% endif %}
+
+    {# --- THE FULL BODY --- #}
+    {% if entry.body %}
+    <div class="prose-frost max-w-none mb-12">
+        {{ entry.body | markdown | safe }}
+    </div>
+    {% endif %}
+
+    {#
+        --- CONNECTED CHARACTERS ---
+        Split into PCs and NPCs the same
+        way timeline/detail does it. Reuses
+        the existing _cast_card.html partial
+        from the timeline templates so cards
+        look consistent across the site.
+    #}
+    {% if entry.character_links %}
+
+    {# Build the two filtered lists #}
+    {% set player_links = [] %}
+    {% set npc_links = [] %}
+    {% for link in entry.character_links %}
+        {% if link.character.character_type == "player" %}
+            {{ player_links.append(link) or "" }}
+        {% else %}
+            {{ npc_links.append(link) or "" }}
+        {% endif %}
+    {% endfor %}
+
+    <div class="pt-10 border-t border-frost-700 mb-12">
+        <h2 class="font-display text-sm tracking-[0.3em] uppercase text-ice-300/60 mb-6">Connected Characters</h2>
+
+        {% if player_links %}
+        <div class="mb-8">
+            <p class="text-xs tracking-[0.2em] uppercase text-ice-300/40 mb-4">Player Characters</p>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {% for link in player_links %}
+                    {% set character = link.character %}
+                    {% include "timeline/_cast_card.html" %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if npc_links %}
+        <div>
+            <p class="text-xs tracking-[0.2em] uppercase text-ice-300/40 mb-4">Non-Player Characters</p>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {% for link in npc_links %}
+                    {% set character = link.character %}
+                    {% include "timeline/_cast_card.html" %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    {% endif %}
+
+    {#
+        --- CONNECTED EVENTS ---
+        Renders linked timeline events as a
+        small list. Each event is a clickable
+        link that takes the user to the
+        event detail page.
+
+        We're using a simpler list layout
+        rather than full cards because
+        events don't have portraits — the
+        compact list reads better.
+    #}
+    {% if entry.event_links %}
+    <div class="pt-10 border-t border-frost-700 mb-12">
+        <h2 class="font-display text-sm tracking-[0.3em] uppercase text-ice-300/60 mb-6">Connected Events</h2>
+
+        <div class="space-y-2">
+            {% for link in entry.event_links %}
+                {% set event = link.event %}
+                <a href="/timeline/{{ event.id }}"
+                   class="group flex items-center gap-4 px-4 py-3 border border-frost-700 hover:border-ice-500/40 hover:bg-frost-800/40 transition-colors">
+
+                    {# Milestone indicator dot #}
+                    <div class="flex-shrink-0">
+                        {% if event.is_milestone == 1 %}
+                        <div class="w-3 h-3 bg-ice-300 rounded-full"></div>
+                        {% else %}
+                        <div class="w-2 h-2 bg-ice-500/60 rounded-full"></div>
+                        {% endif %}
+                    </div>
+
+                    {# Title + date #}
+                    <div class="flex-1 min-w-0">
+                        <p class="font-display text-base tracking-wider text-silver-200 group-hover:text-ice-300 transition-colors leading-tight truncate">
+                            {{ event.title }}
+                        </p>
+                        {% if event.event_date %}
+                        <p class="text-xs text-ice-300/50 italic mt-0.5">
+                            {{ event.event_date }}{% if event.event_end_date %} – {{ event.event_end_date }}{% endif %}
+                        </p>
+                        {% endif %}
+                    </div>
+
+                    {# Arrow indicator #}
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-silver-400 group-hover:text-ice-300 group-hover:translate-x-1 transition-all flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {# --- IMAGE GALLERY --- #}
+    <div class="mt-12 pt-10 border-t border-frost-700">
+        <h2 class="font-display text-sm tracking-[0.3em] uppercase text-ice-300/60 mb-6">Gallery</h2>
+
+        {% if entry.images %}
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+
+            {% for image in entry.images %}
+            <div class="group relative aspect-square bg-frost-800/40 border border-frost-700 overflow-hidden">
+                <img src="{{ image.file_path }}"
+                     alt="{{ image.caption | default(entry.title) }}"
+                     class="w-full h-full object-cover">
+
+                {% if image.is_featured == 1 %}
+                <div class="absolute top-2 left-2">
+                    <span class="px-2 py-0.5 text-[10px] tracking-widest uppercase bg-ice-500/30 text-ice-300 border border-ice-500/40">Featured</span>
+                </div>
+                {% endif %}
+
+                <div class="absolute inset-0 bg-frost-900/80 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-3">
+                    {% if image.caption %}
+                    <p class="text-xs text-silver-300 italic">{{ image.caption }}</p>
+                    {% else %}
+                    <span></span>
+                    {% endif %}
+
+                    <form action="/lore/{{ entry.id }}/images/{{ image.id }}/delete"
+                          method="POST"
+                          onsubmit="return confirm('Delete this image?');">
+                        <button type="submit"
+                                class="text-xs text-red-400 hover:text-red-300 tracking-widest uppercase">
+                            Remove
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+
+        </div>
+        {% else %}
+        <p class="text-silver-400 italic font-light">No images for this entry yet.</p>
+        {% endif %}
+    </div>
+
+    {# --- IMAGE UPLOAD FORM --- #}
+    <div class="mt-8 border border-frost-700 border-dashed p-6">
+        <h3 class="font-display text-sm tracking-[0.3em] uppercase text-ice-300/60 mb-4">Add Images</h3>
+
+        <form action="/lore/{{ entry.id }}/upload"
+              method="POST"
+              enctype="multipart/form-data"
+              class="space-y-4">
+
+            <input type="file"
+                   name="files"
+                   multiple
+                   accept="image/*"
+                   required
+                   class="block w-full text-sm text-silver-400
+                          file:mr-4 file:py-2 file:px-4
+                          file:border file:border-ice-500/40
+                          file:bg-frost-800 file:text-ice-300
+                          file:font-display file:tracking-widest file:uppercase file:text-xs
+                          hover:file:bg-ice-500/10 hover:file:border-ice-300
+                          file:cursor-pointer">
+
+            <input type="text"
+                   name="caption"
+                   placeholder="Optional caption"
+                   class="w-full px-4 py-2 bg-frost-800/60 border border-frost-700 text-silver-200 placeholder:text-silver-400/40 focus:border-ice-500/60 focus:outline-none transition-colors">
+
+            <label class="flex items-center gap-2 text-sm text-silver-400 cursor-pointer">
+                <input type="checkbox" name="is_featured" value="1" class="accent-ice-500">
+                <span>Set as featured image for this entry</span>
+            </label>
+
+            <button type="submit"
+                    class="px-5 py-2 border border-ice-500/40 text-ice-300 hover:bg-ice-500/10 hover:border-ice-300 font-display text-sm tracking-widest uppercase transition-colors">
+                Upload
+            </button>
+        </form>
+    </div>
+
+</article>
+
+{% endblock %}
