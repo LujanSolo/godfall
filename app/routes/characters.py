@@ -75,12 +75,12 @@ import uuid
 # Character, CharacterImage: our data models.
 from app.database import get_db
 from app.models import Character, CharacterImage
+from app.templating import templates
 
 # --- CONFIGURATION ---
-
 # Same BASE_DIR / templates pattern as main.py.
 BASE_DIR = Path(__file__).resolve().parent.parent
-from app.templating import templates
+
 
 # Where uploaded character images will be
 # stored on disk. We put them in static/ so

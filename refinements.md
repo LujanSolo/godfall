@@ -56,6 +56,13 @@ lost in the snowstorm.
   Python 3.12. Future-proofs setup if 3.13/3.14 introduce more breaking
   changes.
 
+- **Add a linter (`ruff`)** — install and configure `ruff`, the modern
+  Python linter. It auto-flags style inconsistencies (import order,
+  unused variables, etc.), enforces PEP 8, and runs in milliseconds.
+  Also clean up the import ordering in older route files (`sessions.py`,
+  `characters.py`) so all imports are grouped at the top per
+  convention.
+
 ---
 
 ## Cut from Roadmap
@@ -78,6 +85,13 @@ lost in the snowstorm.
   roster but rejected for now (too brittle for changing party sizes,
   mobile redesign tax). May revisit as a signature visual moment in a
   later phase if the site has earned room for spectacle.
+
+- **Alternate timeline layer** — a second visual track on the timeline
+  showing the "original" history that Xylos's Final Wish overwrote.
+  Could appear as a ghost-line that fades in on a special interaction,
+  or a toggle that swaps which timeline is shown. Story-rich feature,
+  but only meaningful once players are deep enough into the campaign
+  to encounter the truth.
 
 ---
 

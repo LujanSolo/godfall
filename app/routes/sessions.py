@@ -32,10 +32,10 @@ import uuid
 
 from app.database import get_db
 from app.models import SessionRecap, SessionImage
+from app.templating import templates
 
 # --- CONFIGURATION ---
 BASE_DIR = Path(__file__).resolve().parent.parent
-from app.templating import templates
 
 # Different upload folder than characters —
 # keeps things organized. session images go
