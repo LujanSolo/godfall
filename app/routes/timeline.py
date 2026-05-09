@@ -409,6 +409,7 @@ async def event_update(
     db: Session = Depends(get_db),
     title: str = Form(...),
     event_date: Optional[str] = Form(None),
+    event_end_date: Optional[str] = Form(None),
     sort_order: int = Form(...),
     summary: Optional[str] = Form(None),
     body: Optional[str] = Form(None),

@@ -199,6 +199,8 @@ async def lore_create(
     subtitle: Optional[str] = Form(None),
     body: Optional[str] = Form(None),
     is_secret: int = Form(0),
+    lat: Optional[float] = Form(None),
+    lng: Optional[float] = Form(None),
     character_ids: List[int] = Form(default=[]),
     event_ids: List[int] = Form(default=[]),
 ):
@@ -208,6 +210,8 @@ async def lore_create(
         subtitle=subtitle,
         body=body,
         is_secret=is_secret,
+        lat=lat,
+        lng=lng,
     )
     db.add(new_entry)
     db.commit()
@@ -322,6 +326,8 @@ async def lore_update(
     subtitle: Optional[str] = Form(None),
     body: Optional[str] = Form(None),
     is_secret: int = Form(0),
+    lat: Optional[float] = Form(None),
+    lng: Optional[float] = Form(None),
     character_ids: List[int] = Form(default=[]),
     event_ids: List[int] = Form(default=[]),
 ):
@@ -336,6 +342,8 @@ async def lore_update(
     entry.subtitle = subtitle
     entry.body = body
     entry.is_secret = is_secret
+    entry.lat = lat
+    entry.lng = lng
 
     # Wipe and rebuild character links
     db.query(LoreCharacter).filter(LoreCharacter.lore_id == entry.id).delete()
