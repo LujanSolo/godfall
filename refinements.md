@@ -79,6 +79,25 @@ lost in the snowstorm.
   while keeping the lore entry as the default destination. Doesn't
   require schema changes — just smarter tooltip rendering.
 
+- **Mobile polish pass on the map page** — the floating "Frozen
+  North" title overlay dominates the viewport on small screens,
+  taking up valuable map real estate. Pins also feel small at
+  thumb-tap scale. Specific items:
+
+  1. Shrink the title overlay on mobile (or collapse it into a
+     small "info" button that expands on tap).
+  2. Increase pin tap-target size on mobile — current 40px works
+     but 48-56px would be safer for thumb interaction.
+  3. Pin tooltip currently appears at the bottom of the viewport
+     on hover; on mobile (no hover), tooltips don't show at all.
+     Consider tap-to-show, tap-elsewhere-to-dismiss.
+  4. Consider a "fit to screen" default zoom or a panable/zoomable
+     map (might require a small JS library like `leaflet` or
+     `panzoom`). Worth doing if pin density grows.
+
+  This is a fuller mobile polish pass for the map page in particular,
+  since it's the most visually demanding page on the site.
+
 ## Architecture & Story Features
 
 - **NPC separation** — NPCs need their own page or a clearly distinct

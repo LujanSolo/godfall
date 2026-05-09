@@ -101,11 +101,11 @@ overlay menu on mobile.
       prefixes scale UP.
       #}
       <div class="hidden md:flex gap-8 text-sm tracking-wide uppercase">
-        <a href="/characters" class="text-silver-400 hover:text-ice-300 transition-colors">Characters</a>
-        <a href="/sessions" class="text-silver-400 hover:text-ice-300 transition-colors">Adventure Log</a>
+        <a href="/map" class="text-silver-400 hover:text-ice-300 transition-colors">Map</a>
         <a href="/timeline" class="text-silver-400 hover:text-ice-300 transition-colors">Timeline</a>
-        <a href="#" class="text-silver-400 hover:text-ice-300 transition-colors">Gallery</a>
-        <a href="/lore" class="text-silver-400 hover:text-ice-300 transition-colors">World Lore</a>
+        <a href="/sessions" class="text-silver-400 hover:text-ice-300 transition-colors">Adventure Log</a>
+        <a href="/lore" class="text-silver-400 hover:text-ice-300 transition-colors">Lore</a>
+        <a href="/characters" class="text-silver-400 hover:text-ice-300 transition-colors">Characters</a>
       </div>
 
       {#
@@ -177,18 +177,17 @@ overlay menu on mobile.
         {# Subtle site name at the top of the menu #}
         <p class="font-display text-sm tracking-[0.3em] uppercase text-ice-300/30 mb-4">Godfall</p>
 
-        <a href="/characters" onclick="toggleMobileMenu()"
-          class="font-display text-2xl tracking-widest uppercase text-silver-300 hover:text-ice-300 transition-colors py-2">Characters</a>
+        <a href="/map" onclick="toggleMobileMenu()"
+          class="font-display text-2xl tracking-widest uppercase text-silver-300 hover:text-ice-300 transition-colors py-2">Map</a>
+        <a href="/timeline" onclick="toggleMobileMenu()"
+          class="font-display text-2xl tracking-widest uppercase text-silver-300 hover:text-ice-300 transition-colors py-2">Timeline</a>
         <a href="/sessions" onclick="toggleMobileMenu()"
           class="font-display text-2xl tracking-widest uppercase text-silver-300 hover:text-ice-300 transition-colors py-2">Adventure
           Log</a>
-        <a href="/timeline" onclick="toggleMobileMenu()"
-          class="font-display text-2xl tracking-widest uppercase text-silver-300 hover:text-ice-300 transition-colors py-2">Timeline</a>
-        <a href="#" onclick="toggleMobileMenu()"
-          class="font-display text-2xl tracking-widest uppercase text-silver-300 hover:text-ice-300 transition-colors py-2">Gallery</a>
         <a href="/lore" onclick="toggleMobileMenu()"
-          class="font-display text-2xl tracking-widest uppercase text-silver-300 hover:text-ice-300 transition-colors py-2">World
-          Lore</a>
+          class="font-display text-2xl tracking-widest uppercase text-silver-300 hover:text-ice-300 transition-colors py-2">Lore</a>
+        <a href="/characters" onclick="toggleMobileMenu()"
+          class="font-display text-2xl tracking-widest uppercase text-silver-300 hover:text-ice-300 transition-colors py-2">Characters</a>
 
         {# Tagline at the bottom — a frosty whisper #}
         <p class="mt-8 text-sm text-ice-300/20 font-light tracking-wider">Five Flames. One fire.</p>
