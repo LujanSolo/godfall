@@ -18,6 +18,8 @@ lost in the snowstorm.
   rune, etc). Search `*** REFINEMENT TARGET ***` in `base.html` to find
   the swap point.
 
+- **Add safeguard step against deletions** - especially on the character dossier page
+
 ## Architecture
 
 - **NPC separation** — NPCs need their own page or a clearly distinct
