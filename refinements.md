@@ -18,7 +18,19 @@ lost in the snowstorm.
   rune, etc). Search `*** REFINEMENT TARGET ***` in `base.html` to find
   the swap point.
 
-- **Add safeguard step against deletions** - especially on the character dossier page
+- **Delete confirmation modals** — currently every delete action uses
+  the browser's built-in `confirm()` dialog. It's functional but ugly
+  (looks like a system error mid-page, can't be styled, can be
+  suppressed by browsers, breaks the immersive Frostmaiden feel).
+  Replace across the site with a custom HTMX-driven modal: styled to
+  match the design, triggered via `hx-get` to render a confirmation
+  panel, with an explicit "type the name to confirm" input for high-
+  stakes deletes (characters, sessions). Applies anywhere the user can
+  destroy data: characters, sessions, individual images, future
+  timeline events, and lore entries.
+
+  Note: this is a UX upgrade, not a security fix. Real authorization
+  lives on the server (added in the auth phase).
 
 ## Architecture
 
@@ -46,3 +58,31 @@ lost in the snowstorm.
 
 ---
 
+## Cut from Roadmap
+
+- **Standalone Photo & Art Gallery** (was Phase 4) — cut. Images
+  naturally live where they belong: character dossiers, NPC dossiers,
+  session recaps, and timeline events. A general gallery would either
+  duplicate those views or compete with them for content. No coding
+  benefit either — the upload patterns we already built are the
+  reusable foundation.
+
+## Future Ideas (not on roadmap)
+
+- **Media library admin view** — different from a public gallery.
+  Behind-the-scenes view of every image uploaded across the site, with
+  search/filter/retag/delete capability. Useful only if image volume
+  grows unwieldy. Build only if needed.
+
+- **Fanned hand of cards layout** — considered for the character
+  roster but rejected for now (too brittle for changing party sizes,
+  mobile redesign tax). May revisit as a signature visual moment in a
+  later phase if the site has earned room for spectacle.
+
+---
+
+## Notes
+
+Refinements written down stay refinements. Resist the urge to retrofit
+them while building forward — context will sharpen what they should
+actually become.
