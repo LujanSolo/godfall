@@ -191,6 +191,32 @@ class Character(Base):
         "CharacterImage", back_populates="character", cascade="all, delete-orphan"
     )
 
+    # --- LORE BACK-REFERENCE ---
+    # This is the OTHER side of the LoreCharacter
+    # join table relationship.
+    #
+    # In Phase 5a, we set up LoreEntry.character_links
+    # so a lore entry could navigate to its
+    # linked characters. The connection is
+    # inherently two-way — same join table — but
+    # SQLAlchemy needs both ends declared
+    # explicitly so it knows how to traverse
+    # them in Python.
+    #
+    # Now we can write character.lore_links and
+    # get all the LoreCharacter rows pointing to
+    # this character. From there, link.lore_entry
+    # gets us the actual lore entry.
+    #
+    # No new database table. No new data. Just a
+    # new way to look at what's already there.
+    # Like turning the holocron over and reading
+    # the reflection on the other side.
+    lore_links = relationship(
+        "LoreCharacter",
+        back_populates="character"
+    )
+
     # --- STRING REPRESENTATION ---
     # __repr__ defines what Python prints when
     # you inspect this object in the terminal.
@@ -486,6 +512,11 @@ class TimelineEvent(Base):
         "EventCharacter", back_populates="event", cascade="all, delete-orphan"
     )
 
+    lore_links = relationship(
+        "LoreEvent",
+        back_populates="event"
+    )
+
     def __repr__(self):
         return f"<TimelineEvent: {self.title}>"
 
@@ -741,7 +772,7 @@ class LoreCharacter(Base):
 
     # --- BACK-LINKS ---
     lore_entry = relationship("LoreEntry", back_populates="character_links")
-    character = relationship("Character")
+    character = relationship("Character", back_populates="lore_links")
 
     def __repr__(self):
         return f"<LoreCharacter: Lore #{self.lore_id} ↔ Character #{self.character_id}>"
@@ -770,7 +801,7 @@ class LoreEvent(Base):
     created_at = Column(DateTime, default=utc_now)
 
     lore_entry = relationship("LoreEntry", back_populates="event_links")
-    event = relationship("TimelineEvent")
+    event = relationship("TimelineEvent", back_populates="lore_links")
 
     def __repr__(self):
         return f"<LoreEvent: Lore #{self.lore_id} ↔ Event #{self.event_id}>"
