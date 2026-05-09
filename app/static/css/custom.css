@@ -185,3 +185,39 @@
     margin-bottom: 1.5em;
     border: 1px solid rgb(26 35 50);
 }
+
+/* ----------------------------------------
+   TIMELINE SCROLLBAR
+   ----------------------------------------
+   Custom-styled horizontal scrollbar for
+   the timeline track. Default browser
+   scrollbars are functional but ugly —
+   this matches our icy palette.
+
+   Webkit browsers (Chrome, Safari) and
+   Firefox use different syntax, so we
+   define both.
+   ---------------------------------------- */
+
+.timeline-scroll::-webkit-scrollbar {
+    height: 6px;
+}
+
+.timeline-scroll::-webkit-scrollbar-track {
+    background: rgb(17 24 39 / 0.4);  /* frost-800 alpha */
+}
+
+.timeline-scroll::-webkit-scrollbar-thumb {
+    background: rgb(125 211 252 / 0.3);  /* ice-300 alpha */
+    border-radius: 3px;
+}
+
+.timeline-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgb(125 211 252 / 0.5);
+}
+
+/* Firefox */
+.timeline-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(125 211 252 / 0.3) rgb(17 24 39 / 0.4);
+}
