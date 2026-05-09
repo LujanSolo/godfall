@@ -1,0 +1,72 @@
+{#
+    GODFALL - timeline/_preview.html
+    =================================
+    A FRAGMENT TEMPLATE.
+
+    Notice this template has no {% extends %},
+    no <html>, no <body>, no nav, no footer.
+    It's just the inner content of a tooltip.
+
+    When HTMX fires a request to
+    /timeline/{id}/preview, the server returns
+    THIS HTML and nothing else. HTMX takes
+    the response and swaps it into the
+    tooltip container on the timeline page.
+
+    The leading underscore in the filename
+    is a Python/web-dev convention: "this is
+    a partial, not a standalone page." Helps
+    future-you (or another developer) at a
+    glance know not to navigate to this
+    URL directly.
+#}
+
+{# Find the featured image (or first image) #}
+{% set ns = namespace(featured=None) %}
+{% for image in event.images %}
+    {% if image.is_featured == 1 and ns.featured is none %}
+        {% set ns.featured = image %}
+    {% endif %}
+{% endfor %}
+{% if ns.featured is none and event.images %}
+    {% set ns.featured = event.images[0] %}
+{% endif %}
+
+<div class="bg-frost-900/95 backdrop-blur-md border border-ice-500/40 shadow-2xl shadow-ice-500/10 max-w-xs">
+
+    {# Optional image at the top of the tooltip #}
+    {% if ns.featured %}
+    <div class="aspect-video bg-frost-800 overflow-hidden">
+        <img src="{{ ns.featured.file_path }}"
+             alt="{{ event.title }}"
+             class="w-full h-full object-cover">
+    </div>
+    {% endif %}
+
+    <div class="p-4">
+
+        {# Date label, if any #}
+        {% if event.event_date %}
+        <p class="text-[10px] tracking-[0.2em] uppercase text-ice-300/60 mb-2 italic">
+            {{ event.event_date }}
+        </p>
+        {% endif %}
+
+        {# Title #}
+        <h3 class="font-display text-base tracking-wider text-silver-200 leading-tight mb-2">
+            {{ event.title }}
+        </h3>
+
+        {# Summary #}
+        {% if event.summary %}
+        <p class="text-xs text-silver-400 leading-relaxed font-light">
+            {{ event.summary | truncate(180) }}
+        </p>
+        {% endif %}
+
+        {# "Click to read" cue #}
+        <p class="mt-3 text-[10px] tracking-widest uppercase text-ice-300/50">
+            Click to read the full account →
+        </p>
+    </div>
+</div>
