@@ -2,6 +2,13 @@
 # GODFALL - app/main.py - The Command Center
 # ============================================
 
+# Load environment variables from .env file
+# BEFORE any other imports that might use them.
+# This needs to happen first because some
+# imported modules (like auth.py) read env
+# vars at import time.
+from dotenv import load_dotenv
+load_dotenv()
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
