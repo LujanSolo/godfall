@@ -1,4 +1,4 @@
-# Godfall — Refinements
+# Godfall — Refinements Etc
 
 A running list of polish items, design tweaks, and ideas to revisit
 during the refinement phase. Captured during build so nothing gets

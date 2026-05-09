@@ -39,7 +39,7 @@
 # File: marker that tells FastAPI "this
 # parameter is an uploaded file."
 from app.auth import require_dm
-
+from typing import Optional
 from fastapi import (
     APIRouter,
     Request,
@@ -216,7 +216,8 @@ async def character_create(
     db: Session = Depends(get_db),
     _dm: User = Depends(require_dm),
     name: str = Form(...),
-    player_name: str = Form(...),
+    player_name: Optional[str] = Form(None),
+    character_type: str = Form("player"),
     race: str = Form(...),
     character_class: str = Form(...),
     level: int = Form(1),
@@ -234,6 +235,7 @@ async def character_create(
     character = Character(
         name=name,
         player_name=player_name,
+        character_type=character_type,
         race=race,
         character_class=character_class,
         level=level,
@@ -373,7 +375,8 @@ async def character_update(
     db: Session = Depends(get_db),
     _dm: User = Depends(require_dm),
     name: str = Form(...),
-    player_name: str = Form(...),
+    player_name: Optional[str] = Form(None),
+    character_type: str = Form("player"),
     race: str = Form(...),
     character_class: str = Form(...),
     level: int = Form(1),
@@ -394,6 +397,7 @@ async def character_update(
     # the changes automatically.
     character.name = name
     character.player_name = player_name
+    character.character_type = character_type
     character.race = race
     character.character_class = character_class
     character.level = level

@@ -69,6 +69,11 @@ New Jinja2 concepts in this template:
 
       {# Status + action buttons row #}
       <div class="flex items-center justify-between mb-6">
+        {# NPC indicator #}
+        {% if character.character_type == "npc" %}
+        <span
+          class="px-3 py-1 mr-2 text-xs tracking-widest uppercase bg-frost-800/60 text-silver-400 border border-frost-700/60">NPC</span>
+        {% endif %}
         {% if character.status == "Active" %}
         <span
           class="px-3 py-1 text-xs tracking-widest uppercase bg-ice-500/20 text-ice-300 border border-ice-500/40">Active</span>
@@ -111,7 +116,7 @@ New Jinja2 concepts in this template:
                 Delete
               </button>
             </form>
-            
+
         </div>
         {% endif %}
       </div>
