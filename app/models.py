@@ -43,11 +43,35 @@ from sqlalchemy.orm import relationship
 # datetime: Python's built-in date/time tools.
 # We use it to auto-stamp when records are
 # created or updated.
-from datetime import datetime
+from datetime import datetime, timezone
 
 # Base: the ancestor class we created in
 # database.py. Every model inherits from it.
 from app.database import Base
+
+
+# ============================================
+# TIMEZONE-AWARE NOW
+# ============================================
+# utc_now() is deprecated as of
+# Python 3.12 because it returns a "naive"
+# datetime with no timezone info. The modern
+# pattern is datetime.now(timezone.utc),
+# which returns the same UTC time but with
+# its timezone explicitly attached.
+#
+# We wrap it in a tiny helper so we can pass
+# it as a default to Column() — SQLAlchemy
+# expects a callable (a function reference),
+# not a value, when using "default=" with
+# something that should be evaluated each
+# time a row is created.
+#
+# Like setting a clock that's always honest
+# about which time zone it's reading from.
+# ============================================
+def utc_now():
+    return datetime.now(timezone.utc)
 
 
 # ============================================
@@ -134,19 +158,19 @@ class Character(Base):
     # Automatically records when the character
     # was first added and last updated.
     #
-    # default=datetime.utcnow runs when a
+    # default=utc_now runs when a
     # record is CREATED.
-    # onupdate=datetime.utcnow runs when a
+    # onupdate=utc_now runs when a
     # record is MODIFIED.
     #
     # Like a ship's log — you always know
     # when something was first recorded and
     # when it was last touched.
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utc_now)
     updated_at = Column(
         DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow
+        default=utc_now,
+        onupdate=utc_now
     )
 
     # --- RELATIONSHIP ---
@@ -243,7 +267,7 @@ class CharacterImage(Base):
     is_primary = Column(Integer, default=0)
 
     # --- TIMESTAMP ---
-    uploaded_at = Column(DateTime, default=datetime.utcnow)
+    uploaded_at = Column(DateTime, default=utc_now)
 
     # --- RELATIONSHIP (back-link) ---
     # The other half of the two-way channel.
@@ -320,11 +344,11 @@ class SessionRecap(Base):
     body = Column(Text)
 
     # --- TIMESTAMPS ---
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utc_now)
     updated_at = Column(
         DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow
+        default=utc_now,
+        onupdate=utc_now
     )
 
     # --- RELATIONSHIP ---
@@ -369,7 +393,7 @@ class SessionImage(Base):
     file_path = Column(String(255), nullable=False)
     caption = Column(String(255))
     is_featured = Column(Integer, default=0)
-    uploaded_at = Column(DateTime, default=datetime.utcnow)
+    uploaded_at = Column(DateTime, default=utc_now)
 
     session = relationship(
         "SessionRecap",
@@ -378,3 +402,132 @@ class SessionImage(Base):
 
     def __repr__(self):
         return f"<SessionImage: {self.caption or 'No caption'} (Session #{self.session_id})>"
+    
+
+# ============================================
+# TIMELINE EVENT MODEL
+# ============================================
+# Major story beats from the campaign.
+# Each event becomes a node on the timeline.
+#
+# Distinct from SessionRecap because:
+#   - A single session might cover multiple
+#     events (or zero, if the party shopped
+#     all night).
+#   - An event might span several sessions
+#     (a long siege, an ongoing investigation).
+#   - The timeline is curated narrative; the
+#     adventure log is chronological play.
+#
+# Like the difference between a movie's
+# IMDb trivia page (events) and the actual
+# shooting schedule (sessions).
+# ============================================
+class TimelineEvent(Base):
+    __tablename__ = "timeline_events"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    # --- TITLE ---
+    # Evocative event name. e.g. "The Black
+    # Cabin Incident" or "Auril Revealed."
+    title = Column(String(200), nullable=False)
+
+    # --- IN-GAME DATE ---
+    # Same string-based approach as session
+    # in_game_date — fantasy calendars don't
+    # fit standard date types.
+    event_date = Column(String(100))
+
+    # --- SORT ORDER ---
+    # Integer that controls the timeline's
+    # left-to-right ordering. We use this
+    # instead of date because:
+    #   1. In-game date strings can't sort
+    #      reliably ("Hammer 12" vs "Frostfall")
+    #   2. You may want events that share a
+    #      date in a specific order
+    #   3. You can insert events between
+    #      others by adjusting numbers
+    #
+    # Convention: leave gaps. Start with
+    # 100, 200, 300 instead of 1, 2, 3 — that
+    # way you can insert at 150, 250 later
+    # without renumbering everything.
+    #
+    # Like seat numbers in a theater that
+    # leave room between rows for ushers.
+    sort_order = Column(Integer, default=0, nullable=False)
+
+    # --- HOVER SUMMARY ---
+    # Short text shown in the tooltip when
+    # the user hovers over the timeline node.
+    # Keep it tight — 1-2 sentences max.
+    summary = Column(Text)
+
+    # --- FULL NARRATIVE ---
+    # Long-form markdown narrative for the
+    # event detail page. Renders with the
+    # same | markdown filter we set up.
+    body = Column(Text)
+
+    # --- MILESTONE FLAG ---
+    # Marks story-critical events that should
+    # render larger or with extra emphasis on
+    # the timeline. Think "the dragon arrives"
+    # vs "the party bought a wagon."
+    #
+    # Stored as Integer (0/1) for SQLite
+    # compatibility — same pattern we used
+    # for is_primary on character images.
+    is_milestone = Column(Integer, default=0, nullable=False)
+
+    # --- TIMESTAMPS ---
+    created_at = Column(DateTime, default=utc_now)
+    updated_at = Column(
+        DateTime,
+        default=utc_now,
+        onupdate=utc_now
+    )
+
+    # --- RELATIONSHIPS ---
+    # An event has many images (one-to-many,
+    # same as Character/Session).
+    images = relationship(
+        "EventImage",
+        back_populates="event",
+        cascade="all, delete-orphan"
+    )
+
+    # An event has many character connections
+    # via the EventCharacter join table.
+    # The cascade handles cleanup if the
+    # event is deleted.
+    character_links = relationship(
+        "EventCharacter",
+        back_populates="event",
+        cascade="all, delete-orphan"
+    )
+
+    def __repr__(self):
+        return f"<TimelineEvent: {self.title}>"
+
+
+# ============================================
+# EVENT IMAGE MODEL
+# ============================================
+# Same structure as CharacterImage and
+# SessionImage. By now this pattern should
+# feel comfortable — three near-identical
+# image tables, each tied to a different
+# parent.
+#
+# In a more advanced design, we might
+# unify these into a single polymorphic
+# "Image" table. We won't — the duplication
+# is small, and keeping them separate makes
+# each table's purpose unambiguous. Like
+# having three identical airlock procedures
+# rather than one universal one with a
+# bunch of conditional branches.
+# =======================================
