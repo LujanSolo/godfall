@@ -1,0 +1,152 @@
+{#
+    GODFALL - lore/list.html
+    =========================
+    The lore index. A grid of frost-crystal
+    cards with category filter chips at the top.
+
+    Filtering works via URL query parameter:
+      /lore                 → all entries
+      /lore?category=Faction → factions only
+
+    The route picks up the parameter and
+    pre-filters the entries list. Clicking
+    a filter chip is just a navigation —
+    each filter is its own URL.
+
+    This is "filtering by routing" — simple,
+    shareable, no JS state. Different from
+    the more dynamic HTMX-based filtering
+    we COULD do, but better here because
+    filters are infrequent operations and
+    we benefit from URL-based state.
+#}
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="max-w-7xl mx-auto px-6 py-12">
+
+    {# --- PAGE HEADER --- #}
+    <div class="text-center mb-12">
+        <h1 class="font-display text-4xl md:text-5xl font-black tracking-[0.2em] uppercase text-silver-200 frost-glow">
+            World Lore
+        </h1>
+        <p class="mt-4 text-ice-300/60 font-light tracking-wider italic">
+            The chronicle of all things known &mdash; and a few that aren't.
+        </p>
+    </div>
+
+    {# --- ADD NEW BUTTON --- #}
+    <div class="flex justify-end mb-8">
+        {#
+            We pass the current category as a
+            query param to /lore/new. That way
+            if the DM is browsing factions and
+            clicks "Add", the new entry's
+            category is pre-filled.
+        #}
+        <a href="/lore/new{% if active_category and active_category != 'all' %}?category={{ active_category }}{% endif %}"
+           class="inline-flex items-center gap-2 px-5 py-2 border border-ice-500/40 text-ice-300 hover:bg-ice-500/10 hover:border-ice-300 font-display text-sm tracking-widest uppercase transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            New Entry
+        </a>
+    </div>
+
+    {#
+        --- FILTER CHIPS ---
+        Each chip is a link. The "active"
+        chip gets distinct styling so the
+        user always knows what they're
+        looking at.
+
+        We compare against active_category
+        which the route passes in. If no
+        category was specified, "all" is
+        the default.
+    #}
+    <div class="mb-10 flex flex-wrap items-center gap-2 justify-center">
+        <a href="/lore"
+           class="px-4 py-1.5 text-xs tracking-widest uppercase font-display border transition-colors
+                  {% if active_category == 'all' %}
+                  border-ice-300 bg-ice-500/20 text-ice-300
+                  {% else %}
+                  border-frost-700 text-silver-400 hover:border-ice-500/40 hover:text-ice-300
+                  {% endif %}">
+            All
+        </a>
+
+        {% for cat in categories %}
+        <a href="/lore?category={{ cat }}"
+           class="px-4 py-1.5 text-xs tracking-widest uppercase font-display border transition-colors
+                  {% if active_category == cat %}
+                  border-ice-300 bg-ice-500/20 text-ice-300
+                  {% else %}
+                  border-frost-700 text-silver-400 hover:border-ice-500/40 hover:text-ice-300
+                  {% endif %}">
+            {{ cat }}
+        </a>
+        {% endfor %}
+    </div>
+
+    {#
+        --- ENTRY COUNT ---
+        Tiny but useful: tells the user
+        how many entries match the current
+        filter. Real-world UX touch.
+    #}
+    {% if entries %}
+    <p class="text-center text-xs text-silver-400/50 tracking-widest uppercase mb-8">
+        {{ entries | length }} {% if entries | length == 1 %}Entry{% else %}Entries{% endif %}
+        {% if active_category and active_category != 'all' %}
+        in {{ active_category }}
+        {% endif %}
+    </p>
+    {% endif %}
+
+    {# --- THE CARD GRID --- #}
+    {% if entries %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+
+        {% for entry in entries %}
+            {% include "lore/_card.html" %}
+        {% endfor %}
+
+    </div>
+
+    {% else %}
+
+    {#
+        --- EMPTY STATE ---
+        Different message depending on
+        whether the user is filtered or
+        looking at a truly empty section.
+    #}
+    <div class="text-center py-20 border border-frost-700 border-dashed">
+        {% if active_category and active_category != 'all' %}
+            <p class="text-silver-400 mb-6 italic">No {{ active_category | lower }} entries recorded yet.</p>
+            <div class="flex flex-wrap items-center justify-center gap-3">
+                <a href="/lore"
+                   class="inline-flex items-center gap-2 px-5 py-2 border border-frost-700 text-silver-400 hover:border-ice-500/40 hover:text-ice-300 font-display text-sm tracking-widest uppercase transition-colors">
+                    View All Entries
+                </a>
+                <a href="/lore/new?category={{ active_category }}"
+                   class="inline-flex items-center gap-2 px-5 py-2 border border-ice-500/40 text-ice-300 hover:bg-ice-500/10 hover:border-ice-300 font-display text-sm tracking-widest uppercase transition-colors">
+                    Add the First {{ active_category }}
+                </a>
+            </div>
+        {% else %}
+            <p class="text-silver-400 mb-6 italic">The archive is empty. The world awaits its first inscription.</p>
+            <a href="/lore/new"
+               class="inline-flex items-center gap-2 px-5 py-2 border border-ice-500/40 text-ice-300 hover:bg-ice-500/10 hover:border-ice-300 font-display text-sm tracking-widest uppercase transition-colors">
+                Begin the Archive
+            </a>
+        {% endif %}
+    </div>
+
+    {% endif %}
+
+</section>
+
+{% endblock %}

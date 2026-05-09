@@ -1,0 +1,113 @@
+{#
+    GODFALL - lore/_card.html
+    ==========================
+    Reusable frost-crystal card. Renders
+    one lore entry as a faceted card with
+    category-color accents.
+
+    Expects in scope:
+      entry — a LoreEntry object
+
+    Uses clip-path for the angular corners,
+    which is the secret sauce of the
+    crystal effect.
+#}
+
+{# Find the featured image (or first one) #}
+{% set ns = namespace(featured=None) %}
+{% for image in entry.images %}
+    {% if image.is_featured == 1 and ns.featured is none %}
+        {% set ns.featured = image %}
+    {% endif %}
+{% endfor %}
+{% if ns.featured is none and entry.images %}
+    {% set ns.featured = entry.images[0] %}
+{% endif %}
+
+{#
+    CATEGORY-CODED COLOR
+
+    We'll set both a border accent class
+    and an icon based on category. Doing
+    the lookup here keeps the visible
+    markup clean.
+
+    The "ns_cat" namespace lets us assign
+    once and use later inside the same
+    template.
+#}
+{% set ns_cat = namespace(accent='border-ice-500/40', glow='shadow-ice-500/20', text='text-ice-300') %}
+{% if entry.category == 'Location' %}
+    {% set ns_cat = namespace(accent='border-ice-500/50', glow='shadow-ice-500/30', text='text-ice-300') %}
+{% elif entry.category == 'Faction' %}
+    {% set ns_cat = namespace(accent='border-silver-300/40', glow='shadow-silver-300/20', text='text-silver-200') %}
+{% elif entry.category == 'Item' %}
+    {% set ns_cat = namespace(accent='border-amber-400/40', glow='shadow-amber-400/20', text='text-amber-300') %}
+{% elif entry.category == 'Deity' %}
+    {% set ns_cat = namespace(accent='border-purple-400/40', glow='shadow-purple-400/20', text='text-purple-300') %}
+{% elif entry.category == 'Creature' %}
+    {% set ns_cat = namespace(accent='border-red-400/40', glow='shadow-red-400/20', text='text-red-300') %}
+{% endif %}
+
+{#
+    CARD WRAPPER
+    "lore-crystal" is a custom class we'll
+    add CSS for — it handles the clip-path
+    that creates the faceted shape.
+
+    We layer multiple effects:
+      1. Outer container with clip-path
+         (the crystal shape itself)
+      2. Inner content with background and
+         hover transitions
+      3. Image with gradient overlay for
+         text legibility
+#}
+<a href="/lore/{{ entry.id }}"
+   class="lore-crystal group relative block bg-frost-800/40 border {{ ns_cat.accent }} hover:shadow-2xl {{ ns_cat.glow }} transition-all duration-500"
+   data-category="{{ entry.category }}">
+
+    {# Aspect ratio container — keeps cards uniform #}
+    <div class="aspect-[3/4] relative overflow-hidden">
+
+        {# Background image OR placeholder #}
+        {% if ns.featured %}
+            <img src="{{ ns.featured.file_path }}"
+                 alt="{{ entry.title }}"
+                 class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+        {% else %}
+            {# Stylized empty state #}
+            <div class="absolute inset-0 bg-gradient-to-br from-frost-800 to-frost-900 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-ice-300/15" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+            </div>
+        {% endif %}
+
+        {# Dark gradient overlay for text legibility #}
+        <div class="absolute inset-0 bg-gradient-to-t from-frost-900 via-frost-900/60 to-frost-900/10 group-hover:from-frost-900 group-hover:via-frost-900/30 transition-all duration-500"></div>
+
+        {# Top-right category indicator #}
+        <div class="absolute top-3 right-3 flex items-center gap-2">
+            {# Secret indicator #}
+            {% if entry.is_secret == 1 %}
+            <span class="text-[9px] tracking-widest uppercase px-1.5 py-0.5 bg-frost-900/80 text-amber-300/80 border border-amber-400/30">DM</span>
+            {% endif %}
+            <span class="text-[10px] tracking-[0.2em] uppercase {{ ns_cat.text }} bg-frost-900/60 px-2 py-0.5 backdrop-blur-sm">
+                {{ entry.category }}
+            </span>
+        </div>
+
+        {# Bottom content area — title and subtitle #}
+        <div class="absolute bottom-0 left-0 right-0 p-4 md:p-5">
+            <h3 class="font-display text-lg md:text-xl tracking-wider text-silver-100 group-hover:{{ ns_cat.text }} transition-colors leading-tight">
+                {{ entry.title }}
+            </h3>
+            {% if entry.subtitle %}
+            <p class="mt-1 text-xs text-ice-300/60 italic font-light tracking-wide">
+                {{ entry.subtitle }}
+            </p>
+            {% endif %}
+        </div>
+    </div>
+</a>

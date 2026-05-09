@@ -221,3 +221,69 @@
     scrollbar-width: thin;
     scrollbar-color: rgb(125 211 252 / 0.3) rgb(17 24 39 / 0.4);
 }
+
+
+/* ----------------------------------------
+   LORE CRYSTAL CARD
+   ----------------------------------------
+   The clip-path creates angular corners
+   that give each card the look of a
+   faceted gem or shard of ice.
+
+   The values are percentages defining
+   eight points around the card perimeter,
+   creating the 8-sided clipped shape.
+
+   Browsers that don't support clip-path
+   (extremely rare in 2026) will fall back
+   to a regular rectangle. Graceful
+   degradation in action.
+
+   The hover state slightly nudges the
+   facets, like a crystal shifting in
+   the light.
+   ---------------------------------------- */
+
+.lore-crystal {
+    clip-path: polygon(
+        8% 0,        /* top-left clip */
+        92% 0,       /* top-right clip */
+        100% 8%,     /* right-top corner */
+        100% 92%,    /* right-bottom corner */
+        92% 100%,    /* bottom-right clip */
+        8% 100%,     /* bottom-left clip */
+        0 92%,       /* left-bottom corner */
+        0 8%         /* left-top corner */
+    );
+    transition: clip-path 0.4s ease, transform 0.4s ease;
+}
+
+.lore-crystal:hover {
+    /*
+       Slightly tighter facets on hover —
+       like the crystal sharpening into focus.
+    */
+    clip-path: polygon(
+        6% 0,
+        94% 0,
+        100% 6%,
+        100% 94%,
+        94% 100%,
+        6% 100%,
+        0 94%,
+        0 6%
+    );
+    transform: translateY(-2px);
+}
+
+/*
+   When a card is filtered out, fade it
+   instead of removing it from the DOM.
+   The "filtered-out" class is added by
+   our HTMX/JS filter logic.
+*/
+.lore-crystal.filtered-out {
+    opacity: 0.15;
+    pointer-events: none;
+    filter: grayscale(0.8) blur(1px);
+}
