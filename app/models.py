@@ -30,6 +30,7 @@ from sqlalchemy import (
     Text,
     DateTime,
     Date,
+    Float,
     ForeignKey,
 )
 
@@ -112,7 +113,7 @@ class Character(Base):
     # "minor"   = supporting role
     # "cameo"   = one-off encounter
     #
-    # Players default to "major" 
+    # Players default to "major"
     importance = Column(String(20), default="major", nullable=True)
     race = Column(String(50), nullable=False)
     character_class = Column(String(50), nullable=False)
@@ -167,11 +168,7 @@ class Character(Base):
     # when something was first recorded and
     # when it was last touched.
     created_at = Column(DateTime, default=utc_now)
-    updated_at = Column(
-        DateTime,
-        default=utc_now,
-        onupdate=utc_now
-    )
+    updated_at = Column(DateTime, default=utc_now, onupdate=utc_now)
 
     # --- RELATIONSHIP ---
     # This line doesn't create a column in the
@@ -191,9 +188,7 @@ class Character(Base):
     # behind — like the Empire's "no witnesses"
     # policy, but for data hygiene.
     images = relationship(
-        "CharacterImage",
-        back_populates="character",
-        cascade="all, delete-orphan"
+        "CharacterImage", back_populates="character", cascade="all, delete-orphan"
     )
 
     # --- STRING REPRESENTATION ---
@@ -244,11 +239,7 @@ class CharacterImage(Base):
     # carries its squadron assignment — the
     # squadron roster doesn't try to physically
     # contain the ships.
-    character_id = Column(
-        Integer,
-        ForeignKey("characters.id"),
-        nullable=False
-    )
+    character_id = Column(Integer, ForeignKey("characters.id"), nullable=False)
 
     # --- IMAGE DATA ---
     # file_path: where the image file lives
@@ -273,14 +264,11 @@ class CharacterImage(Base):
     # The other half of the two-way channel.
     # image.character gets the Character
     # object this image belongs to.
-    character = relationship(
-        "Character",
-        back_populates="images"
-    )
+    character = relationship("Character", back_populates="images")
 
     def __repr__(self):
         return f"<CharacterImage: {self.caption or 'No caption'} (Character #{self.character_id})>"
-    
+
 
 # ============================================
 # SESSION RECAP MODEL
@@ -345,20 +333,14 @@ class SessionRecap(Base):
 
     # --- TIMESTAMPS ---
     created_at = Column(DateTime, default=utc_now)
-    updated_at = Column(
-        DateTime,
-        default=utc_now,
-        onupdate=utc_now
-    )
+    updated_at = Column(DateTime, default=utc_now, onupdate=utc_now)
 
     # --- RELATIONSHIP ---
     # Same one-to-many pattern as Character.
     # One session has many images. Delete the
     # session, the images go with it.
     images = relationship(
-        "SessionImage",
-        back_populates="session",
-        cascade="all, delete-orphan"
+        "SessionImage", back_populates="session", cascade="all, delete-orphan"
     )
 
     def __repr__(self):
@@ -384,25 +366,18 @@ class SessionImage(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
-    session_id = Column(
-        Integer,
-        ForeignKey("session_recaps.id"),
-        nullable=False
-    )
+    session_id = Column(Integer, ForeignKey("session_recaps.id"), nullable=False)
 
     file_path = Column(String(255), nullable=False)
     caption = Column(String(255))
     is_featured = Column(Integer, default=0)
     uploaded_at = Column(DateTime, default=utc_now)
 
-    session = relationship(
-        "SessionRecap",
-        back_populates="images"
-    )
+    session = relationship("SessionRecap", back_populates="images")
 
     def __repr__(self):
         return f"<SessionImage: {self.caption or 'No caption'} (Session #{self.session_id})>"
-    
+
 
 # ============================================
 # TIMELINE EVENT MODEL
@@ -494,19 +469,13 @@ class TimelineEvent(Base):
 
     # --- TIMESTAMPS ---
     created_at = Column(DateTime, default=utc_now)
-    updated_at = Column(
-        DateTime,
-        default=utc_now,
-        onupdate=utc_now
-    )
+    updated_at = Column(DateTime, default=utc_now, onupdate=utc_now)
 
     # --- RELATIONSHIPS ---
     # An event has many images (one-to-many,
     # same as Character/Session).
     images = relationship(
-        "EventImage",
-        back_populates="event",
-        cascade="all, delete-orphan"
+        "EventImage", back_populates="event", cascade="all, delete-orphan"
     )
 
     # An event has many character connections
@@ -514,9 +483,7 @@ class TimelineEvent(Base):
     # The cascade handles cleanup if the
     # event is deleted.
     character_links = relationship(
-        "EventCharacter",
-        back_populates="event",
-        cascade="all, delete-orphan"
+        "EventCharacter", back_populates="event", cascade="all, delete-orphan"
     )
 
     def __repr__(self):
@@ -546,21 +513,14 @@ class EventImage(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
-    event_id = Column(
-        Integer,
-        ForeignKey("timeline_events.id"),
-        nullable=False
-    )
+    event_id = Column(Integer, ForeignKey("timeline_events.id"), nullable=False)
 
     file_path = Column(String(255), nullable=False)
     caption = Column(String(255))
     is_featured = Column(Integer, default=0)
     uploaded_at = Column(DateTime, default=datetime.utcnow)
 
-    event = relationship(
-        "TimelineEvent",
-        back_populates="images"
-    )
+    event = relationship("TimelineEvent", back_populates="images")
 
     def __repr__(self):
         return f"<EventImage: {self.caption or 'No caption'} (Event #{self.event_id})>"
@@ -604,16 +564,8 @@ class EventCharacter(Base):
     id = Column(Integer, primary_key=True, index=True)
 
     # --- THE TWO LINKS ---
-    event_id = Column(
-        Integer,
-        ForeignKey("timeline_events.id"),
-        nullable=False
-    )
-    character_id = Column(
-        Integer,
-        ForeignKey("characters.id"),
-        nullable=False
-    )
+    event_id = Column(Integer, ForeignKey("timeline_events.id"), nullable=False)
+    character_id = Column(Integer, ForeignKey("characters.id"), nullable=False)
 
     # --- ROLE ---
     # Optional text describing how the
@@ -630,11 +582,195 @@ class EventCharacter(Base):
     # --- BACK-LINKS ---
     # Each row in this join table can navigate
     # to its event and its character.
-    event = relationship(
-        "TimelineEvent",
-        back_populates="character_links"
-    )
+    event = relationship("TimelineEvent", back_populates="character_links")
     character = relationship("Character")
 
     def __repr__(self):
-        return f"<EventCharacter: Event #{self.event_id} ↔ Character #{self.character_id}>"
+        return (
+            f"<EventCharacter: Event #{self.event_id} ↔ Character #{self.character_id}>"
+        )
+
+
+# ============================================
+# LORE ENTRY MODEL
+# ============================================
+# A single piece of world lore — a location,
+# faction, magic item, deity, myth, etc.
+#
+# Unified into one model with a "category"
+# field rather than separate tables per type.
+# This keeps our codebase simple while still
+# letting us filter and group meaningfully.
+#
+# Like a single field manual that organizes
+# entries by chapter (category) rather than
+# having a different book for every topic.
+# ============================================
+class LoreEntry(Base):
+    __tablename__ = "lore_entries"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    # --- TITLE ---
+    title = Column(String(200), nullable=False)
+
+    # --- CATEGORY ---
+    # Location, Faction, Item, Deity, Myth,
+    # Other... we'll start with a few common
+    # ones and you can add new categories on
+    # the fly. The form will offer a dropdown
+    # but accept any value, so adding "Tribe"
+    # or "Magic" doesn't need a code change.
+    #
+    # Stored as a simple string. Could be an
+    # enum if we wanted strict validation, but
+    # flexibility wins here — campaigns are
+    # weird and varied.
+    category = Column(String(50), nullable=False, default="Other")
+
+    # --- SUBTITLE ---
+    # Optional flavor descriptor.
+    # e.g. "Frost Giant Stronghold" or
+    # "Ten-Towns' Largest Settlement"
+    subtitle = Column(String(200))
+
+    # --- BODY ---
+    # Long-form markdown narrative. Same
+    # treatment as session/event bodies —
+    # rendered with the | markdown filter.
+    body = Column(Text)
+
+    # --- MAP COORDINATES (added in 5c) ---
+    # Latitude/longitude on the campaign map.
+    # Defined as Float so we can store decimal
+    # positioning. Nullable because non-location
+    # entries (factions, items, deities) don't
+    # have a place on the map.
+    #
+    # We're using "lat" and "lng" naming even
+    # though for our purposes they're really
+    # just X/Y coordinates on an image. The
+    # convention is widely understood and will
+    # feel familiar if we ever upgrade to a
+    # real geographic mapping library.
+    lat = Column(Float)
+    lng = Column(Float)
+
+    # --- IS SECRET ---
+    # Marks entries the players haven't
+    # discovered yet. Once we add auth in
+    # Phase 6, secret entries will be
+    # DM-only. For now the field is here
+    # but doesn't do anything functionally.
+    #
+    # Stored as Integer (0/1) for SQLite
+    # consistency with our other booleans.
+    is_secret = Column(Integer, default=0, nullable=False)
+
+    # --- TIMESTAMPS ---
+    created_at = Column(DateTime, default=utc_now)
+    updated_at = Column(DateTime, default=utc_now, onupdate=utc_now)
+
+    # --- RELATIONSHIPS ---
+    images = relationship(
+        "LoreImage", back_populates="lore_entry", cascade="all, delete-orphan"
+    )
+
+    character_links = relationship(
+        "LoreCharacter", back_populates="lore_entry", cascade="all, delete-orphan"
+    )
+
+    event_links = relationship(
+        "LoreEvent", back_populates="lore_entry", cascade="all, delete-orphan"
+    )
+
+    def __repr__(self):
+        return f"<LoreEntry: {self.title} ({self.category})>"
+
+
+# ============================================
+# LORE IMAGE MODEL
+# ============================================
+# Same pattern as every other image table.
+# By now this should feel like routine.
+# ============================================
+class LoreImage(Base):
+    __tablename__ = "lore_images"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    lore_id = Column(Integer, ForeignKey("lore_entries.id"), nullable=False)
+
+    file_path = Column(String(255), nullable=False)
+    caption = Column(String(255))
+    is_featured = Column(Integer, default=0)
+    uploaded_at = Column(DateTime, default=utc_now)
+
+    lore_entry = relationship("LoreEntry", back_populates="images")
+
+    def __repr__(self):
+        return f"<LoreImage: {self.caption or 'No caption'} (Lore #{self.lore_id})>"
+
+
+# ============================================
+# LORE-CHARACTER JOIN TABLE
+# ============================================
+# Same many-to-many pattern as EventCharacter.
+# Links lore entries to characters with an
+# optional descriptor of how they relate.
+#
+# Examples of "relationship" values:
+#   "Worships," "Founded by," "Killed by,"
+#   "Crafted by," "Hunted by," "Avatar of"
+# ============================================
+class LoreCharacter(Base):
+    __tablename__ = "lore_characters"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    lore_id = Column(Integer, ForeignKey("lore_entries.id"), nullable=False)
+    character_id = Column(Integer, ForeignKey("characters.id"), nullable=False)
+
+    # --- DESCRIPTOR ---
+    # How the character relates to this lore.
+    # Optional — not every connection needs
+    # a label.
+    relationship_type = Column(String(100))
+
+    created_at = Column(DateTime, default=utc_now)
+
+    # --- BACK-LINKS ---
+    lore_entry = relationship("LoreEntry", back_populates="character_links")
+    character = relationship("Character")
+
+    def __repr__(self):
+        return f"<LoreCharacter: Lore #{self.lore_id} ↔ Character #{self.character_id}>"
+
+
+# ============================================
+# LORE-EVENT JOIN TABLE
+# ============================================
+# Same pattern, different connection.
+# Links lore entries to timeline events.
+#
+# Examples of "relevance":
+#   "First appearance," "Destroyed during,"
+#   "Site of," "Origin"
+# ============================================
+class LoreEvent(Base):
+    __tablename__ = "lore_events"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    lore_id = Column(Integer, ForeignKey("lore_entries.id"), nullable=False)
+    event_id = Column(Integer, ForeignKey("timeline_events.id"), nullable=False)
+
+    relevance = Column(String(100))
+
+    created_at = Column(DateTime, default=utc_now)
+
+    lore_entry = relationship("LoreEntry", back_populates="event_links")
+    event = relationship("TimelineEvent")
+
+    def __repr__(self):
+        return f"<LoreEvent: Lore #{self.lore_id} ↔ Event #{self.event_id}>"
