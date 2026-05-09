@@ -1,0 +1,191 @@
+{#
+    GODFALL - map/view.html
+    ========================
+    The dedicated map page. Full-bleed
+    immersive layout — the map fills the
+    viewport, with floating UI elements
+    layered on top.
+
+    Pins are absolutely positioned over the
+    map using the lat/lng percentages set
+    in the lore form. Hover a pin → HTMX
+    fetches the preview fragment.
+#}
+{% extends "base.html" %}
+
+{% block content %}
+
+{#
+    --- WRAPPER ---
+    Negative margins on the top neutralize
+    the default page padding so the map can
+    truly stretch edge-to-edge below the nav.
+    The page-level padding from main is
+    handled here instead.
+#}
+<div class="relative w-full">
+
+    {#
+        --- FLOATING TITLE OVERLAY ---
+        Sits at the top center of the map,
+        with a subtle backdrop blur for
+        legibility. Doesn't compete with
+        the map for attention.
+    #}
+    <div class="absolute top-6 left-1/2 -translate-x-1/2 z-30 text-center pointer-events-none">
+        <div class="px-6 py-3 bg-frost-900/70 backdrop-blur-md border border-frost-700/60">
+            <h1 class="font-display text-xl md:text-2xl tracking-[0.3em] uppercase text-silver-200 frost-glow">
+                The Frozen North
+            </h1>
+            <p class="mt-1 text-[10px] tracking-[0.2em] uppercase text-ice-300/60 italic">
+                {% if pins %}
+                    {{ pins | length }} {% if pins | length == 1 %}Discovered Location{% else %}Discovered Locations{% endif %}
+                {% else %}
+                    The world awaits its first marker
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    {#
+        --- THE MAP ITSELF ---
+        relative positioning so we can absolute-
+        position pins inside it.
+
+        The atmospheric overlay creates a subtle
+        frost-tinted vignette — darkens the
+        edges, lightens the center, gives the
+        map a sense of being viewed through
+        cold air.
+    #}
+    <div class="relative bg-frost-900">
+
+        {# The map image #}
+        <img src="/static/images/world-map.jpg"
+             alt="World map of the Frozen North"
+             class="w-full h-auto block select-none"
+             draggable="false">
+
+        {# Atmospheric vignette overlay #}
+        <div class="absolute inset-0 pointer-events-none"
+             style="background: radial-gradient(ellipse at center, transparent 40%, rgba(10, 14, 23, 0.5) 100%);"></div>
+
+        {#
+            --- PINS ---
+            Each pin is absolutely positioned
+            using its lore entry's lat/lng as
+            top/left percentages.
+
+            -translate-x-1/2 -translate-y-1/2
+            centers the pin on its coordinates.
+
+            HTMX attributes:
+              hx-get fetches the preview fragment
+              hx-trigger fires on hover (200ms delay)
+              hx-target points the response into
+                       the tooltip element
+              hx-swap controls how the fragment
+                     gets inserted
+
+            The pin itself is wrapped in an
+            anchor tag, so click navigates to
+            the lore detail page.
+        #}
+        {% for pin in pins %}
+        <a href="/lore/{{ pin.id }}"
+           class="map-pin absolute z-10 -translate-x-1/2 -translate-y-1/2 group"
+           style="top: {{ pin.lat }}%; left: {{ pin.lng }}%;"
+           hx-get="/map/pin/{{ pin.id }}/preview"
+           hx-trigger="mouseenter delay:200ms"
+           hx-target="#map-tooltip-content"
+           hx-swap="innerHTML"
+           onmouseenter="showMapTooltip()"
+           onmouseleave="hideMapTooltip()"
+           aria-label="{{ pin.title }}">
+
+            {#
+                The rune/sigil pin marker.
+                Built from layered SVG elements
+                for that "glowing magical
+                inscription" feel.
+
+                The outer ring pulses gently.
+                The inner shape is a stylized
+                geometric rune.
+                On hover everything brightens.
+            #}
+            <div class="relative w-10 h-10 md:w-12 md:h-12">
+
+                {# Outer pulsing aura #}
+                <div class="absolute inset-0 rounded-full bg-ice-300/20 animate-ping group-hover:bg-ice-300/40"></div>
+
+                {# Mid ring #}
+                <div class="absolute inset-1 rounded-full border border-ice-300/40 group-hover:border-ice-300 transition-colors"></div>
+
+                {# Inner rune #}
+                <div class="absolute inset-2 rounded-full bg-frost-900/80 backdrop-blur-sm border border-ice-300/60 group-hover:border-ice-300 group-hover:bg-frost-900 flex items-center justify-center transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 md:w-5 md:h-5 text-ice-300 group-hover:scale-125 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        {# A stylized rune: snowflake-like geometric pattern #}
+                        <path d="M12 2 L12 22 M2 12 L22 12 M5 5 L19 19 M19 5 L5 19" stroke-linecap="round" />
+                        <circle cx="12" cy="12" r="2" fill="currentColor" />
+                    </svg>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+
+    </div>
+
+    {#
+        --- LEGEND / EMPTY STATE ---
+        If no pins exist yet, show a small
+        helpful message at the bottom.
+    #}
+    {% if not pins %}
+    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 text-center pointer-events-auto">
+        <div class="px-6 py-4 bg-frost-900/80 backdrop-blur-md border border-frost-700/60 max-w-md">
+            <p class="text-silver-300 text-sm font-light leading-relaxed mb-3">
+                No locations have been pinned yet.
+                Add Location-category lore entries with
+                coordinates to populate the map.
+            </p>
+            <a href="/lore/new?category=Location"
+               class="inline-flex items-center gap-2 px-4 py-1.5 border border-ice-500/40 text-ice-300 hover:bg-ice-500/10 hover:border-ice-300 font-display text-xs tracking-widest uppercase transition-colors">
+                Add a Location
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{#
+    --- HOVER TOOLTIP ---
+    Floats at the bottom center of the
+    viewport. Same pattern as the timeline
+    tooltip. Starts hidden, populated by
+    HTMX on pin hover, shown by JS.
+#}
+<div id="map-tooltip"
+     class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 hidden pointer-events-none">
+    <div id="map-tooltip-content"></div>
+</div>
+
+{# Tiny JS for tooltip show/hide #}
+<script>
+    function showMapTooltip() {
+        setTimeout(() => {
+            const content = document.getElementById('map-tooltip-content');
+            const tooltip = document.getElementById('map-tooltip');
+            if (content.innerHTML.trim()) {
+                tooltip.classList.remove('hidden');
+            }
+        }, 250);
+    }
+
+    function hideMapTooltip() {
+        const tooltip = document.getElementById('map-tooltip');
+        tooltip.classList.add('hidden');
+    }
+</script>
+
+{% endblock %}

@@ -1,0 +1,62 @@
+{#
+    GODFALL - map/_pin_preview.html
+    ================================
+    HTMX fragment returned when hovering
+    a map pin. No <html> wrapper — just
+    the tooltip's inner content.
+#}
+
+{# Find the featured image (or first image) #}
+{% set ns = namespace(featured=None) %}
+{% for image in entry.images %}
+    {% if image.is_featured == 1 and ns.featured is none %}
+        {% set ns.featured = image %}
+    {% endif %}
+{% endfor %}
+{% if ns.featured is none and entry.images %}
+    {% set ns.featured = entry.images[0] %}
+{% endif %}
+
+<div class="bg-frost-900/95 backdrop-blur-md border border-ice-500/40 shadow-2xl shadow-ice-500/10 max-w-sm">
+
+    {# Optional image at the top #}
+    {% if ns.featured %}
+    <div class="aspect-video bg-frost-800 overflow-hidden">
+        <img src="{{ ns.featured.file_path }}"
+             alt="{{ entry.title }}"
+             class="w-full h-full object-cover">
+    </div>
+    {% endif %}
+
+    <div class="p-4">
+
+        {# Category label #}
+        <p class="text-[10px] tracking-[0.2em] uppercase text-ice-300/60 mb-2">
+            {{ entry.category }}
+        </p>
+
+        {# Title #}
+        <h3 class="font-display text-lg tracking-wider text-silver-200 leading-tight">
+            {{ entry.title }}
+        </h3>
+
+        {# Subtitle #}
+        {% if entry.subtitle %}
+        <p class="text-xs text-ice-300/60 italic mt-1">
+            {{ entry.subtitle }}
+        </p>
+        {% endif %}
+
+        {# Snippet of body if available #}
+        {% if entry.body %}
+        <p class="mt-3 text-xs text-silver-400 leading-relaxed font-light">
+            {{ entry.body | striptags | truncate(140) }}
+        </p>
+        {% endif %}
+
+        {# Click cue #}
+        <p class="mt-3 text-[10px] tracking-widest uppercase text-ice-300/50">
+            Click to read the full entry →
+        </p>
+    </div>
+</div>
