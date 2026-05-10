@@ -392,6 +392,63 @@ lost in the snowstorm.
   `{% include %}`. The "two-times rule" applies once we have three
   callers.
 
+- **Backup strategy for the database and uploads** — `godfall.db` and
+  `app/static/uploads/` contain everything that isn't reproducible
+  from code: characters, sessions, timeline events, lore entries,
+  the DM credentials, every uploaded image. Neither is in version
+  control (correctly so), which means a hard drive failure = total
+  data loss. The site's current "backup story" is whatever the
+  laptop's owner remembers to do manually.
+
+  Strategy options, ordered by effort:
+
+  1. *Manual periodic copy.* `cp godfall.db ~/Dropbox/godfall-backups/
+     godfall-YYYY-MM-DD.db` once a week. Same for the uploads folder
+     (or zip it first). Zero infrastructure, but relies entirely on
+     habit.
+
+  2. *Automated local script.* A small shell or Python script that
+     runs daily via `cron` (or `launchd` on macOS), copies the
+     database and uploads folder to a designated backup location
+     (Dropbox, iCloud Drive, an external drive, etc.). Set it once,
+     forget it.
+
+  3. *Cloud sync at the OS level.* Place the entire project folder
+     inside a synced cloud directory (Dropbox, iCloud Drive,
+     OneDrive). The cloud provider handles versioning automatically.
+     Easiest, but mixes "workspace" and "backup" concerns and may
+     have quirks with the database file being open during writes.
+
+  4. *Production-style backup.* Once the site is deployed (see entry
+     below), the production server should have its own automated
+     backup pipeline — typically a daily job that snapshots the
+     database to an object storage bucket (S3, Backblaze B2, etc.)
+     with rotation. This is the "real" answer for a live site.
+
+  Suggested first step: option 1 right now, option 2 when the site
+  feels valuable enough to lose, option 4 as part of deployment.
+
+- **Production deployment** — once the refinement work feels
+  meaningfully complete, the site needs a real home. Several
+  reasonable hosting paths:
+
+  - *Render / Railway / Fly.io* — modern, beginner-friendly hosts
+    with free or low-cost tiers and Python/FastAPI support out of
+    the box. Push the repo, they handle the rest.
+  - *PythonAnywhere* — even simpler, specifically designed for
+    Python web apps.
+  - *VPS (DigitalOcean, Linode, Hetzner)* — full control, more
+    setup work, requires configuring nginx + uvicorn + systemd
+    yourself.
+
+  Production deployment also needs to address: HTTPS via Let's
+  Encrypt, the Tailwind production build (entry above), a real
+  secret key in environment variables, the `secure=True` flag on
+  session cookies, and the database backup pipeline (entry above).
+
+  Worth tackling as its own dedicated phase, after most other
+  refinements feel done.
+
 ---
 
 ## Cut from Roadmap
