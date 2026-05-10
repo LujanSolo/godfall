@@ -1,212 +1,212 @@
 {#
-    GODFALL - characters/list.html
-    ===============================
-    The Roster — a card grid showing every
-    character in the party. Click a card to
-    see that character's full dossier.
+GODFALL - characters/list.html
+===============================
+THE TRIBUNAL.
 
-    This template introduces several key
-    Jinja2 concepts:
-      - Loops (for/endfor)
-      - Conditionals (if/elif/else)
-      - Filters (truncate, default)
-      - Logic for primary image lookup
+Two distinct sections:
+
+1. The Five Flames — five overlapping
+tribunal panels, each a tall poster
+of one PC. Visually entangled,
+hinting at the truth that all five
+are fragments of the same being.
+
+2. The World At Large — banner-style
+dossiers for NPCs, organized into
+importance tiers (Major / Minor /
+Cameo) like a movie credits roll.
+
+The DM-only "Add Character" button is
+gated behind the auth check.
 #}
 {% extends "base.html" %}
 
 {% block content %}
 
-<section class="max-w-6xl mx-auto px-6 py-16">
+<section class="max-w-7xl mx-auto px-6 py-16">
 
-    {# --- PAGE HEADER --- #}
+  {# --- PAGE HEADER --- #}
+  <div class="text-center mb-16">
+    <h1 class="font-display text-4xl md:text-5xl font-black tracking-[0.2em] uppercase text-silver-200 frost-glow">
+      The Roster
+    </h1>
+    <p class="mt-4 text-ice-300/60 font-light tracking-wider italic">
+      Five Flames against the endless dark.
+    </p>
+  </div>
+
+  {# --- ADD NEW BUTTON (DM only) --- #}
+  {% if request.state.user %}
+  <div class="flex justify-end mb-12">
+    <a href="/characters/new"
+      class="inline-flex items-center gap-2 px-5 py-2 border border-ice-500/40 text-ice-300 hover:bg-ice-500/10 hover:border-ice-300 font-display text-sm tracking-widest uppercase transition-colors">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+      </svg>
+      Add Character
+    </a>
+  </div>
+  {% endif %}
+
+  {#
+  =============================================
+  THE FIVE FLAMES
+  =============================================
+  Five overlapping tribunal panels. Desktop
+  renders them side-by-side with the bleed
+  effect; mobile becomes a horizontal swipe
+  carousel.
+
+  Why a section heading here? It anchors the
+  composition and gives the page rhythm. The
+  understated subtitle hints at the truth
+  without giving anything away.
+  #}
+  {% if pcs %}
+  <section class="mb-24">
+
     <div class="text-center mb-12">
-        <h1 class="font-display text-4xl md:text-5xl font-black tracking-[0.2em] uppercase text-silver-200 frost-glow">
-            The Roster
-        </h1>
-        <p class="mt-4 text-ice-300/60 font-light tracking-wider">
-            Five Flames against the endless dark.
-        </p>
+      <p class="font-display text-xs tracking-[0.4em] uppercase text-ice-300/50">The Five Flames</p>
+      <p class="mt-2 text-[10px] tracking-[0.2em] uppercase text-silver-400/40 italic">Lit by a hand they've never seen
+      </p>
     </div>
-
-    {# --- ADD NEW BUTTON --- #}
-    {% if request.state.user %}
-    <div class="flex justify-end mb-8">
-        <a href="/characters/new"
-           class="inline-flex items-center gap-2 px-5 py-2 border border-ice-500/40 text-ice-300 hover:bg-ice-500/10 hover:border-ice-300 font-display text-sm tracking-widest uppercase transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-            </svg>
-            Add Character
-        </a>
-    </div>
-    {% endif %}
 
     {#
-        --- CHARACTER GRID ---
-        grid: turns this div into a CSS grid
-        grid-cols-1: 1 column on mobile
-        sm:grid-cols-2: 2 columns on tablet
-        lg:grid-cols-3: 3 columns on desktop
-        gap-6: spacing between cards
+    The frieze container. flex on desktop
+    for the overlap; horizontal scroll
+    on mobile.
 
-        Tailwind's mobile-first scaling at work.
+    "tribunal-frieze" is our custom CSS
+    class that handles the overlap, the
+    scroll snapping, and the edge masks.
     #}
-    {% if characters %}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="tribunal-frieze">
+      {% for character in pcs %}
+      {% set loop_index = loop.index %}
+      {% include "characters/_flame_panel.html" %}
+      {% endfor %}
+    </div>
 
-        {#
-            JINJA2 LOOP
-            "for character in characters" loops
-            through the list we passed from
-            Python. Each iteration, "character"
-            holds one Character object.
+  </section>
+  {% endif %}
 
-            This is the for-loop — the rebel
-            attack run. Each pilot (character)
-            takes their turn down the trench.
-        #}
-        {% for character in characters %}
+  {#
+  =============================================
+  THE WORLD AT LARGE (NPCs)
+  =============================================
+  Movie-credits style with importance tiers.
+  Only renders sections that have entries —
+  if you have no Cameo NPCs, the "AND" tier
+  simply doesn't appear.
+  #}
+  {% if npcs_major or npcs_minor or npcs_cameo or npcs_other %}
+  <section>
 
-        {#
-            CARD WRAPPER
-            The whole card is wrapped in an <a>
-            tag so clicking anywhere on it
-            navigates to the dossier.
+    <div class="text-center mb-16">
+      <p class="font-display text-xs tracking-[0.4em] uppercase text-ice-300/50">The World At Large</p>
+      <p class="mt-2 text-[10px] tracking-[0.2em] uppercase text-silver-400/40 italic">Allies, enemies, witnesses,
+        ghosts</p>
+    </div>
 
-            group: enables hover effects on
-            child elements (like the title
-            color-changing on hover).
-        #}
-        <a href="/characters/{{ character.id }}"
-           class="group block bg-frost-800/40 border border-frost-700 hover:border-ice-500/40 transition-all overflow-hidden">
+    {# --- STARRING (major) --- #}
+    {% if npcs_major %}
+    <div class="mb-16">
+      {#
+      Tier divider — left-aligned with
+      a small ornamental flourish.
+      Mimics film credits: the title
+      of the role, then the cast list.
+      #}
+      <div class="flex items-center gap-4 mb-6">
+        <div class="h-px w-8 bg-ice-500/40"></div>
+        <p class="font-display text-xs tracking-[0.4em] uppercase text-ice-300">Starring</p>
+        <div class="flex-1 h-px bg-frost-700/60"></div>
+      </div>
 
-            {#
-                PORTRAIT AREA
-                We need to find the primary
-                image. Jinja2 doesn't have a
-                built-in "find first match"
-                filter, so we use a small
-                loop with a flag variable.
-
-                "ns" creates a namespace —
-                a workaround for Jinja2's loop
-                scope rules. Without this,
-                changes to "primary" inside
-                the loop wouldn't persist
-                outside it. Like having to
-                speak through a translator
-                droid because the locals don't
-                share your variable scope.
-            #}
-            {% set ns = namespace(primary=None) %}
-            {% for image in character.images %}
-                {% if image.is_primary == 1 and ns.primary is none %}
-                    {% set ns.primary = image %}
-                {% endif %}
-            {% endfor %}
-
-            {#
-                If no primary was found, fall
-                back to the first image (if any).
-            #}
-            {% if ns.primary is none and character.images %}
-                {% set ns.primary = character.images[0] %}
-            {% endif %}
-
-            <div class="aspect-[3/4] bg-frost-900 overflow-hidden relative">
-                {% if ns.primary %}
-                    <img src="{{ ns.primary.file_path }}"
-                         alt="{{ character.name }}"
-                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                {% else %}
-                    {#
-                        PLACEHOLDER
-                        When there's no image yet,
-                        show a stylized empty state
-                        instead of a broken image.
-                    #}
-                    <div class="w-full h-full flex items-center justify-center text-ice-300/20">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                    </div>
-                {% endif %}
-
-                {#
-                    STATUS BADGE
-                    Color changes based on status.
-                    Jinja2 if/elif/else lets us
-                    pick a color class dynamically.
-
-                    "Active" = ice blue (alive)
-                    "Dead" = red
-                    "Missing" = amber
-                    "Unknown" = silver
-                #}
-                <div class="absolute top-3 right-3">
-                    {% if character.status == "Active" %}
-                        <span class="px-2 py-1 text-xs tracking-widest uppercase bg-ice-500/20 text-ice-300 border border-ice-500/40">Active</span>
-                    {% elif character.status == "Dead" %}
-                        <span class="px-2 py-1 text-xs tracking-widest uppercase bg-red-900/40 text-red-300 border border-red-700/40">Dead</span>
-                    {% elif character.status == "Missing" %}
-                        <span class="px-2 py-1 text-xs tracking-widest uppercase bg-amber-900/40 text-amber-300 border border-amber-700/40">Missing</span>
-                    {% else %}
-                        <span class="px-2 py-1 text-xs tracking-widest uppercase bg-frost-700/60 text-silver-400 border border-frost-700">{{ character.status }}</span>
-                    {% endif %}
-                </div>
-            </div>
-
-            {# --- CARD INFO --- #}
-            <div class="p-5">
-                <h2 class="font-display text-2xl tracking-wider text-silver-200 group-hover:text-ice-300 transition-colors">
-                    {{ character.name }}
-                </h2>
-
-                <p class="mt-1 text-sm text-ice-300/70 tracking-wide">
-                    {{ character.race }} &mdash; {{ character.character_class }} {{ character.level }}
-                </p>
-
-                {#
-                    THE ONE-LINER
-                    | truncate(120) is a Jinja2
-                    filter that cuts off text at
-                    120 characters with an ellipsis.
-                    Prevents super-long one-liners
-                    from breaking the card layout.
-
-                    | default("...") provides a
-                    fallback if the field is empty.
-                #}
-                {% if character.one_liner %}
-                <p class="mt-3 text-silver-400 text-sm italic font-light leading-relaxed">
-                    "{{ character.one_liner | truncate(120) }}"
-                </p>
-                {% endif %}
-            </div>
-        </a>
-
+      <div class="space-y-4">
+        {% for character in npcs_major %}
+        {% include "characters/_npc_row.html" %}
         {% endfor %}
+      </div>
     </div>
-
-    {% else %}
-
-    {#
-        EMPTY STATE
-        Shown when there are no characters yet.
-        Better than just leaving the page blank
-        and confusing the user.
-    #}
-    <div class="text-center py-20 border border-frost-700 border-dashed">
-        <p class="text-silver-400 mb-6">The roster is empty. The flames have not yet been lit.</p>
-        {% if request.state.user %}
-        <a href="/characters/new"
-           class="inline-flex items-center gap-2 px-5 py-2 border border-ice-500/40 text-ice-300 hover:bg-ice-500/10 hover:border-ice-300 font-display text-sm tracking-widest uppercase transition-colors">
-            Add the First Character
-        </a>
-        {% endif %}
-    </div>
-
     {% endif %}
+
+    {# --- WITH (minor) --- #}
+    {% if npcs_minor %}
+    <div class="mb-16">
+      <div class="flex items-center gap-4 mb-6">
+        <div class="h-px w-8 bg-ice-500/30"></div>
+        <p class="font-display text-xs tracking-[0.4em] uppercase text-ice-300/80">With</p>
+        <div class="flex-1 h-px bg-frost-700/60"></div>
+      </div>
+
+      <div class="space-y-4">
+        {% for character in npcs_minor %}
+        {% include "characters/_npc_row.html" %}
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {# --- AND (cameo) --- #}
+    {% if npcs_cameo %}
+    <div class="mb-16">
+      <div class="flex items-center gap-4 mb-6">
+        <div class="h-px w-8 bg-ice-500/20"></div>
+        <p class="font-display text-xs tracking-[0.4em] uppercase text-ice-300/60">And</p>
+        <div class="flex-1 h-px bg-frost-700/60"></div>
+      </div>
+
+      <div class="space-y-4">
+        {% for character in npcs_cameo %}
+        {% include "characters/_npc_row.html" %}
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {# --- UNCATEGORIZED (catch-all) --- #}
+    {#
+    Anything with a missing or unexpected
+    importance value lands here. Better
+    than dropping them silently.
+    #}
+    {% if npcs_other %}
+    <div class="mb-16">
+      <div class="flex items-center gap-4 mb-6">
+        <div class="h-px w-8 bg-frost-700"></div>
+        <p class="font-display text-xs tracking-[0.4em] uppercase text-silver-400/60">Also</p>
+        <div class="flex-1 h-px bg-frost-700/60"></div>
+      </div>
+
+      <div class="space-y-4">
+        {% for character in npcs_other %}
+        {% include "characters/_npc_row.html" %}
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+  </section>
+  {% endif %}
+
+  {#
+  --- EMPTY STATE ---
+  If no characters at all, show the original
+  "begin the chronicle" call-to-action.
+  Should rarely render in practice.
+  #}
+  {% if not pcs and not npcs_major and not npcs_minor and not npcs_cameo and not npcs_other %}
+  <div class="text-center py-20 border border-frost-700 border-dashed">
+    <p class="text-silver-400 mb-6 italic">The roster is empty. The flames have not yet been lit.</p>
+    {% if request.state.user %}
+    <a href="/characters/new"
+      class="inline-flex items-center gap-2 px-5 py-2 border border-ice-500/40 text-ice-300 hover:bg-ice-500/10 hover:border-ice-300 font-display text-sm tracking-widest uppercase transition-colors">
+      Add the First Character
+    </a>
+    {% endif %}
+  </div>
+  {% endif %}
 
 </section>
 
