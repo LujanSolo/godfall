@@ -1,34 +1,36 @@
 {#
     GODFALL - sessions/list.html
     =============================
-    The adventure log feed. Sessions are
-    listed newest-first, each with their
-    featured image, dates, title, session
-    number, and short summary.
+    The Adventure Log index.
 
-    Layout: vertical stack of large feed
-    cards, single column on mobile, slightly
-    constrained width on desktop for that
-    "editorial" feel — like reading an
-    illustrated journal.
+    Hybrid layout:
+      - Left sidebar with the full session
+        index (sticky, scrollable, jumpable).
+      - Main column with newspaper-style
+        cards: number on the left, title and
+        thumbnail at the top right, summary
+        text below.
+
+    Mobile collapses the sidebar into a
+    drop-down trigger at the top.
 #}
 {% extends "base.html" %}
 
 {% block content %}
 
-<section class="max-w-4xl mx-auto px-6 py-16">
+<section class="max-w-7xl mx-auto px-6 py-12">
 
     {# --- PAGE HEADER --- #}
-    <div class="text-center mb-12">
+    <div class="text-center mb-10">
         <h1 class="font-display text-4xl md:text-5xl font-black tracking-[0.2em] uppercase text-silver-200 frost-glow">
             Adventure Log
         </h1>
         <p class="mt-4 text-ice-300/60 font-light tracking-wider italic">
-            The chronicle of the Five Flames.
+            The chronicle, session by session.
         </p>
     </div>
 
-    {# --- ADD NEW BUTTON --- #}
+    {# --- ADD NEW BUTTON (DM only) --- #}
     {% if request.state.user %}
     <div class="flex justify-end mb-8">
         <a href="/sessions/new"
@@ -41,114 +43,279 @@
     </div>
     {% endif %}
 
-    {# --- SESSION FEED --- #}
+    {#
+        --- MOBILE INDEX TRIGGER ---
+        Visible only at narrow widths. Toggles
+        the sidebar as an overlay.
+    #}
     {% if sessions %}
-    <div class="space-y-8">
-
-        {% for session in sessions %}
-
-        {#
-            Each session card. The whole card
-            is wrapped in an <a> so clicking
-            anywhere navigates to the detail
-            view.
-
-            Find the featured image (or fall
-            back to the first image, or none).
-        #}
-        {% set ns = namespace(featured=None) %}
-        {% for image in session.images %}
-            {% if image.is_featured == 1 and ns.featured is none %}
-                {% set ns.featured = image %}
-            {% endif %}
-        {% endfor %}
-        {% if ns.featured is none and session.images %}
-            {% set ns.featured = session.images[0] %}
-        {% endif %}
-
-        <a href="/sessions/{{ session.id }}"
-           class="group block bg-frost-800/40 border border-frost-700 hover:border-ice-500/40 transition-all overflow-hidden">
-
-            {# --- FEATURED IMAGE --- #}
-            {% if ns.featured %}
-            <div class="aspect-[21/9] bg-frost-900 overflow-hidden">
-                <img src="{{ ns.featured.file_path }}"
-                     alt="{{ session.title }}"
-                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
-            </div>
-            {% endif %}
-
-            {# --- TEXT CONTENT --- #}
-            <div class="p-6 md:p-8">
-
-                {# Session number + dates row #}
-                <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs tracking-widest uppercase text-ice-300/60 mb-3">
-                    <span class="font-display">Session {{ session.session_number }}</span>
-
-                    {#
-                        REAL DATE FORMATTING
-                        | strftime is a custom filter
-                        we'll register in main.py.
-                        It converts a Python date into
-                        a string like "May 8, 2026".
-
-                        Wrapped in {% if %} so it only
-                        shows when we have a date.
-                    #}
-                    {% if session.real_date %}
-                    <span class="text-silver-400">
-                        {{ session.real_date | strftime('%B %-d, %Y') }}
-                    </span>
-                    {% endif %}
-
-                    {% if session.in_game_date %}
-                    <span class="text-silver-400 italic normal-case">
-                        {{ session.in_game_date }}
-                    </span>
-                    {% endif %}
-                </div>
-
-                {# Title #}
-                <h2 class="font-display text-2xl md:text-3xl tracking-wider text-silver-200 group-hover:text-ice-300 transition-colors leading-tight">
-                    {{ session.title }}
-                </h2>
-
-                {# Short summary #}
-                {% if session.summary %}
-                <p class="mt-4 text-silver-400 leading-relaxed font-light">
-                    {{ session.summary | truncate(200) }}
-                </p>
-                {% endif %}
-
-                {# Read more cue #}
-                <div class="mt-5 inline-flex items-center gap-2 text-xs tracking-widest uppercase text-ice-300/60 group-hover:text-ice-300 transition-colors">
-                    Read the full account
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                    </svg>
-                </div>
-            </div>
-        </a>
-
-        {% endfor %}
-
+    <div class="md:hidden mb-6">
+        <button id="mobile-index-toggle"
+                onclick="toggleMobileIndex()"
+                class="w-full flex items-center justify-between px-4 py-3 border border-frost-700 bg-frost-800/40 text-silver-300 hover:border-ice-500/40 transition-colors">
+            <span class="font-display text-sm tracking-[0.3em] uppercase">
+                Sessions Index
+            </span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+        </button>
     </div>
-
-    {% else %}
-
-    {# --- EMPTY STATE --- #}
-    <div class="text-center py-20 border border-frost-700 border-dashed">
-        <p class="text-silver-400 mb-6 italic">The chronicle is unwritten. The journey awaits its first entry.</p>
-        {% if request.state.user %}
-        <a href="/sessions/new"
-           class="inline-flex items-center gap-2 px-5 py-2 border border-ice-500/40 text-ice-300 hover:bg-ice-500/10 hover:border-ice-300 font-display text-sm tracking-widest uppercase transition-colors">
-            Begin the Chronicle
-        </a>
-        {% endif %}
-    </div>
-
     {% endif %}
 
+    {# --- TWO-COLUMN LAYOUT --- #}
+    <div class="flex flex-col md:flex-row md:gap-10">
+
+        {#
+            --- SIDEBAR INDEX ---
+
+            On desktop: sticky, fixed-width
+            column on the left with its own
+            internal scroll if needed.
+
+            On mobile: hidden by default,
+            shown as a slide-down panel when
+            the trigger is tapped.
+        #}
+        {% if sessions %}
+        <aside id="session-index"
+               class="md:block hidden md:sticky md:top-24 md:self-start md:w-56 lg:w-64 flex-shrink-0 mb-8 md:mb-0">
+
+            <div class="border border-frost-700 bg-frost-800/20">
+
+                {# Sidebar header #}
+                <div class="px-4 py-3 border-b border-frost-700 bg-frost-800/40">
+                    <p class="font-display text-xs tracking-[0.3em] uppercase text-ice-300/70">
+                        The Index
+                    </p>
+                </div>
+
+                {# Scrollable list of session entries #}
+                <nav class="max-h-[60vh] md:max-h-[70vh] overflow-y-auto session-index-scroll">
+                    {% for session in sessions %}
+                    <a href="#session-{{ session.id }}"
+                       data-session-id="{{ session.id }}"
+                       class="session-index-link block px-4 py-3 border-b border-frost-700/40 last:border-b-0 hover:bg-ice-500/5 transition-colors group">
+                        <div class="flex items-baseline gap-3">
+                            <span class="font-display text-xs text-ice-300/40 group-hover:text-ice-300/70 tracking-widest tabular-nums flex-shrink-0">
+                                #{{ "%02d" | format(session.session_number or loop.index) }}
+                            </span>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-sm text-silver-300 group-hover:text-ice-300 leading-tight truncate transition-colors">
+                                    {{ session.title }}
+                                </p>
+                                {% if session.real_date %}
+                                <p class="text-[10px] tracking-widest uppercase text-silver-400/40 mt-0.5">
+                                    {{ session.real_date | strftime("%b %-d, %Y") }}
+                                </p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </nav>
+            </div>
+
+        </aside>
+        {% endif %}
+
+        {# --- MAIN COLUMN --- #}
+        <div class="flex-1 min-w-0">
+
+            {% if sessions %}
+
+                {# Newspaper-style cards #}
+                <div class="space-y-6">
+                    {% for session in sessions %}
+
+                        {# Find the featured image (or first image) for the thumbnail #}
+                        {% set ns = namespace(featured=None) %}
+                        {% for image in session.images %}
+                            {% if image.is_featured == 1 and ns.featured is none %}
+                                {% set ns.featured = image %}
+                            {% endif %}
+                        {% endfor %}
+                        {% if ns.featured is none and session.images %}
+                            {% set ns.featured = session.images[0] %}
+                        {% endif %}
+
+                        <article id="session-{{ session.id }}"
+                                 data-session-id="{{ session.id }}"
+                                 class="session-card group border border-frost-700 bg-frost-800/20 hover:border-ice-500/40 transition-colors overflow-hidden">
+
+                            <div class="flex flex-col sm:flex-row">
+
+                                {# Session number strip on the far left #}
+                                <div class="flex-shrink-0 sm:w-20 lg:w-24 bg-frost-900/60 border-b sm:border-b-0 sm:border-r border-frost-700 flex items-center justify-center py-4 sm:py-0">
+                                    <span class="font-display text-3xl lg:text-4xl tracking-wider text-ice-300/50 tabular-nums">
+                                        #{{ "%02d" | format(session.session_number or loop.index) }}
+                                    </span>
+                                </div>
+
+                                {# Main content area #}
+                                <div class="flex-1 p-5 lg:p-6 min-w-0">
+
+                                    {# Header row: title + thumbnail #}
+                                    <div class="flex flex-col sm:flex-row gap-4 mb-4">
+                                        <div class="flex-1 min-w-0">
+                                            <a href="/sessions/{{ session.id }}" class="block">
+                                                <h2 class="font-display text-xl lg:text-2xl tracking-wider text-silver-200 group-hover:text-ice-300 transition-colors leading-tight">
+                                                    {{ session.title }}
+                                                </h2>
+                                            </a>
+
+                                            {# Date row #}
+                                            <div class="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs tracking-widest uppercase">
+                                                {% if session.real_date %}
+                                                <span class="text-silver-400/70">
+                                                    {{ session.real_date | strftime("%b %-d, %Y") }}
+                                                </span>
+                                                {% endif %}
+                                                {% if session.in_game_date %}
+                                                <span class="text-ice-300/40 italic">
+                                                    {{ session.in_game_date }}
+                                                </span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+
+                                        {# Thumbnail (if image available) #}
+                                        {% if ns.featured %}
+                                        <a href="/sessions/{{ session.id }}"
+                                           class="flex-shrink-0 sm:w-32 sm:h-24 lg:w-40 lg:h-28 bg-frost-900 border border-frost-700 overflow-hidden block">
+                                            <img src="{{ ns.featured.file_path }}"
+                                                 alt="{{ session.title }}"
+                                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                        </a>
+                                        {% endif %}
+                                    </div>
+
+                                    {# Summary text (Medium density choice) #}
+                                    {% if session.summary %}
+                                    <p class="text-sm text-silver-300 leading-relaxed font-light line-clamp-3">
+                                        {{ session.summary }}
+                                    </p>
+                                    {% endif %}
+
+                                    {# Read full entry link #}
+                                    <a href="/sessions/{{ session.id }}"
+                                       class="inline-flex items-center gap-2 mt-4 text-xs tracking-widest uppercase text-ice-300/70 hover:text-ice-300 transition-colors">
+                                        <span>Read Full Entry</span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </a>
+                                </div>
+                            </div>
+                        </article>
+
+                    {% endfor %}
+                </div>
+
+            {% else %}
+
+                {# --- EMPTY STATE --- #}
+                <div class="text-center py-20 border border-frost-700 border-dashed">
+                    <p class="text-silver-400 mb-6 italic">No sessions logged yet. The chronicle has not begun.</p>
+                    {% if request.state.user %}
+                    <a href="/sessions/new"
+                       class="inline-flex items-center gap-2 px-5 py-2 border border-ice-500/40 text-ice-300 hover:bg-ice-500/10 hover:border-ice-300 font-display text-sm tracking-widest uppercase transition-colors">
+                        Begin the Chronicle
+                    </a>
+                    {% endif %}
+                </div>
+
+            {% endif %}
+
+        </div>
+    </div>
+
 </section>
+
+{# --- JS for sidebar interactions --- #}
+{% if sessions %}
+<script>
+    // --- MOBILE SIDEBAR TOGGLE ---
+    function toggleMobileIndex() {
+        const sidebar = document.getElementById('session-index');
+        sidebar.classList.toggle('hidden');
+    }
+
+    // --- SMOOTH SCROLL ON SIDEBAR LINK CLICK ---
+    // Override default anchor jump with smooth
+    // scrolling so navigating feels intentional
+    // rather than abrupt.
+    document.querySelectorAll('.session-index-link').forEach(link => {
+        link.addEventListener('click', (event) => {
+            event.preventDefault();
+            const sessionId = link.dataset.sessionId;
+            const target = document.getElementById('session-' + sessionId);
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+                // Optional: collapse mobile menu after click
+                if (window.innerWidth < 768) {
+                    document.getElementById('session-index').classList.add('hidden');
+                }
+            }
+        });
+    });
+
+    // --- ACTIVE-SESSION-IN-VIEW HIGHLIGHT ---
+    // Lenient mode: whichever card is closest
+    // to the top of the viewport gets the
+    // active styling.
+    //
+    // We use the IntersectionObserver API,
+    // which is the modern, performant way to
+    // detect when elements enter or leave the
+    // viewport. Far more efficient than
+    // listening to every scroll event.
+    const cards = document.querySelectorAll('.session-card');
+    const sidebarLinks = document.querySelectorAll('.session-index-link');
+
+    function setActiveSession(sessionId) {
+        sidebarLinks.forEach(link => {
+            if (link.dataset.sessionId === sessionId) {
+                link.classList.add('active-session');
+            } else {
+                link.classList.remove('active-session');
+            }
+        });
+    }
+
+    // Build an observer that fires whenever a
+    // card crosses certain viewport positions.
+    // The rootMargin offsets the trigger zone:
+    // -45% from top means "fire when the card
+    // crosses 45% down the viewport." This
+    // creates a "lenient" sense of which card
+    // is currently being read.
+    const observer = new IntersectionObserver((entries) => {
+        // Find the first entry that's intersecting
+        // the trigger zone — that's our active card.
+        const visible = entries
+            .filter(e => e.isIntersecting)
+            .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+
+        if (visible.length > 0) {
+            const activeId = visible[0].target.dataset.sessionId;
+            setActiveSession(activeId);
+        }
+    }, {
+        rootMargin: "-45% 0% -45% 0%",
+        threshold: 0
+    });
+
+    cards.forEach(card => observer.observe(card));
+
+    // Set the first session as active by default on page load
+    if (cards.length > 0) {
+        setActiveSession(cards[0].dataset.sessionId);
+    }
+</script>
+{% endif %}
 
 {% endblock %}

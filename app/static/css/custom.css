@@ -488,3 +488,58 @@ img.object-cover,
 .tribunal-frieze img {
   object-position: center -2%;
 }
+
+
+/* ============================================
+   ADVENTURE LOG — SIDEBAR & CARDS
+   ============================================ */
+
+/* --- ACTIVE SESSION HIGHLIGHT IN SIDEBAR --- */
+.session-index-link.active-session {
+    background-color: rgba(125, 211, 252, 0.08);
+    border-left: 2px solid rgba(125, 211, 252, 0.6);
+    padding-left: calc(1rem - 2px);
+}
+
+.session-index-link.active-session p {
+    color: rgb(186, 230, 253);
+}
+
+.session-index-link.active-session span {
+    color: rgba(125, 211, 252, 0.7);
+}
+
+/* --- SIDEBAR SCROLLBAR STYLING --- */
+.session-index-scroll::-webkit-scrollbar {
+    width: 4px;
+}
+
+.session-index-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.session-index-scroll::-webkit-scrollbar-thumb {
+    background: rgba(125, 211, 252, 0.2);
+    border-radius: 2px;
+}
+
+.session-index-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(125, 211, 252, 0.4);
+}
+
+/* Firefox */
+.session-index-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(125, 211, 252, 0.2) transparent;
+}
+
+/* --- LINE CLAMP UTILITY ---
+   Tailwind v3+ has a built-in line-clamp,
+   but if your version doesn't, this provides it.
+   Truncates to 3 lines with an ellipsis. */
+.line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
