@@ -1,0 +1,238 @@
+{#
+    GODFALL - _shared/gallery.html
+    ===============================
+    A reusable masonry-style gallery with
+    a built-in lightbox for full-screen
+    viewing.
+
+    Expects in scope:
+      images        — list of image objects
+                      with file_path, caption,
+                      is_featured (or is_primary
+                      for characters), id
+      delete_url    — URL pattern for image
+                      delete (the parent's
+                      route prefix, e.g.
+                      "/sessions/{{ id }}/images")
+                      Pass empty string to
+                      hide delete buttons
+                      entirely.
+
+    The fragment renders a CSS-columns
+    masonry layout where each image keeps
+    its natural aspect ratio. Clicking any
+    image opens it in a hand-rolled
+    lightbox with prev/next navigation.
+
+    Featured/primary images get a small
+    badge.
+#}
+
+{% if images %}
+<div class="gallery-masonry">
+    {% for image in images %}
+        <div class="gallery-tile group relative">
+            {#
+                Each image is wrapped in an
+                anchor with data attributes
+                that the lightbox JS reads.
+            #}
+            <a href="{{ image.file_path }}"
+               class="gallery-trigger block bg-frost-800/40 border border-frost-700 hover:border-ice-500/40 transition-colors overflow-hidden"
+               data-gallery-index="{{ loop.index0 }}"
+               data-caption="{{ image.caption | default('') }}"
+               aria-label="{{ image.caption | default('Open image') }}">
+
+                <img src="{{ image.file_path }}"
+                     alt="{{ image.caption | default('Gallery image') }}"
+                     class="w-full h-auto block transition-transform duration-500 group-hover:scale-[1.02]"
+                     loading="lazy">
+
+                {#
+                    Featured/primary indicator.
+                    Some image models use is_featured,
+                    others use is_primary. Try both.
+                #}
+                {% if (image.is_featured == 1) or (image.is_primary == 1) %}
+                <div class="absolute top-2 left-2 pointer-events-none">
+                    <span class="px-2 py-0.5 text-[10px] tracking-widest uppercase bg-ice-500/30 text-ice-300 border border-ice-500/40 backdrop-blur-sm">Featured</span>
+                </div>
+                {% endif %}
+
+                {#
+                    Caption shown on hover, sliding up
+                    from the bottom. Subtle, only when
+                    the user is engaging with the image.
+                #}
+                {% if image.caption %}
+                <div class="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-frost-900/95 via-frost-900/60 to-transparent translate-y-full group-hover:translate-y-0 transition-transform duration-300 pointer-events-none">
+                    <p class="text-xs text-silver-200 italic line-clamp-2">{{ image.caption }}</p>
+                </div>
+                {% endif %}
+            </a>
+
+            {#
+                Delete button (DM only). Floats
+                separately from the gallery
+                trigger so clicking delete doesn't
+                also open the lightbox.
+            #}
+            {% if request.state.user and delete_url %}
+            <form action="{{ delete_url }}/{{ image.id }}/delete"
+                  method="POST"
+                  onsubmit="return confirm('Delete this image?');"
+                  class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button type="submit"
+                        class="px-2 py-1 text-[10px] tracking-widest uppercase bg-red-900/70 text-red-200 border border-red-700/40 backdrop-blur-sm hover:bg-red-800 hover:text-red-100 transition-colors">
+                    Remove
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    {% endfor %}
+</div>
+
+{#
+    --- THE LIGHTBOX ---
+    Single instance per page. Hidden by
+    default. Populated and shown by JS
+    when a gallery trigger is clicked.
+#}
+<div id="gallery-lightbox"
+     class="fixed inset-0 z-[100] hidden bg-frost-900/95 backdrop-blur-md"
+     role="dialog"
+     aria-modal="true"
+     aria-label="Image viewer">
+
+    {# Click outside the image to close #}
+    <div class="absolute inset-0" onclick="closeLightbox()"></div>
+
+    {# Close button (top right) #}
+    <button onclick="closeLightbox()"
+            class="absolute top-6 right-6 z-10 p-2 text-ice-300/70 hover:text-ice-300 transition-colors"
+            aria-label="Close lightbox">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+    </button>
+
+    {# Previous button (left edge) #}
+    <button id="lightbox-prev"
+            onclick="navigateLightbox(-1)"
+            class="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-10 p-3 text-ice-300/50 hover:text-ice-300 transition-colors"
+            aria-label="Previous image">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 19l-7-7 7-7" />
+        </svg>
+    </button>
+
+    {# Next button (right edge) #}
+    <button id="lightbox-next"
+            onclick="navigateLightbox(1)"
+            class="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-10 p-3 text-ice-300/50 hover:text-ice-300 transition-colors"
+            aria-label="Next image">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5l7 7-7 7" />
+        </svg>
+    </button>
+
+    {# The image itself, with caption below #}
+    <div class="absolute inset-0 flex flex-col items-center justify-center p-12 md:p-20 pointer-events-none">
+        <img id="lightbox-image"
+             src=""
+             alt=""
+             class="max-w-full max-h-full object-contain pointer-events-auto">
+        <p id="lightbox-caption"
+           class="mt-4 text-sm text-ice-300/80 italic max-w-2xl text-center pointer-events-none"></p>
+        <p id="lightbox-counter"
+           class="mt-2 text-xs tracking-widest uppercase text-silver-400/60 pointer-events-none"></p>
+    </div>
+</div>
+
+<script>
+    // --- LIGHTBOX STATE ---
+    // Tracks which image is currently shown
+    // and the full list to navigate through.
+    const galleryTriggers = document.querySelectorAll('.gallery-trigger');
+    let currentIndex = 0;
+    const images = Array.from(galleryTriggers).map(trigger => ({
+        src: trigger.getAttribute('href'),
+        caption: trigger.dataset.caption || ''
+    }));
+
+    function openLightbox(index) {
+        if (images.length === 0) return;
+        currentIndex = index;
+        showImage();
+
+        const lightbox = document.getElementById('gallery-lightbox');
+        lightbox.classList.remove('hidden');
+
+        // Hide page scroll so the lightbox feels modal
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+        const lightbox = document.getElementById('gallery-lightbox');
+        lightbox.classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+
+    function navigateLightbox(direction) {
+        // Wrap around at the ends — going next
+        // from the last image goes to the first,
+        // going prev from the first goes to the last.
+        currentIndex = (currentIndex + direction + images.length) % images.length;
+        showImage();
+    }
+
+    function showImage() {
+        const image = images[currentIndex];
+        document.getElementById('lightbox-image').src = image.src;
+        document.getElementById('lightbox-image').alt = image.caption || 'Gallery image';
+        document.getElementById('lightbox-caption').textContent = image.caption;
+        document.getElementById('lightbox-counter').textContent = (currentIndex + 1) + ' / ' + images.length;
+
+        // Hide prev/next buttons if there's only one image
+        const prev = document.getElementById('lightbox-prev');
+        const next = document.getElementById('lightbox-next');
+        if (images.length <= 1) {
+            prev.classList.add('hidden');
+            next.classList.add('hidden');
+        } else {
+            prev.classList.remove('hidden');
+            next.classList.remove('hidden');
+        }
+    }
+
+    // --- WIRE UP TRIGGERS ---
+    // Override default link behavior so clicking
+    // a gallery image opens the lightbox instead
+    // of navigating to the image URL directly.
+    galleryTriggers.forEach((trigger, index) => {
+        trigger.addEventListener('click', (event) => {
+            event.preventDefault();
+            openLightbox(index);
+        });
+    });
+
+    // --- KEYBOARD NAVIGATION ---
+    // Standard expectations: Escape closes,
+    // arrow keys navigate.
+    document.addEventListener('keydown', (event) => {
+        const lightbox = document.getElementById('gallery-lightbox');
+        if (lightbox.classList.contains('hidden')) return;
+
+        if (event.key === 'Escape') {
+            closeLightbox();
+        } else if (event.key === 'ArrowLeft') {
+            navigateLightbox(-1);
+        } else if (event.key === 'ArrowRight') {
+            navigateLightbox(1);
+        }
+    });
+</script>
+
+{% else %}
+<p class="text-silver-400 italic font-light">No images yet.</p>
+{% endif %}

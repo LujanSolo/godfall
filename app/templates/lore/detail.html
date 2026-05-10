@@ -234,47 +234,9 @@ only be reachable for the DM.
   {% endif %}
 
   {# --- IMAGE GALLERY --- #}
-  <div class="mt-12 pt-10 border-t border-frost-700">
-    <h2 class="font-display text-sm tracking-[0.3em] uppercase text-ice-300/60 mb-6">Gallery</h2>
-
-    {% if entry.images %}
-    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-
-      {% for image in entry.images %}
-      <div class="group relative aspect-square bg-frost-800/40 border border-frost-700 overflow-hidden">
-        <img src="{{ image.file_path }}" alt="{{ image.caption | default(entry.title) }}"
-          class="w-full h-full object-cover">
-
-        {% if image.is_featured == 1 %}
-        <div class="absolute top-2 left-2">
-          <span
-            class="px-2 py-0.5 text-[10px] tracking-widest uppercase bg-ice-500/30 text-ice-300 border border-ice-500/40">Featured</span>
-        </div>
-        {% endif %}
-
-        <div
-          class="absolute inset-0 bg-frost-900/80 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-3">
-          {% if image.caption %}
-          <p class="text-xs text-silver-300 italic">{{ image.caption }}</p>
-          {% else %}
-          <span></span>
-          {% endif %}
-
-          <form action="/lore/{{ entry.id }}/images/{{ image.id }}/delete" method="POST"
-            onsubmit="return confirm('Delete this image?');">
-            <button type="submit" class="text-xs text-red-400 hover:text-red-300 tracking-widest uppercase">
-              Remove
-            </button>
-          </form>
-        </div>
-      </div>
-      {% endfor %}
-
-    </div>
-    {% else %}
-    <p class="text-silver-400 italic font-light">No images for this entry yet.</p>
-    {% endif %}
-  </div>
+  {% set images = entry.images %}
+  {% set delete_url = "/lore/" ~ entry.id ~ "/images" %}
+  {% include "_shared/gallery.html" %}
 
   {# --- IMAGE UPLOAD FORM --- #}
   {% if request.state.user %}

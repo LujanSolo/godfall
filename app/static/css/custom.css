@@ -543,3 +543,53 @@ img.object-cover,
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
+
+/* ============================================
+   MASONRY GALLERY
+   ============================================
+   Native CSS columns layout. Each image
+   keeps its natural aspect ratio and flows
+   into the appropriate column based on
+   available space. No JavaScript library
+   needed.
+
+   Mobile: 1 column
+   Small tablet: 2 columns
+   Desktop: 3 columns
+   ============================================ */
+
+.gallery-masonry {
+    column-count: 1;
+    column-gap: 1rem;
+}
+
+@media (min-width: 640px) {
+    .gallery-masonry {
+        column-count: 2;
+    }
+}
+
+@media (min-width: 1024px) {
+    .gallery-masonry {
+        column-count: 3;
+    }
+}
+
+.gallery-tile {
+    /* break-inside prevents a tile from being
+       split across two columns, which would
+       look broken. Mandatory for masonry
+       layouts. */
+    break-inside: avoid;
+
+    /* Margin instead of gap because gap doesn't
+       quite work the same way with CSS columns
+       in all browsers. Bottom margin spaces
+       tiles vertically. */
+    margin-bottom: 1rem;
+    /* Prevent flicker on browsers that
+       implement column layout transitions
+       imperfectly. */
+    page-break-inside: avoid;
+    -webkit-column-break-inside: avoid;
+}
