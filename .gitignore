@@ -214,5 +214,24 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 
+# ===========================
+# GODFALL PROJECT-SPECIFIC
+# ===========================
+
+# SQLite database files (our DB is godfall.db, not the
+# Django default db.sqlite3 already excluded above)
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# User-uploaded content lives on disk, not in version control.
+# Character portraits, session photos, lore images, etc.
+app/static/uploads/
+
+# The world map image — too large for git, swappable per project
+app/static/images/world-map.jpg
+app/static/images/world-map.png
+
 # Streamlit
 .streamlit/secrets.toml
