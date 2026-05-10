@@ -1,4 +1,4 @@
-# Godfall — Refinements Etc
+# Godfall — Refinements
 
 A running list of polish items, design tweaks, and ideas to revisit
 during the refinement phase. Captured during build so nothing gets
@@ -7,11 +7,6 @@ lost in the snowstorm.
 ---
 
 ## Visual & UX
-
-- **Character card layout** — switch from centered grid to **Option 6
-  (banner-style horizontal cards)** with responsive vertical-on-mobile
-  adaptation. Portrait left, info right on desktop. Portrait top, info
-  below on mobile. Editorial "intelligence briefing" feel.
 
 - **Custom mobile menu icon** — replace the standard hamburger lines
   with something more thematic (frosted snowflake, d20, illuminated
@@ -36,17 +31,26 @@ lost in the snowstorm.
   is uploaded, generate multiple sized/cropped variants on the server
   rather than relying on browser CSS cropping. Currently we use
   `object-cover` to fit any image into any container, which crops
-  unpredictably (faces or key details can get cut off). Better
-  approach:
+  unpredictably (faces or key details can get cut off).
+
+  Interim mitigation already applied: `object-position: center 25%`
+  blanket rule biases cropping toward the upper portion of images,
+  preserving heads and upper torsos for the common case. Real fix
+  still needed.
+
+  Better approach (Option 4 from the discussion):
 
   1. Add Pillow (Python's image library) to dependencies.
   2. On upload, generate optimized versions: thumbnail (square, ~400px)
      for gallery grids, landscape crop (~1200x675) for hero/featured
      spots, full-size (resized to ~2000px max dimension) for detail
      views.
-  3. Optionally, allow the uploader to set a focal point (click-to-set
-     coordinates) so cropping respects what's important.
-  4. Apply across all image displays: character galleries, session
+  3. Allow the uploader to set a focal point (click-to-set
+     coordinates) so cropping respects what's important. Store as
+     focal_x, focal_y percentages on the image record.
+  4. Pillow uses the focal point to decide where to center each
+     variant's crop.
+  5. Apply across all image displays: character galleries, session
      galleries, timeline event galleries, hover previews.
 
   This dramatically improves visual quality and reduces page weight
@@ -79,6 +83,59 @@ lost in the snowstorm.
   while keeping the lore entry as the default destination. Doesn't
   require schema changes — just smarter tooltip rendering.
 
+- **Map experience overhaul (zoom, towns-as-hubs, in-town events)** —
+  the current map handles single-point pins well, but as the campaign
+  grows, three related limitations emerge that all want fixing
+  together:
+
+  1. *Multiple events at one location.* Several adventures may happen
+     at or near the same map point (e.g. four sessions all set in
+     Bryn Shander). The current pin model shows one tooltip per
+     location, no good way to surface "five things happened here."
+     Solution candidates:
+     - Pin tooltips become richer, showing a list of related events
+       and NPCs alongside the location summary.
+     - Pin clicks lead to a "location hub" page that aggregates
+       everything tied to that point.
+     - Add zoom controls so multiple sub-pins can fan out at a
+       location when zoomed in close enough.
+
+  2. *Towns deserve their own pages and own maps.* Major settlements
+     (Ten-Towns, Easthaven, Bryn Shander, Targos) have their own
+     internal geography — inns, taverns, key buildings, residents.
+     Clicking a town pin on the world map should navigate the user
+     into a town-specific view with its own map and its own pins
+     (already captured in the "Town-level maps" entry below; this
+     entry exists to tie it explicitly into the broader map
+     overhaul).
+
+  3. *In-town adventures need representation on the world map.* Most
+     of an adventure may happen entirely within a single town, and
+     that should be visible from the world-map level too. A pin on
+     Bryn Shander should hover-preview not just "Bryn Shander —
+     Largest of the Ten-Towns" but also "5 sessions, 3 NPCs
+     encountered, 2 timeline events" with quick links into each.
+
+  Implementation thinking:
+
+  - The cleanest architecture is to treat each Location lore entry
+    as a *hub* with relationships to events, characters, sessions,
+    and (optionally) other Location entries (parent/child for
+    town-within-region nesting).
+  - The hover tooltip becomes a richer summary card showing
+    relationship counts and a few key links, not just the lore
+    entry blurb.
+  - Town pins, when clicked, navigate to the town's detail page —
+    which renders that town's own map (per the town-level maps
+    refinement) plus the standard lore entry content.
+  - Zoom-in behavior is the most ambitious piece. Could be deferred
+    until we know the world map actually needs it — or solved
+    differently by always navigating into a town hub instead of
+    trying to zoom on the world map itself.
+
+  Worth tackling these three together as a single dedicated map
+  overhaul phase, since they share so much underlying architecture.
+
 - **Mobile polish pass on the map page** — the floating "Frozen
   North" title overlay dominates the viewport on small screens,
   taking up valuable map real estate. Pins also feel small at
@@ -98,45 +155,166 @@ lost in the snowstorm.
   This is a fuller mobile polish pass for the map page in particular,
   since it's the most visually demanding page on the site.
 
-- **"Previously on..." home page feature** — TTRPG sessions often
-  have a week or more between play, and players (and the DM) forget
-  where things stood. Add a recap section to the home page that
-  bridges the gap between sessions.
+- **Unified sigil across the Five Flames frieze** — a future flourish
+  for the Tribunal layout: a single rune or sigil spanning the top
+  of all five PC panels, partially obscured by each panel, only
+  fully resolving when seen as a unified composition. Visual
+  reinforcement of the "fragments of one" theme — the sigil is
+  whole only when the Flames are aligned. Optional, additive, and
+  thematically rich. Build only if the existing layered-panel effect
+  feels like it could carry more storytelling weight.
 
-  Hybrid approach:
+- **Multiclass level display** — character level is currently a
+  single integer, which doesn't represent multiclassed characters
+  well. A Ranger 5 / Rogue 2 just shows as "Level 7" on cards and
+  dossiers, losing the meaningful breakdown. Options:
 
-  1. New small DB model — `PreviouslyOn` — with fields for a
-     custom narrative blurb (markdown-supported), an optional
-     pinned session reference, and an optional pinned timeline
-     event reference. Plus timestamps.
-  2. Only one entry is "active" at a time; updating it replaces
-     the previous one (or archives it for history if we want to
-     get fancy later).
-  3. A small DM-only edit form somewhere accessible (e.g.
-     `/previously-on/edit`) lets the DM write a fresh blurb
-     between sessions. The form lets them link to recent
-     content (a session, an event, or both).
-  4. The home page renders the active entry below the "Five
-     Flames" hero — title like "Previously on Godfall...",
-     the DM's blurb, optional thumbnails of the linked session/
-     event, and a "Read more" CTA pointing to the linked content.
-  5. If no entry exists, the home page just shows the hero as
-     it does now. Graceful fallback.
+  1. *Lightweight:* keep the integer total but add an optional
+     "level breakdown" string field (e.g. "Ranger 5 / Rogue 2"
+     or "5/2") that displays alongside the total.
+  2. *Structured:* add a separate `class_levels` field as a list
+     of (class_name, level) pairs. The level total is computed
+     from those rather than stored. More work, but supports
+     things like rendering each class with its own iconography
+     or color treatment.
 
-  This pairs well with the auth phase — the edit form should be
-  DM-only, but the display is for everyone visiting the site.
+  Option 1 is the right starting point — it's a 5-minute change
+  and handles 95% of the value. Option 2 is overkill unless we
+  ever want to do something fancier with multiclass data.
 
-  It also makes the home page feel alive instead of just being a
-  beautiful but static landing screen. Genuinely useful between
-  sessions, especially for groups with longer gaps between plays.
+  Display patterns to consider: "Class: Ranger / Rogue" with
+  "Level: 7 (5/2)" beneath, or "Ranger 5 / Rogue 2 (Level 7)"
+  inline. Either reads well.
+
+## Story-Aware Features
+
+- **"Previously on Godfall..." home page section** — D&D campaigns
+  often go a week or more between sessions, and players genuinely
+  forget where things stood. A "previously on..." moment on the
+  home page would let the DM frame what matters most heading into
+  the next session — like the recap intros at the start of a TV
+  episode.
+
+  Hybrid approach (the right one):
+
+  1. Add a `Recap` model with fields:
+     - `body` (markdown text, the DM's free-form summary)
+     - `linked_session_id` (optional FK to SessionRecap)
+     - `linked_event_id` (optional FK to TimelineEvent)
+     - `linked_character_ids` (optional list, for highlighting NPCs
+       newly introduced or returning)
+     - `linked_lore_ids` (optional list, for relevant locations or
+       items)
+     - `is_active` (only one recap is active at a time — the
+       current "previously on")
+     - timestamps
+  2. Add a small DM-only management page at `/recap` for editing
+     the active recap.
+  3. Render the active recap on the home page below the hero/title
+     section, styled atmospherically (parchment scroll, frost-
+     edged card, etc.). Linked items appear as small clickable
+     references (portraits for characters, location pins for lore,
+     etc.) so players can quickly refresh their memory.
+  4. Optional polish: archive past recaps so players can scroll
+     back through previous "previously on..." moments — like a
+     mini journal of how the DM has framed the campaign.
+
+  This pairs naturally with the auth phase (DM-only editing,
+  player-readable display) and brings the home page to life as
+  more than just decoration. Probably best built RIGHT AFTER auth
+  is in place, since the editing controls need to be DM-gated.
+
+- **NPC dossiers should link to timeline events** — character
+  dossiers already display a "Mentioned in Lore" section (built
+  in sub-phase 5b), but there's no equivalent "Appears in Events"
+  section. The data is already there — we set up the
+  EventCharacter join table back in Phase 4. We just need to query
+  the back-reference.
+
+  Implementation: add a `lore_links` parallel — `event_links` on
+  the Character model already exists implicitly via the
+  EventCharacter join table; we may need to add a back-reference
+  declaration on Character (similar to what we did for
+  `lore_links` in 5b). Then add a "Featured in Events" section to
+  `characters/detail.html` that loops through the events.
+
+  Should appear for both PCs and NPCs. NPCs benefit most because
+  their stories are *defined* by the events they appear in —
+  knowing which sessions or timeline beats featured a given NPC
+  is exactly the kind of cross-reference that makes the site
+  useful.
+
+## Player Engagement Features (the big one)
+
+- **Player accounts and in-session commentary** — the largest
+  unbuilt feature on the list, but potentially the most
+  transformative. Right now the auth system supports a single DM
+  account. This refinement extends it to support player accounts
+  and unlocks several connected capabilities:
+
+  Architecture:
+
+  1. Extend the User model to support multiple users with
+     different roles ("dm", "player").
+  2. Each player user is linked to one or more Character records
+     (their PCs).
+  3. Player login uses the same flow as DM login but lands them
+     in a player session with read-only access to most things and
+     write access to specific player-targeted features.
+
+  The headline feature: comment threads on session recaps.
+
+  Players can leave two kinds of comments on each session entry:
+
+  - *In-character (IC):* their character speaks. Avatar shown is
+    a small token of the linked character's primary portrait.
+    Comment renders with character name + avatar, suggesting
+    "this is what my character would say about this session."
+
+  - *Out-of-character (OOC):* the player speaks as themselves.
+    Comment renders with plain-text player name, no avatar.
+    "Loved that scene where Vellynne pulled the lever" type
+    energy. Distinct visual treatment from IC.
+
+  Why this is valuable:
+
+  - In-character commentary becomes its own narrative artifact —
+    a chronicle of how each character experienced events from
+    their own perspective.
+  - Out-of-character commentary keeps the players engaged
+    between sessions, building anticipation and shared memory.
+  - The DM gets to see how players are processing the campaign
+    without interrogating them at the table.
+
+  Implementation considerations:
+
+  - Comment model with fields: author_user_id, session_id, mode
+    ("ic" or "ooc"), body (markdown), as_character_id (FK to
+    Character, only used for IC comments), created_at, edited_at.
+  - Replies/threading: probably worth supporting from day one,
+    even if just a single level of nesting. Conversations matter.
+  - Permissions: any logged-in player can post; DMs can post and
+    moderate (delete any comment); players can edit/delete their
+    own.
+  - Notifications: optional but nice — a small "X new comments"
+    indicator on the home page for players returning between
+    sessions.
+  - Could later extend the same comment system to timeline
+    events and lore entries.
+
+  This is a meaningful expansion of the auth system and a real
+  feature unto itself. Best tackled as its own dedicated phase
+  rather than a quick polish. Probably comes AFTER most of the
+  smaller refinements above are in place — the site needs to
+  feel finished before commentary becomes the next layer of
+  storytelling.
 
 ## Architecture & Story Features
 
-- **NPC separation** — NPCs need their own page or a clearly distinct
-  subsection of the Roster, so player characters remain the visual
-  focus. Probably a separate route (`/npcs`) but reusing the same
-  Character model and detail/form templates with `character_type`
-  filtering.
+- **NPC separation** — RESOLVED in the Tribunal layout. PCs and NPCs
+  now visually separated on the roster page. Keeping the entry here
+  for posterity in case we ever want to revisit a fully separate
+  `/npcs` route.
 
 - **Progressive NPC reveal (knowledge-gating)** — NPC character cards
   should reflect what the *party* currently knows about that NPC, not
@@ -170,27 +348,13 @@ lost in the snowstorm.
   map, each major settlement (the Ten-Towns, Easthaven, Bryn
   Shander, Targos, etc.) deserves its own zoomed-in map showing
   notable buildings, NPCs, and points of interest within the town.
-  Two architectural approaches to consider:
 
-  *Approach 1: Town maps as their own pages.* A regional pin for
-  Bryn Shander on the world map links to either the lore entry or
-  directly to a `/map/bryn-shander` page with a town map. Nested
-  pin system — pins on the world map reveal town maps, pins on town
-  maps reveal building/NPC details.
-
-  *Approach 2: Town maps embedded in lore entries.* A Location-type
-  lore entry for a town has an optional `town_map` field with its
-  own pin coordinates. The detail page renders that map alongside
-  the lore. No new routes; just an enrichment of the lore detail.
-
-  Approach 1 is more powerful and scalable but means more
-  infrastructure (zoom states, breadcrumb navigation, possibly
-  zooming/panning UI). Approach 2 is simpler and keeps lore entries
-  as self-contained units.
-
-  Decide which approach when there's actual content to populate it
-  with. Probably revisit after a few towns have been visited in
-  play and the right shape becomes obvious.
+  Now folded into the broader **Map experience overhaul** entry
+  above, since the town-map work is architecturally inseparable
+  from the multi-event-at-one-location and in-town-events problems.
+  Approach 1 (town maps as their own pages, nested pin system) is
+  the favored direction now that we're tackling the whole map
+  experience together.
 
   Either approach pairs beautifully with the "map as session
   backdrop" concept — clicking into a town during play to reference
@@ -248,8 +412,9 @@ lost in the snowstorm.
 
 - **Fanned hand of cards layout** — considered for the character
   roster but rejected for now (too brittle for changing party sizes,
-  mobile redesign tax). May revisit as a signature visual moment in a
-  later phase if the site has earned room for spectacle.
+  mobile redesign tax). Currently superseded by the Tribunal
+  layout. May revisit as a signature visual moment in a later phase
+  if the site has earned room for spectacle.
 
 - **Alternate timeline layer** — a second visual track on the timeline
   showing the "original" history that Xylos's Final Wish overwrote.
@@ -273,14 +438,6 @@ lost in the snowstorm.
   progressive NPC reveal and town-level maps — clicking a pin during
   play could surface newly-learned info live, then drill down into
   a town map when the party arrives at a settlement.
-
-- **"Previously On" history archive** — extension of the home page
-  recap feature. Once the basic version is in place, consider
-  archiving past recap blurbs so players can scroll back through
-  the "story so far" as a series of bite-sized summaries. Could
-  work as a small archive page, or as a vertical stack on the home
-  page showing the last 3-5 recaps. Useful for new players joining
-  mid-campaign.
 
 ---
 

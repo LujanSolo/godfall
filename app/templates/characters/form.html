@@ -104,6 +104,45 @@ New concepts here:
         </label>
       </div>
     </fieldset>
+    {#
+    --- IMPORTANCE TIER (NPCs only) ---
+    Determines which section of the roster
+    page the NPC appears in: STARRING (major),
+    WITH (minor), or AND (cameo). Hidden for
+    PCs since they're always the focal cast.
+    #}
+    <fieldset id="importance-field" class="hidden">
+      <legend class="font-display text-sm tracking-[0.3em] uppercase text-ice-300/60 mb-4">Importance</legend>
+
+      <div class="grid grid-cols-3 gap-3">
+        <label
+          class="importance-option flex items-center justify-center gap-2 px-4 py-3 border cursor-pointer transition-colors">
+          <input type="radio" name="importance" value="major" class="sr-only importance-input" {% if not editing or
+            character.importance=="major" %}checked{% endif %}>
+          <span class="font-display text-sm tracking-widest uppercase">Starring</span>
+        </label>
+
+        <label
+          class="importance-option flex items-center justify-center gap-2 px-4 py-3 border cursor-pointer transition-colors">
+          <input type="radio" name="importance" value="minor" class="sr-only importance-input" {% if editing and
+            character.importance=="minor" %}checked{% endif %}>
+          <span class="font-display text-sm tracking-widest uppercase">With</span>
+        </label>
+
+        <label
+          class="importance-option flex items-center justify-center gap-2 px-4 py-3 border cursor-pointer transition-colors">
+          <input type="radio" name="importance" value="cameo" class="sr-only importance-input" {% if editing and
+            character.importance=="cameo" %}checked{% endif %}>
+          <span class="font-display text-sm tracking-widest uppercase">Cameo</span>
+        </label>
+      </div>
+
+      <p class="mt-3 text-xs text-silver-400/60 leading-relaxed">
+        <span class="text-ice-300/50">Starring:</span> recurring, story-significant NPCs &middot;
+        <span class="text-ice-300/50">With:</span> supporting roles &middot;
+        <span class="text-ice-300/50">Cameo:</span> one-off encounters
+      </p>
+    </fieldset>
 
     {#
     --- IDENTITY SECTION ---
@@ -247,7 +286,19 @@ New concepts here:
         </label>
         <textarea id="backstory" name="backstory" rows="6"
           placeholder="Where they come from, what shaped them, what drives them..."
-          class="w-full px-4 py-2.5 bg-frost-800/60 border border-frost-700 text-silver-200 placeholder:text-silver-400/40 focus:border-ice-500/60 focus:outline-none transition-colors resize-y">{% if editing %}{{ character.backstory | default('') }}{% endif %}</textarea>
+          class="w-full px-4 py-2.5 bg-frost-800/60 border border-frost-700 text-silver-200 placeholder:text-silver-400/40 focus:border-ice-500/60 focus:outline-none transition-colors resize-y font-mono text-sm leading-relaxed">{% if editing %}{{ character.backstory | default('') }}{% endif %}</textarea>
+
+        <div class="mt-3 text-xs text-silver-400/70 leading-relaxed">
+          <p class="text-ice-300/40 tracking-widest uppercase mb-1">Formatting</p>
+          <p>
+            Markdown supported &mdash;
+            <code class="text-ice-300/70">## Heading</code>,
+            <code class="text-ice-300/70">**bold**</code>,
+            <code class="text-ice-300/70">*italic*</code>,
+            <code class="text-ice-300/70">- list</code>,
+            <code class="text-ice-300/70">&gt; quote</code>.
+          </p>
+        </div>
       </div>
 
       <div>
@@ -300,33 +351,29 @@ New concepts here:
 
 </section>
 
-{#
---- CHARACTER TYPE LOGIC ---
-Show or hide the Player Name field
-based on which type radio is selected.
-
-Also visually styles the radio buttons
-as toggle-pill cards. Tailwind's "peer"
-utility could do this with no JS, but
-we already need JS for the show/hide,
-so we keep it all in one place.
-#}
 <script>
+  // --- CHARACTER TYPE & IMPORTANCE LOGIC ---
+  // Both fields use the same toggle-pill
+  // pattern: a hidden radio behind a styled
+  // label that updates appearance based on
+  // selection. Importance is only visible
+  // for NPCs.
+
   const typeRadios = document.querySelectorAll('.character-type-input');
   const typeLabels = document.querySelectorAll('.character-type-option');
+  const importanceRadios = document.querySelectorAll('.importance-input');
+  const importanceLabels = document.querySelectorAll('.importance-option');
   const playerNameField = document.getElementById('player-name-field');
+  const importanceField = document.getElementById('importance-field');
 
-  function updateCharacterTypeUI() {
-    // Find which radio is checked
-    let selected = null;
-    typeRadios.forEach(radio => {
-      if (radio.checked) selected = radio.value;
-    });
-
-    // Style the labels — selected one gets
-    // the ice-blue accent treatment.
-    typeLabels.forEach(label => {
-      const input = label.querySelector('.character-type-input');
+  // Generic helper: given a group of radios
+  // and a group of labels, apply the
+  // selected/unselected styling. Avoids
+  // repeating the same logic for each
+  // toggle-pill group.
+  function syncRadioStyles(radios, labels) {
+    labels.forEach(label => {
+      const input = label.querySelector('input[type=radio]');
       if (input.checked) {
         label.classList.add('border-ice-500/60', 'bg-ice-500/10', 'text-ice-300');
         label.classList.remove('border-frost-700', 'text-silver-400', 'hover:border-ice-500/40');
@@ -335,22 +382,42 @@ so we keep it all in one place.
         label.classList.add('border-frost-700', 'text-silver-400', 'hover:border-ice-500/40');
       }
     });
+  }
 
-    // Show/hide the Player Name field.
-    // For NPCs, hide entirely.
+  function updateCharacterTypeUI() {
+    // Find which type is selected
+    let selected = null;
+    typeRadios.forEach(radio => {
+      if (radio.checked) selected = radio.value;
+    });
+
+    // Style the type toggle pills
+    syncRadioStyles(typeRadios, typeLabels);
+
+    // Show/hide fields based on type
     if (selected === 'npc') {
       playerNameField.classList.add('hidden');
+      importanceField.classList.remove('hidden');
     } else {
       playerNameField.classList.remove('hidden');
+      importanceField.classList.add('hidden');
     }
   }
 
-  // Set initial state on page load
-  updateCharacterTypeUI();
+  function updateImportanceUI() {
+    syncRadioStyles(importanceRadios, importanceLabels);
+  }
 
-  // Re-run whenever a radio changes
+  // Initialize on load
+  updateCharacterTypeUI();
+  updateImportanceUI();
+
+  // Re-run when radios change
   typeRadios.forEach(radio => {
     radio.addEventListener('change', updateCharacterTypeUI);
+  });
+  importanceRadios.forEach(radio => {
+    radio.addEventListener('change', updateImportanceUI);
   });
 </script>
 

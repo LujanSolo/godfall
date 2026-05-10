@@ -16,9 +16,9 @@
    glow — like bioluminescence beneath ice.
    ---------------------------------------- */
 .frost-glow {
-    text-shadow:
-        0 0 40px rgba(125, 211, 252, 0.15),
-        0 0 80px rgba(125, 211, 252, 0.05);
+  text-shadow:
+    0 0 40px rgba(125, 211, 252, 0.15),
+    0 0 80px rgba(125, 211, 252, 0.05);
 }
 
 /* ----------------------------------------
@@ -31,11 +31,9 @@
    light seeping through cracks in a glacier.
    ---------------------------------------- */
 .bg-gradient-radial {
-    background: radial-gradient(
-        ellipse at center,
-        rgba(14, 165, 233, 0.06) 0%,
-        transparent 70%
-    );
+  background: radial-gradient(ellipse at center,
+      rgba(14, 165, 233, 0.06) 0%,
+      transparent 70%);
 }
 
 /* ----------------------------------------
@@ -55,135 +53,149 @@
    ---------------------------------------- */
 
 .prose-frost {
-    color: rgb(203 213 225 / 0.95);  /* silver-300-ish */
-    font-weight: 300;
-    line-height: 1.75;
-    font-size: 1.0625rem;
+  color: rgb(203 213 225 / 0.95);
+  /* silver-300-ish */
+  font-weight: 300;
+  line-height: 1.75;
+  font-size: 1.0625rem;
 }
 
 .prose-frost h1,
 .prose-frost h2,
 .prose-frost h3,
 .prose-frost h4 {
-    font-family: 'Cinzel', serif;
-    color: rgb(125 211 252);  /* ice-300 */
-    letter-spacing: 0.05em;
-    margin-top: 2.5em;
-    margin-bottom: 0.75em;
-    font-weight: 700;
+  font-family: 'Cinzel', serif;
+  color: rgb(125 211 252);
+  /* ice-300 */
+  letter-spacing: 0.05em;
+  margin-top: 2.5em;
+  margin-bottom: 0.75em;
+  font-weight: 700;
 }
 
 .prose-frost h2 {
-    font-size: 1.875rem;
-    border-bottom: 1px solid rgb(26 35 50);  /* frost-700 */
-    padding-bottom: 0.5rem;
+  font-size: 1.875rem;
+  border-bottom: 1px solid rgb(26 35 50);
+  /* frost-700 */
+  padding-bottom: 0.5rem;
 }
 
 .prose-frost h3 {
-    font-size: 1.5rem;
+  font-size: 1.5rem;
 }
 
 .prose-frost h4 {
-    font-size: 1.25rem;
-    color: rgb(226 232 240);  /* silver-200 */
+  font-size: 1.25rem;
+  color: rgb(226 232 240);
+  /* silver-200 */
 }
 
 .prose-frost p {
-    margin-top: 1.25em;
-    margin-bottom: 1.25em;
+  margin-top: 1.25em;
+  margin-bottom: 1.25em;
 }
 
 .prose-frost strong {
-    color: rgb(226 232 240);  /* silver-200 */
-    font-weight: 600;
+  color: rgb(226 232 240);
+  /* silver-200 */
+  font-weight: 600;
 }
 
 .prose-frost em {
-    color: rgb(125 211 252 / 0.85);  /* ice-300 with alpha */
-    font-style: italic;
+  color: rgb(125 211 252 / 0.85);
+  /* ice-300 with alpha */
+  font-style: italic;
 }
 
 .prose-frost a {
-    color: rgb(125 211 252);  /* ice-300 */
-    text-decoration: underline;
-    text-decoration-color: rgb(125 211 252 / 0.4);
-    text-underline-offset: 3px;
-    transition: all 0.2s;
+  color: rgb(125 211 252);
+  /* ice-300 */
+  text-decoration: underline;
+  text-decoration-color: rgb(125 211 252 / 0.4);
+  text-underline-offset: 3px;
+  transition: all 0.2s;
 }
 
 .prose-frost a:hover {
-    color: rgb(56 189 248);  /* ice-400 */
-    text-decoration-color: rgb(56 189 248);
+  color: rgb(56 189 248);
+  /* ice-400 */
+  text-decoration-color: rgb(56 189 248);
 }
 
 .prose-frost ul,
 .prose-frost ol {
-    margin-top: 1.25em;
-    margin-bottom: 1.25em;
-    padding-left: 1.5em;
+  margin-top: 1.25em;
+  margin-bottom: 1.25em;
+  padding-left: 1.5em;
 }
 
 .prose-frost ul {
-    list-style-type: disc;
+  list-style-type: disc;
 }
 
 .prose-frost ol {
-    list-style-type: decimal;
+  list-style-type: decimal;
 }
 
 .prose-frost li {
-    margin-top: 0.5em;
-    margin-bottom: 0.5em;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
 }
 
 .prose-frost li::marker {
-    color: rgb(125 211 252 / 0.5);  /* ice-300 muted */
+  color: rgb(125 211 252 / 0.5);
+  /* ice-300 muted */
 }
 
 .prose-frost blockquote {
-    border-left: 2px solid rgb(125 211 252 / 0.4);  /* ice-300 alpha */
-    padding-left: 1.25rem;
-    margin-left: 0;
-    margin-top: 1.5em;
-    margin-bottom: 1.5em;
-    color: rgb(148 163 184);  /* silver-400 */
-    font-style: italic;
+  border-left: 2px solid rgb(125 211 252 / 0.4);
+  /* ice-300 alpha */
+  padding-left: 1.25rem;
+  margin-left: 0;
+  margin-top: 1.5em;
+  margin-bottom: 1.5em;
+  color: rgb(148 163 184);
+  /* silver-400 */
+  font-style: italic;
 }
 
 .prose-frost code {
-    background-color: rgb(17 24 39 / 0.6);  /* frost-800 alpha */
-    color: rgb(125 211 252);  /* ice-300 */
-    padding: 0.125rem 0.375rem;
-    border-radius: 2px;
-    font-size: 0.875em;
+  background-color: rgb(17 24 39 / 0.6);
+  /* frost-800 alpha */
+  color: rgb(125 211 252);
+  /* ice-300 */
+  padding: 0.125rem 0.375rem;
+  border-radius: 2px;
+  font-size: 0.875em;
 }
 
 .prose-frost pre {
-    background-color: rgb(17 24 39 / 0.6);
-    border: 1px solid rgb(26 35 50);
-    padding: 1rem;
-    overflow-x: auto;
-    margin-top: 1.5em;
-    margin-bottom: 1.5em;
+  background-color: rgb(17 24 39 / 0.6);
+  border: 1px solid rgb(26 35 50);
+  padding: 1rem;
+  overflow-x: auto;
+  margin-top: 1.5em;
+  margin-bottom: 1.5em;
 }
 
 .prose-frost pre code {
-    background: none;
-    padding: 0;
+  background: none;
+  padding: 0;
 }
 
 .prose-frost hr {
-    border: none;
-    border-top: 1px solid rgb(26 35 50);  /* frost-700 */
-    margin-top: 2.5em;
-    margin-bottom: 2.5em;
+  border: none;
+  border-top: 1px solid rgb(26 35 50);
+  /* frost-700 */
+  margin-top: 2.5em;
+  margin-bottom: 2.5em;
 }
 
 .prose-frost img {
-    max-width: 100%;
-    margin-top: 1.5em;
-    margin-bottom: 1.5em;
-    border: 1px solid rgb(26 35 50);
+  max-width: 100%;
+  margin-top: 1.5em;
+  margin-bottom: 1.5em;
+  border: 1px solid rgb(26 35 50);
 }
 
 /* ----------------------------------------
@@ -200,26 +212,28 @@
    ---------------------------------------- */
 
 .timeline-scroll::-webkit-scrollbar {
-    height: 6px;
+  height: 6px;
 }
 
 .timeline-scroll::-webkit-scrollbar-track {
-    background: rgb(17 24 39 / 0.4);  /* frost-800 alpha */
+  background: rgb(17 24 39 / 0.4);
+  /* frost-800 alpha */
 }
 
 .timeline-scroll::-webkit-scrollbar-thumb {
-    background: rgb(125 211 252 / 0.3);  /* ice-300 alpha */
-    border-radius: 3px;
+  background: rgb(125 211 252 / 0.3);
+  /* ice-300 alpha */
+  border-radius: 3px;
 }
 
 .timeline-scroll::-webkit-scrollbar-thumb:hover {
-    background: rgb(125 211 252 / 0.5);
+  background: rgb(125 211 252 / 0.5);
 }
 
 /* Firefox */
 .timeline-scroll {
-    scrollbar-width: thin;
-    scrollbar-color: rgb(125 211 252 / 0.3) rgb(17 24 39 / 0.4);
+  scrollbar-width: thin;
+  scrollbar-color: rgb(125 211 252 / 0.3) rgb(17 24 39 / 0.4);
 }
 
 
@@ -245,35 +259,40 @@
    ---------------------------------------- */
 
 .lore-crystal {
-    clip-path: polygon(
-        8% 0,        /* top-left clip */
-        92% 0,       /* top-right clip */
-        100% 8%,     /* right-top corner */
-        100% 92%,    /* right-bottom corner */
-        92% 100%,    /* bottom-right clip */
-        8% 100%,     /* bottom-left clip */
-        0 92%,       /* left-bottom corner */
-        0 8%         /* left-top corner */
+  clip-path: polygon(8% 0,
+      /* top-left clip */
+      92% 0,
+      /* top-right clip */
+      100% 8%,
+      /* right-top corner */
+      100% 92%,
+      /* right-bottom corner */
+      92% 100%,
+      /* bottom-right clip */
+      8% 100%,
+      /* bottom-left clip */
+      0 92%,
+      /* left-bottom corner */
+      0 8%
+      /* left-top corner */
     );
-    transition: clip-path 0.4s ease, transform 0.4s ease;
+  transition: clip-path 0.4s ease, transform 0.4s ease;
 }
 
 .lore-crystal:hover {
-    /*
+  /*
        Slightly tighter facets on hover —
        like the crystal sharpening into focus.
     */
-    clip-path: polygon(
-        6% 0,
-        94% 0,
-        100% 6%,
-        100% 94%,
-        94% 100%,
-        6% 100%,
-        0 94%,
-        0 6%
-    );
-    transform: translateY(-2px);
+  clip-path: polygon(6% 0,
+      94% 0,
+      100% 6%,
+      100% 94%,
+      94% 100%,
+      6% 100%,
+      0 94%,
+      0 6%);
+  transform: translateY(-2px);
 }
 
 /*
@@ -283,7 +302,189 @@
    our HTMX/JS filter logic.
 */
 .lore-crystal.filtered-out {
-    opacity: 0.15;
-    pointer-events: none;
-    filter: grayscale(0.8) blur(1px);
+  opacity: 0.15;
+  pointer-events: none;
+  filter: grayscale(0.8) blur(1px);
+}
+
+/* ============================================
+   THE TRIBUNAL — FIVE FLAMES FRIEZE
+   ============================================
+   The visual storytelling layer. Five panels
+   that overlap and bleed into each other,
+   suggesting they are fragments of the same
+   being. On hover, the focused panel pulls
+   forward to a clean, individually-readable
+   state.
+
+   Desktop: panels overlap horizontally with
+            transparent edges that blend.
+   Mobile: horizontal scroll-snap carousel,
+           each panel ~80% viewport width.
+   ============================================ */
+
+/* --- THE FRIEZE CONTAINER --- */
+
+.tribunal-frieze {
+  /* Mobile (default): horizontal scrolling
+       carousel with snap behavior. The panels
+       stay in a row but the user swipes
+       through them rather than seeing all at
+       once. */
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-left: 1.5rem;
+  gap: 0.75rem;
+  padding: 0 1.5rem 1rem;
+
+  /* Hide scrollbar visually while keeping
+       scroll functionality. The pattern works
+       across browsers. */
+  scrollbar-width: none;
+  /* Firefox */
+}
+
+.tribunal-frieze::-webkit-scrollbar {
+  display: none;
+  /* Chrome, Safari */
+}
+
+/* --- DESKTOP LAYOUT (md and up) ---
+   Switch off scroll, switch on overlap.
+   Each panel takes equal width and tucks
+   under its neighbors. */
+
+@media (min-width: 768px) {
+  .tribunal-frieze {
+    overflow-x: visible;
+    scroll-snap-type: none;
+    gap: 0;
+    padding: 0;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+/* --- INDIVIDUAL FLAME PANELS --- */
+
+.flame-panel {
+  /* Mobile: each panel is most of the
+       viewport, with the next panel peeking
+       in to suggest swipeability. */
+  width: 78vw;
+  max-width: 22rem;
+  flex-shrink: 0;
+  scroll-snap-align: start;
+
+  /* The transparent-edge mask. Pixels at
+       the very left and right edges fade to
+       transparent, so when panels overlap,
+       both images become semi-visible at
+       the seam. */
+  mask-image: linear-gradient(to right,
+      transparent 0%,
+      black 12%,
+      black 88%,
+      transparent 100%);
+  -webkit-mask-image: linear-gradient(to right,
+      transparent 0%,
+      black 12%,
+      black 88%,
+      transparent 100%);
+}
+
+/* --- DESKTOP PANEL LAYOUT ---
+   Each panel takes a fifth of the row's
+   width minus the overlap, then negative
+   margin pulls it toward its neighbors. */
+
+@media (min-width: 768px) {
+  .flame-panel {
+    width: 22%;
+    max-width: none;
+    margin-left: -2.5%;
+    margin-right: -2.5%;
+    scroll-snap-align: none;
+  }
+
+  /* The first panel doesn't overlap on
+       its left edge (no neighbor there);
+       same for the last panel's right edge.
+       This keeps the frieze edges clean. */
+  .flame-panel:first-child {
+    margin-left: 0;
+  }
+
+  .flame-panel:last-child {
+    margin-right: 0;
+  }
+}
+
+/* --- HOVER FOCUS BEHAVIOR ---
+   When a panel is hovered, it pulls forward:
+   the mask softens (more of the panel becomes
+   fully opaque), z-index jumps to the top,
+   and the panel scales slightly. The result
+   is that the hovered character becomes
+   individually clean and prominent while
+   the others stay blended. */
+
+.flame-panel:hover {
+  z-index: 50 !important;
+  transform: translateY(-8px) scale(1.03);
+  /* Soften the edge mask so the hovered
+       panel becomes mostly fully opaque,
+       individually readable. */
+  mask-image: linear-gradient(to right,
+      rgba(0, 0, 0, 0.7) 0%,
+      black 5%,
+      black 95%,
+      rgba(0, 0, 0, 0.7) 100%);
+  -webkit-mask-image: linear-gradient(to right,
+      rgba(0, 0, 0, 0.7) 0%,
+      black 5%,
+      black 95%,
+      rgba(0, 0, 0, 0.7) 100%);
+  /* Add a subtle frost glow when
+       individually focused. */
+  filter: drop-shadow(0 0 30px rgba(125, 211, 252, 0.25));
+}
+
+/* --- KEYBOARD FOCUS PARITY ---
+   The same lift effect should apply when
+   the panel receives keyboard focus, not
+   just mouse hover. Accessibility wins. */
+
+.flame-panel:focus-visible {
+  z-index: 50 !important;
+  transform: translateY(-8px) scale(1.03);
+  outline: none;
+  filter: drop-shadow(0 0 30px rgba(125, 211, 252, 0.4));
+}
+
+/* ============================================
+   IMAGE CROPPING — TOP-BIASED
+   ============================================
+   Most character portraits and event images
+   have their subject in the upper portion of
+   the frame (heads at the top, action above
+   center). The default object-position of
+   "center" crops equally from top and bottom,
+   which often slices off heads and faces.
+
+   Biasing toward "center top" preserves the
+   subject for the common case. Images with
+   centered or bottom-anchored subjects will
+   look slightly worse, but those are rarer.
+
+   This is a quick blanket improvement until
+   we build the proper focal-point + Pillow
+   processing system.
+   ============================================ */
+
+img.object-cover,
+.flame-panel img,
+.tribunal-frieze img {
+  object-position: center -2%;
 }

@@ -175,8 +175,8 @@ New Jinja2 concepts in this template:
   {% if character.backstory %}
   <div class="mb-10 pb-10 border-b border-frost-700">
     <h2 class="font-display text-sm tracking-[0.3em] uppercase text-ice-300/60 mb-4">Background</h2>
-    <div class="text-silver-300 leading-relaxed font-light max-w-3xl">
-      {{ character.backstory | replace('\n', '<br>') | safe }}
+    <div class="prose-frost max-w-3xl">
+        {{ character.backstory | markdown | safe }}
     </div>
   </div>
   {% endif %}
@@ -190,32 +190,32 @@ New Jinja2 concepts in this template:
 
     {% if character.top_magic_items %}
     <div>
-      <h2 class="font-display text-sm tracking-[0.3em] uppercase text-ice-300/60 mb-4">Notable Gear</h2>
-      <div class="text-silver-300 leading-relaxed font-light">
-        {{ character.top_magic_items | replace('\n', '<br>') | safe }}
-      </div>
+        <h2 class="font-display text-sm tracking-[0.3em] uppercase text-ice-300/60 mb-4">Notable Gear</h2>
+        <div class="prose-frost">
+            {{ character.top_magic_items | markdown | safe }}
+        </div>
     </div>
     {% endif %}
 
     {% if character.notable_traits %}
     <div>
-      <h2 class="font-display text-sm tracking-[0.3em] uppercase text-ice-300/60 mb-4">Notable Traits</h2>
-      <div class="text-silver-300 leading-relaxed font-light">
-        {{ character.notable_traits | replace('\n', '<br>') | safe }}
-      </div>
+        <h2 class="font-display text-sm tracking-[0.3em] uppercase text-ice-300/60 mb-4">Notable Traits</h2>
+        <div class="prose-frost">
+            {{ character.notable_traits | markdown | safe }}
+        </div>
     </div>
     {% endif %}
 
     {% if character.pets_companions %}
     <div class="md:col-span-2">
-      <h2 class="font-display text-sm tracking-[0.3em] uppercase text-ice-300/60 mb-4">Pets &amp; Companions</h2>
-      <div class="text-silver-300 leading-relaxed font-light">
-        {{ character.pets_companions | replace('\n', '<br>') | safe }}
-      </div>
+        <h2 class="font-display text-sm tracking-[0.3em] uppercase text-ice-300/60 mb-4">Pets &amp; Companions</h2>
+        <div class="prose-frost">
+            {{ character.pets_companions | markdown | safe }}
+        </div>
     </div>
     {% endif %}
 
-  </div>
+</div>
 
   {#
   --- IMAGE GALLERY ---

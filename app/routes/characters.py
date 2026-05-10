@@ -256,6 +256,7 @@ async def character_create(
     name: str = Form(...),
     player_name: Optional[str] = Form(None),
     character_type: str = Form("player"),
+    importance: str = Form("major"),
     race: str = Form(...),
     character_class: str = Form(...),
     level: int = Form(1),
@@ -274,6 +275,7 @@ async def character_create(
         name=name,
         player_name=player_name,
         character_type=character_type,
+        importance=importance,
         race=race,
         character_class=character_class,
         level=level,
@@ -415,6 +417,7 @@ async def character_update(
     name: str = Form(...),
     player_name: Optional[str] = Form(None),
     character_type: str = Form("player"),
+    importance: str = Form("major"),
     race: str = Form(...),
     character_class: str = Form(...),
     level: int = Form(1),
@@ -436,6 +439,7 @@ async def character_update(
     character.name = name
     character.player_name = player_name
     character.character_type = character_type
+    character.importance = importance
     character.race = race
     character.character_class = character_class
     character.level = level
