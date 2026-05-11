@@ -57,24 +57,6 @@ lost in the snowstorm.
   (no more loading full-resolution images for tiny thumbnails). Worth
   doing once we have enough images uploaded to feel the pain.
 
-- **Re-evaluate the lore page layout once 5c is complete** — the
-  card-grid-only view felt thin during 5a development, but final
-  judgment was deferred until the map is in place and the page has
-  meaningful density. After 5c, populate the lore section with real
-  content (5-10 entries spanning multiple categories) and assess
-  whether the card grid still feels Netflix-y or whether it works in
-  context with the map anchor. If it still feels wrong, revisit
-  approaches: categorized list view (Approach A), two-pane tome
-  layout (Approach B), or a denser card variant.
-
-- **Refine the lore "frost-crystal" card design** — the current
-  card has subtle clipped corners and a hover image-zoom effect, but
-  doesn't fully sell the "frost crystal" concept. Options to amplify:
-  more aggressive clip-path angles for sharper facets, a layered
-  back-shape for depth, an animated shimmer that occasionally sweeps
-  across the card, frost-texture overlay on edges, stronger glow.
-  Tackle alongside the lore page layout re-evaluation above.
-
 - **Smarter pin destinations on the map** — currently pins always
   navigate to the lore detail page (Option A from the 5c discussion).
   Eventually, consider upgrading the hover tooltip to surface a
@@ -244,6 +226,36 @@ lost in the snowstorm.
   is exactly the kind of cross-reference that makes the site
   useful.
 
+- **Lore Codex: Reveal Manager** — once the Folio/Codex is built,
+  the DM will need to reveal entries to players as the campaign
+  progresses. Phase A of the Codex build adds an inline "Revealed
+  to players" checkbox on the lore edit form, which is the
+  simplest possible approach: edit each entry individually and
+  flip the toggle when ready.
+
+  Eventually, a dedicated **Reveal Manager** page would be more
+  efficient for the DM. It would:
+
+  1. List every unrevealed entry on a single screen, organized by
+     chapter, with a small portrait/icon and short description.
+  2. Provide a one-click "reveal" toggle next to each, so the DM
+     can sweep through a batch of post-session reveals without
+     opening each entry's edit page.
+  3. Optionally support bulk selection ("reveal these five at
+     once") for sessions where the party learned a lot.
+  4. Possibly show a "recently revealed" panel so the DM can
+     undo accidental reveals.
+
+  This pairs nicely with the post-session ritual — the DM finishes
+  a session, opens the Reveal Manager, and ticks through which
+  entries the party learned. Players visiting the codex next see
+  the page fill in. Builds anticipation and gives the DM a
+  satisfying tool.
+
+  Build this when the manual per-entry toggle starts to feel
+  tedious — probably after the first few sessions with the Codex
+  in active use.
+
 ## Player Engagement Features (the big one)
 
 - **Player accounts and in-session commentary** — the largest
@@ -343,6 +355,10 @@ lost in the snowstorm.
   and the alternate-timeline concept. Genuinely transformative
   feature for a campaign companion site — it makes the site itself
   part of the storytelling.
+
+  Closely related to the Lore Codex reveal mechanism — both
+  represent the same philosophy (progressive disclosure as
+  storytelling) applied to different content types.
 
 - **Town-level maps (nested mapping)** — beyond the regional world
   map, each major settlement (the Ten-Towns, Easthaven, Bryn
@@ -459,6 +475,14 @@ lost in the snowstorm.
   duplicate those views or compete with them for content. No coding
   benefit either — the upload patterns we already built are the
   reusable foundation.
+
+- **Frost-crystal lore card design** — superseded by the Folio/Codex
+  redesign. The card grid as a layout is being replaced entirely
+  by the book metaphor, so polishing the cards is moot.
+
+- **Lore page card-grid re-evaluation** — also superseded by the
+  Folio/Codex redesign. The "is the card grid Netflix-y" question
+  was resolved by picking a different metaphor entirely.
 
 ## Future Ideas (not on roadmap)
 
