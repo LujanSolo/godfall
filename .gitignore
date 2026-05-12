@@ -221,6 +221,7 @@ __marimo__/
 # SQLite database files (our DB is godfall.db, not the
 # Django default db.sqlite3 already excluded above)
 *.db
+*.db.backup
 *.db-journal
 *.sqlite
 *.sqlite3
