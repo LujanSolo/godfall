@@ -1,0 +1,267 @@
+{#
+GODFALL - lore/_search_overlay.html
+====================================
+The codex search overlay. Triggered by
+the search button OR by pressing Cmd/Ctrl+K.
+
+Lazy-loads the entry data the first time
+it opens, then filters in-memory as the
+user types. Click any result to navigate
+to that entry.
+
+Include this on any codex page that should
+expose search (currently table of contents
+and chapter spreads).
+#}
+
+{# --- SEARCH TRIGGER BUTTON --- #}
+<div class="fixed top-24 right-6 z-30">
+  <button id="codex-search-trigger" onclick="openCodexSearch()"
+    class="group inline-flex items-center gap-3 px-4 py-2 border border-frost-700 bg-frost-900/80 backdrop-blur-md hover:border-ice-500/40 text-silver-400 hover:text-ice-300 transition-colors"
+    aria-label="Search the codex">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+    </svg>
+    <span class="hidden sm:inline text-xs tracking-widest uppercase">Search</span>
+    <span
+      class="hidden md:inline-flex items-center gap-1 ml-2 pl-2 border-l border-frost-700 text-[10px] text-silver-400/50">
+      <kbd class="font-mono">⌘K</kbd>
+    </span>
+  </button>
+</div>
+
+{# --- THE OVERLAY --- #}
+<div id="codex-search-overlay" class="fixed inset-0 z-[100] hidden" role="dialog" aria-modal="true"
+  aria-label="Codex search">
+
+  {# Backdrop — click to dismiss #}
+  <div class="absolute inset-0 bg-frost-900/95 backdrop-blur-md" onclick="closeCodexSearch()"></div>
+
+  {# The modal content #}
+  <div class="relative max-w-2xl mx-auto mt-24 px-6">
+
+    {# Search input #}
+    <div class="border border-frost-700 bg-frost-900/95 backdrop-blur-md">
+
+      <div class="flex items-center gap-4 px-5 py-4 border-b border-frost-700">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-ice-300/60 flex-shrink-0" fill="none"
+          viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input id="codex-search-input" type="text" placeholder="Search the codex..." autocomplete="off"
+          class="flex-1 bg-transparent border-none text-silver-200 placeholder:text-silver-400/40 focus:outline-none font-display text-lg tracking-wide">
+        <button onclick="closeCodexSearch()"
+          class="text-silver-400/60 hover:text-ice-300 transition-colors flex-shrink-0" aria-label="Close search">
+          <kbd class="text-[10px] tracking-widest uppercase border border-frost-700 px-2 py-0.5">Esc</kbd>
+        </button>
+      </div>
+
+      {# Results area — populated by JS #}
+      <div id="codex-search-results" class="max-h-[60vh] overflow-y-auto">
+        <p class="px-5 py-8 text-center text-sm text-silver-400/50 italic">
+          Type to search the codex...
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // --- STATE ---
+  // Cache for the entry data once loaded.
+  // null means "not yet fetched"; an array
+  // (even empty) means "fetched and ready."
+  let codexSearchData = null;
+
+  // Track the currently selected result for
+  // keyboard navigation (up/down arrows).
+  let selectedResultIndex = -1;
+
+  // --- OPEN / CLOSE ---
+
+  async function openCodexSearch() {
+    const overlay = document.getElementById('codex-search-overlay');
+    const input = document.getElementById('codex-search-input');
+
+    overlay.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+
+    // Lazy-load the data the first time
+    // the overlay opens.
+    if (codexSearchData === null) {
+      try {
+        const response = await fetch('/lore/search-data');
+        const json = await response.json();
+        codexSearchData = json.entries || [];
+      } catch (error) {
+        console.error('Failed to load codex search data:', error);
+        codexSearchData = [];
+      }
+    }
+
+    // Focus the input so the user can type
+    // immediately without clicking.
+    input.focus();
+    input.select();
+
+    // Re-run the filter with current input
+    // value in case the user is re-opening
+    // with a previous query still there.
+    filterResults();
+  }
+
+  function closeCodexSearch() {
+    const overlay = document.getElementById('codex-search-overlay');
+    overlay.classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+
+  // --- FILTERING ---
+
+  function filterResults() {
+    const input = document.getElementById('codex-search-input');
+    const resultsContainer = document.getElementById('codex-search-results');
+    const query = input.value.trim().toLowerCase();
+
+    // Reset selection when the query changes
+    selectedResultIndex = -1;
+
+    if (codexSearchData === null) {
+      resultsContainer.innerHTML = '<p class="px-5 py-8 text-center text-sm text-silver-400/50 italic">Loading...</p>';
+      return;
+    }
+
+    if (query === '') {
+      resultsContainer.innerHTML = '<p class="px-5 py-8 text-center text-sm text-silver-400/50 italic">Type to search the codex...</p>';
+      return;
+    }
+
+    // Score-based matching: title matches
+    // rank higher than subtitle or chapter
+    // matches. Simple but effective for
+    // small datasets.
+    const scored = codexSearchData
+      .map(entry => {
+        const title = entry.title.toLowerCase();
+        const subtitle = entry.subtitle.toLowerCase();
+        const chapter = entry.chapter.toLowerCase();
+        const category = entry.category.toLowerCase();
+
+        let score = 0;
+        if (title.includes(query)) score += 10;
+        if (title.startsWith(query)) score += 5;
+        if (subtitle.includes(query)) score += 3;
+        if (chapter.includes(query)) score += 2;
+        if (category.includes(query)) score += 1;
+
+        return { entry, score };
+      })
+      .filter(item => item.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 12);  // Cap at 12 results
+
+    if (scored.length === 0) {
+      resultsContainer.innerHTML = `
+                <p class="px-5 py-8 text-center text-sm text-silver-400/50 italic">
+                    No entries match "${escapeHtml(query)}".
+                </p>
+            `;
+      return;
+    }
+
+    // Build the result list
+    const html = scored.map((item, index) => `
+            <a href="/lore/${item.entry.id}"
+               class="codex-search-result block px-5 py-3 border-b border-frost-700/40 last:border-b-0 hover:bg-ice-500/5 transition-colors"
+               data-index="${index}">
+                <div class="flex items-baseline gap-3">
+                    <div class="flex-1 min-w-0">
+                        <p class="font-display text-base tracking-wider text-silver-200 leading-tight">
+                            ${escapeHtml(item.entry.title)}
+                        </p>
+                        ${item.entry.subtitle ? `
+                            <p class="text-xs text-ice-300/50 italic mt-0.5 truncate">
+                                ${escapeHtml(item.entry.subtitle)}
+                            </p>
+                        ` : ''}
+                    </div>
+                    <p class="text-[10px] tracking-[0.2em] uppercase text-ice-300/40 flex-shrink-0">
+                        ${escapeHtml(item.entry.chapter)}
+                    </p>
+                </div>
+            </a>
+        `).join('');
+
+    resultsContainer.innerHTML = html;
+  }
+
+  // --- HELPERS ---
+
+  // Escape HTML to prevent any weird content
+  // in entry titles from breaking the DOM
+  // when we inject results via innerHTML.
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  // Update visual selection state when the
+  // user navigates with arrow keys.
+  function setSelectedResult(index) {
+    const results = document.querySelectorAll('.codex-search-result');
+    if (results.length === 0) return;
+
+    // Wrap around at boundaries
+    if (index < 0) index = results.length - 1;
+    if (index >= results.length) index = 0;
+
+    selectedResultIndex = index;
+
+    // Update styling
+    results.forEach((el, i) => {
+      if (i === index) {
+        el.classList.add('bg-ice-500/10');
+        el.scrollIntoView({ block: 'nearest' });
+      } else {
+        el.classList.remove('bg-ice-500/10');
+      }
+    });
+  }
+
+  // --- EVENT HANDLERS ---
+
+  // Filter on each keystroke
+  document.getElementById('codex-search-input').addEventListener('input', filterResults);
+
+  // Keyboard navigation within the overlay
+  document.getElementById('codex-search-input').addEventListener('keydown', (event) => {
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      setSelectedResult(selectedResultIndex + 1);
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      setSelectedResult(selectedResultIndex - 1);
+    } else if (event.key === 'Enter') {
+      event.preventDefault();
+      const results = document.querySelectorAll('.codex-search-result');
+      const target = selectedResultIndex >= 0 ? results[selectedResultIndex] : results[0];
+      if (target) {
+        window.location.href = target.href;
+      }
+    } else if (event.key === 'Escape') {
+      closeCodexSearch();
+    }
+  });
+
+  // Global keyboard shortcut: Cmd+K or Ctrl+K
+  // opens the search from anywhere on the page.
+  document.addEventListener('keydown', (event) => {
+    if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
+      event.preventDefault();
+      openCodexSearch();
+    }
+  });
+</script>

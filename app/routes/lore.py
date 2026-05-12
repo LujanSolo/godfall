@@ -128,6 +128,57 @@ LORE_CATEGORIES = [
 
 
 # ============================================
+# ROUTE: SEARCH DATA (JSON)
+# GET /lore/search-data
+# ============================================
+# Returns a JSON array of all searchable lore
+# entries the current viewer can see. The
+# overlay JS uses this to power live filtering.
+#
+# We return JSON rather than HTML because the
+# data is consumed by JavaScript, not rendered
+# directly. FastAPI auto-serializes the
+# returned dict to JSON with the correct
+# content-type header.
+# ============================================
+@router.get("/search-data")
+async def search_data(
+    request: Request,
+    db: Session = Depends(get_db),
+    user: Optional[User] = Depends(get_current_user),
+):
+    query = db.query(LoreEntry)
+
+    # Apply the same visibility rules as
+    # everywhere else: hide secrets from
+    # non-DMs, hide unrevealed entries from
+    # non-DMs (those shouldn't be searchable
+    # by players — they don't know they exist).
+    if user is None or user.role != "dm":
+        query = query.filter(LoreEntry.is_secret == 0)
+        query = query.filter(LoreEntry.is_revealed == 1)
+
+    entries = query.order_by(LoreEntry.title).all()
+
+    # Build the JSON-serializable list. We only
+    # include the fields the overlay needs:
+    # title for matching/display, subtitle for
+    # display, category and chapter for context,
+    # id for the link target.
+    results = [
+        {
+            "id": entry.id,
+            "title": entry.title,
+            "subtitle": entry.subtitle or "",
+            "category": entry.category or "",
+            "chapter": entry.folio_chapter or "",
+        }
+        for entry in entries
+    ]
+
+    return {"entries": results}
+
+# ============================================
 # ROUTE: LORE LIST
 # GET /lore
 # ============================================
@@ -160,7 +211,7 @@ async def lore_list(
     # filter is_revealed at the query level.
     if user is None or user.role != "dm":
         query = query.filter(LoreEntry.is_secret == 0)
-    
+
     entries = query.order_by(
         LoreEntry.folio_chapter,
         LoreEntry.folio_position,
