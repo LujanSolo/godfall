@@ -46,6 +46,55 @@ from app.models import (
 )
 from app.templating import templates
 
+# ============================================
+# CHAPTER SLUG HELPERS
+# ============================================
+# The codex uses URL-safe slugs in its routes
+# but stores chapters as human-readable names
+# in the database. These helpers convert
+# between the two representations.
+#
+# The slug rules mirror the Jinja2 filter
+# chain used in the table of contents template:
+#   lowercase, " & " → "-and-", spaces → "-",
+#   apostrophes stripped.
+#
+# Centralizing this here means the slug logic
+# lives in one place. If we ever change the
+# rules, only one file needs updating.
+# ============================================
+
+# The canonical chapter names. Must match the
+# dropdown values in the lore form template.
+CODEX_CHAPTERS = [
+    "Places of the North",
+    "Allies & Enemies",
+    "The Frostmaiden's Court",
+    "Relics & Curiosities",
+    "Whispers & Rumors",
+    "The Forgotten",
+]
+
+
+def chapter_to_slug(chapter_name: str) -> str:
+    """Convert a chapter name to its URL slug."""
+    return (
+        chapter_name.lower().replace(" & ", "-and-").replace(" ", "-").replace("'", "")
+    )
+
+
+def slug_to_chapter(slug: str) -> Optional[str]:
+    """
+    Find the canonical chapter name matching
+    a given slug. Returns None if the slug
+    doesn't match any known chapter.
+    """
+    for chapter in CODEX_CHAPTERS:
+        if chapter_to_slug(chapter) == slug:
+            return chapter
+    return None
+
+
 # --- CONFIGURATION ---
 BASE_DIR = Path(__file__).resolve().parent.parent
 UPLOAD_DIR = BASE_DIR / "static" / "uploads" / "lore"
@@ -100,29 +149,54 @@ LORE_CATEGORIES = [
 async def lore_list(
     request: Request,
     db: Session = Depends(get_db),
-    category: Optional[str] = None,
     user: Optional[User] = Depends(get_current_user),
 ):
+    # Build the base query
     query = db.query(LoreEntry)
 
-    if category and category != "all":
-        query = query.filter(LoreEntry.category == category)
-
-    # Hide secret entries from non-DM visitors.
-    # Players never know they exist.
+    # Non-DMs never see is_secret entries — those
+    # are DM-only forever. They DO see unrevealed
+    # entries (as placeholder slots), so we don't
+    # filter is_revealed at the query level.
     if user is None or user.role != "dm":
         query = query.filter(LoreEntry.is_secret == 0)
+    
+    entries = query.order_by(
+        LoreEntry.folio_chapter,
+        LoreEntry.folio_position,
+        LoreEntry.title
+    ).all()
 
-    entries = query.order_by(LoreEntry.title).all()
+    # Group entries by chapter into a dictionary.
+    # Using a regular dict preserves insertion order
+    # in Python 3.7+, which is what we want since we
+    # already sorted by chapter.
+    chapters = {}
+    for entry in entries:
+        chapter = entry.folio_chapter or "Whispers & Rumors"
+        if chapter not in chapters:
+            chapters[chapter] = []
+        chapters[chapter].append(entry)
+
+    # Also count revealed vs total for each chapter,
+    # which the template uses to show "X of Y known"
+    # progress. For DMs this just shows the totals.
+    chapter_stats = {}
+    for chapter_name, chapter_entries in chapters.items():
+        total = len(chapter_entries)
+        revealed = sum(1 for e in chapter_entries if e.is_revealed == 1)
+        chapter_stats[chapter_name] = {
+            "total": total,
+            "revealed": revealed,
+        }
 
     return templates.TemplateResponse(
         "lore/list.html",
         {
             "request": request,
-            "title": "World Lore — Godfall",
-            "entries": entries,
-            "categories": LORE_CATEGORIES,
-            "active_category": category or "all",
+            "title": "The Codex — Godfall",
+            "chapters": chapters,
+            "chapter_stats": chapter_stats,
         },
     )
 
@@ -205,6 +279,10 @@ async def lore_create(
     subtitle: Optional[str] = Form(None),
     body: Optional[str] = Form(None),
     is_secret: int = Form(0),
+    folio_chapter: str = Form("Places of the North"),
+    folio_layout: str = Form("bestiary"),
+    folio_position: int = Form(0),
+    is_revealed: int = Form(0),
     lat: Optional[float] = Form(None),
     lng: Optional[float] = Form(None),
     character_ids: List[int] = Form(default=[]),
@@ -216,6 +294,10 @@ async def lore_create(
         subtitle=subtitle,
         body=body,
         is_secret=is_secret,
+        folio_chapter=folio_chapter,
+        folio_layout=folio_layout,
+        folio_position=folio_position,
+        is_revealed=is_revealed,
         lat=lat,
         lng=lng,
     )
@@ -245,6 +327,95 @@ async def lore_create(
 
 
 # ============================================
+# ROUTE: CHAPTER SPREAD
+# GET /lore/chapter/{slug}
+# ============================================
+# Renders a single chapter as a spread.
+# Entries are grouped by their folio_layout
+# value: cathedral entries get their own
+# spotlight panel, bestiary entries fill a
+# grid, glossary entries appear as a textual
+# listing.
+#
+# Unrevealed entries appear as faded slots
+# for non-DM viewers — visible structure
+# but obscured content.
+# ============================================
+@router.get("/chapter/{slug}")
+async def chapter_spread(
+    request: Request,
+    slug: str,
+    db: Session = Depends(get_db),
+    user: Optional[User] = Depends(get_current_user),
+):
+    # Resolve the slug to a real chapter name
+    chapter_name = slug_to_chapter(slug)
+    if chapter_name is None:
+        return HTMLResponse(
+            content="<h1>Chapter not found</h1>"
+            "<p>This volume contains no such chapter.</p>",
+            status_code=404,
+        )
+
+    # Query entries for this chapter.
+    query = db.query(LoreEntry).filter(LoreEntry.folio_chapter == chapter_name)
+
+    # Non-DMs never see secret entries
+    if user is None or user.role != "dm":
+        query = query.filter(LoreEntry.is_secret == 0)
+
+    # Order by position, then title as tiebreaker
+    entries = query.order_by(LoreEntry.folio_position, LoreEntry.title).all()
+
+    # Group entries by layout treatment.
+    # Each group will be rendered with its own
+    # template fragment.
+    cathedral_entries = [e for e in entries if e.folio_layout == "cathedral"]
+    bestiary_entries = [e for e in entries if e.folio_layout == "bestiary"]
+    glossary_entries = [e for e in entries if e.folio_layout == "glossary"]
+    # Any entry with an unexpected layout falls
+    # back to bestiary. Better than dropping.
+    other_entries = [
+        e
+        for e in entries
+        if e.folio_layout not in ("cathedral", "bestiary", "glossary")
+    ]
+    if other_entries:
+        bestiary_entries.extend(other_entries)
+
+    # Figure out previous and next chapters for
+    # navigation. The CODEX_CHAPTERS list defines
+    # the canonical order.
+    try:
+        current_idx = CODEX_CHAPTERS.index(chapter_name)
+        prev_chapter = CODEX_CHAPTERS[current_idx - 1] if current_idx > 0 else None
+        next_chapter = (
+            CODEX_CHAPTERS[current_idx + 1]
+            if current_idx < len(CODEX_CHAPTERS) - 1
+            else None
+        )
+    except ValueError:
+        prev_chapter = None
+        next_chapter = None
+
+    return templates.TemplateResponse(
+        "lore/chapter.html",
+        {
+            "request": request,
+            "title": f"{chapter_name} — The Codex",
+            "chapter_name": chapter_name,
+            "chapter_number": current_idx + 1,
+            "cathedral_entries": cathedral_entries,
+            "bestiary_entries": bestiary_entries,
+            "glossary_entries": glossary_entries,
+            "prev_chapter": prev_chapter,
+            "next_chapter": next_chapter,
+            "chapter_to_slug": chapter_to_slug,
+        },
+    )
+
+
+# ============================================
 # ROUTE: VIEW ONE LORE ENTRY
 # GET /lore/{id}
 # ============================================
@@ -255,11 +426,7 @@ async def lore_detail(
     db: Session = Depends(get_db),
     user: Optional[User] = Depends(get_current_user),
 ):
-    entry = (
-        db.query(LoreEntry)
-        .filter(LoreEntry.id == id)
-        .first()
-    )
+    entry = db.query(LoreEntry).filter(LoreEntry.id == id).first()
 
     # Treat secret entries as if they don't exist
     # for non-DM visitors. We return the same
@@ -273,9 +440,9 @@ async def lore_detail(
     if not entry:
         return HTMLResponse(
             content="<h1>Lore not found</h1>"
-                    "<p>This entry has been lost to the "
-                    "frozen ages.</p>",
-            status_code=404
+            "<p>This entry has been lost to the "
+            "frozen ages.</p>",
+            status_code=404,
         )
 
     return templates.TemplateResponse(
@@ -284,8 +451,9 @@ async def lore_detail(
             "request": request,
             "title": f"{entry.title} — Godfall",
             "entry": entry,
-        }
+        },
     )
+
 
 # ============================================
 # ROUTE: EDIT LORE FORM
@@ -355,6 +523,10 @@ async def lore_update(
     subtitle: Optional[str] = Form(None),
     body: Optional[str] = Form(None),
     is_secret: int = Form(0),
+    folio_chapter: str = Form("Places of the North"),
+    folio_layout: str = Form("bestiary"),
+    folio_position: int = Form(0),
+    is_revealed: int = Form(0),
     lat: Optional[float] = Form(None),
     lng: Optional[float] = Form(None),
     character_ids: List[int] = Form(default=[]),
@@ -371,6 +543,10 @@ async def lore_update(
     entry.subtitle = subtitle
     entry.body = body
     entry.is_secret = is_secret
+    entry.folio_chapter = folio_chapter
+    entry.folio_layout = folio_layout
+    entry.folio_position = folio_position
+    entry.is_revealed = is_revealed
     entry.lat = lat
     entry.lng = lng
 

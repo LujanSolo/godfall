@@ -697,6 +697,39 @@ class LoreEntry(Base):
     # Stored as Integer (0/1) for SQLite
     # consistency with our other booleans.
     is_secret = Column(Integer, default=0, nullable=False)
+    
+    # --- FOLIO / CODEX FIELDS ---
+    # Which chapter this entry belongs to in
+    # the codex (e.g. "Places of the North",
+    # "Allies & Enemies", etc.). Free-text so
+    # the DM can name chapters dynamically;
+    # the form constrains via dropdown for
+    # consistency.
+    folio_chapter = Column(String(100), index=True)
+
+    # Which page-template treatment this entry
+    # gets on the spread: "cathedral" (one
+    # spotlight entry per page), "bestiary"
+    # (grid of 4-6), "glossary" (textual list).
+    # Default to bestiary as the safest mid-
+    # density treatment.
+    folio_layout = Column(String(20), default="bestiary")
+
+    # Order within the chapter. Lower values
+    # appear first. Gaps in numbering are
+    # fine (10, 20, 30 lets you insert at 15
+    # later without renumbering everything).
+    folio_position = Column(Integer, default=0)
+
+    # Whether players can see this entry on
+    # the codex. Separate from is_secret:
+    #   is_secret = DM-only forever
+    #   is_revealed = "the party has
+    #     discovered this in the campaign"
+    # An entry can be is_secret=0 and
+    # is_revealed=0 (not a secret per se, but
+    # the party hasn't found it yet).
+    is_revealed = Column(Integer, default=0)
 
     # --- TIMESTAMPS ---
     created_at = Column(DateTime, default=utc_now)

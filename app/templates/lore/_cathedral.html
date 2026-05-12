@@ -1,0 +1,91 @@
+{#
+GODFALL - lore/_cathedral.html
+===============================
+Cathedral layout — a single entry as a
+full-spread spotlight. Featured image on
+one side, title and summary on the other.
+
+Expects in scope: entry
+#}
+
+{# Determine if this entry should display its
+real content. DMs see everything; players
+only see revealed entries. #}
+{% set show_content = entry.is_revealed == 1 or request.state.user %}
+
+{# Find the featured image, if any #}
+{% set ns = namespace(featured=None) %}
+{% for image in entry.images %}
+{% if image.is_featured == 1 and ns.featured is none %}
+{% set ns.featured = image %}
+{% endif %}
+{% endfor %}
+{% if ns.featured is none and entry.images %}
+{% set ns.featured = entry.images[0] %}
+{% endif %}
+
+<div class="cathedral-entry">
+  {% if show_content %}
+  {# --- REVEALED: FULL TREATMENT --- #}
+  <a href="/lore/{{ entry.id }}"
+    class="group block border border-frost-700 hover:border-ice-500/40 bg-frost-800/20 transition-colors overflow-hidden">
+
+    <div class="grid grid-cols-1 md:grid-cols-2">
+
+      {# Image side #}
+      <div class="aspect-[4/3] md:aspect-auto bg-frost-900 overflow-hidden">
+        {% if ns.featured %}
+        <img src="{{ ns.featured.file_path }}" alt="{{ entry.title }}"
+          class="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500">
+        {% else %}
+        <div class="w-full h-full flex items-center justify-center text-ice-300/15">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24" fill="none" viewBox="0 0 24 24"
+            stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+              d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
+        </div>
+        {% endif %}
+      </div>
+
+      {# Text side #}
+      <div class="p-8 md:p-10 flex flex-col justify-center">
+        <p class="font-display text-[10px] tracking-[0.3em] uppercase text-ice-300/50 mb-3">
+          {{ entry.category }}
+          {% if entry.is_secret == 1 %}
+          <span class="ml-2 text-amber-300/60">· Hidden</span>
+          {% endif %}
+          {% if not entry.is_revealed == 1 and request.state.user %}
+          <span class="ml-2 text-amber-300/60">· Unrevealed</span>
+          {% endif %}
+        </p>
+        <h2
+          class="font-display text-2xl md:text-3xl tracking-wider text-silver-100 group-hover:text-ice-300 transition-colors leading-tight">
+          {{ entry.title }}
+        </h2>
+        {% if entry.subtitle %}
+        <p class="mt-2 text-sm text-ice-300/60 italic">
+          {{ entry.subtitle }}
+        </p>
+        {% endif %}
+        {% if entry.body %}
+        <p class="mt-4 text-sm text-silver-400 leading-relaxed font-light line-clamp-4">
+          {{ entry.body | striptags | truncate(280) }}
+        </p>
+        {% endif %}
+        <p
+          class="mt-6 text-xs tracking-widest uppercase text-ice-300/60 group-hover:text-ice-300 transition-colors inline-flex items-center gap-2">
+          <span>Read the Entry</span>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </p>
+      </div>
+    </div>
+  </a>
+
+  {% else %}
+  {# --- UNREVEALED: PLACEHOLDER --- #}
+  {% include "lore/_unrevealed_cathedral.html" %}
+  {% endif %}
+</div>
