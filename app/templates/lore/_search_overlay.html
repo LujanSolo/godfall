@@ -173,7 +173,7 @@ and chapter spreads).
 
     // Build the result list
     const html = scored.map((item, index) => `
-            <a href="/lore/${item.entry.id}"
+            <a href="${item.entry.url}"
                class="codex-search-result block px-5 py-3 border-b border-frost-700/40 last:border-b-0 hover:bg-ice-500/5 transition-colors"
                data-index="${index}">
                 <div class="flex items-baseline gap-3">

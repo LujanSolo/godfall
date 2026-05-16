@@ -140,46 +140,12 @@ async def character_list(
         .order_by(Character.name)
         .all()
     )
-
-    # --- NPCs: split by importance tier ---
-    # Major recurring figures first, supporting
-    # cast next, walk-on roles at the end. Like
-    # a movie credits roll where leads come
-    # first and the "and Carrie Fisher as
-    # Princess Leia" comes before the gaffer.
-    #
-    # We fetch all NPCs once (alphabetical),
-    # then partition them in Python rather than
-    # running multiple database queries. Faster
-    # and cleaner for our scale.
-    all_npcs = (
-        db.query(Character)
-        .filter(Character.character_type == "npc")
-        .order_by(Character.name)
-        .all()
-    )
-
-    npcs_major = [c for c in all_npcs if c.importance == "major"]
-    npcs_minor = [c for c in all_npcs if c.importance == "minor"]
-    npcs_cameo = [c for c in all_npcs if c.importance == "cameo"]
-    # Catch-all bucket for any NPC with a
-    # missing or unexpected importance value.
-    # Better than silently dropping them.
-    npcs_other = [
-        c for c in all_npcs
-        if c.importance not in ("major", "minor", "cameo")
-    ]
-
     return templates.TemplateResponse(
         "characters/list.html",
         {
             "request": request,
             "title": "The Roster — Godfall",
             "pcs": pcs,
-            "npcs_major": npcs_major,
-            "npcs_minor": npcs_minor,
-            "npcs_cameo": npcs_cameo,
-            "npcs_other": npcs_other,
         }
     )
 

@@ -1,0 +1,130 @@
+{#
+GODFALL - lore/_gem.html
+=========================
+A single faceted gem in the chapter grid.
+
+Handles both LoreEntry objects and NPC
+dicts transparently.
+
+Expects in scope:
+entry — a LoreEntry object or NPC dict
+is_revealed — boolean
+#}
+
+{# --- NORMALIZE --- #}
+{% if entry is mapping %}
+{% set gem_id = entry.id %}
+{% set gem_title = entry.title %}
+{% set gem_category = entry.category %}
+{% set gem_images = entry.images %}
+{% set gem_is_npc = true %}
+{% set gem_url = "/characters/" ~ entry.id %}
+{% else %}
+{% set gem_id = entry.id %}
+{% set gem_title = entry.title %}
+{% set gem_category = entry.category %}
+{% set gem_images = entry.images %}
+{% set gem_is_npc = false %}
+{% set gem_url = "/lore/" ~ entry.id %}
+{% endif %}
+
+{# Find the featured image #}
+{% set ns = namespace(featured=None) %}
+{% for image in gem_images %}
+{% if gem_is_npc %}
+{% if image.is_primary == 1 and ns.featured is none %}
+{% set ns.featured = image %}
+{% endif %}
+{% else %}
+{% if image.is_featured == 1 and ns.featured is none %}
+{% set ns.featured = image %}
+{% endif %}
+{% endif %}
+{% endfor %}
+{% if ns.featured is none and gem_images %}
+{% set ns.featured = gem_images[0] %}
+{% endif %}
+
+{% set dm_override = request.state.user is not none %}
+
+{% if is_revealed or dm_override %}
+
+{# === REVEALED GEM === #}
+<a href="{{ gem_url }}" class="gem-slot group">
+
+  <div class="gem-stone {% if not is_revealed %}gem-dm-unrevealed{% endif %}">
+
+    <div class="gem-glow"></div>
+
+    <div class="gem-body">
+      {% if ns.featured %}
+      <img src="{{ ns.featured.file_path }}" alt="{{ gem_title }}" class="gem-image" loading="lazy">
+      {% else %}
+      <div class="gem-icon">
+        {% if gem_category == "Location" %}
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+        {% elif gem_category == "NPC" %}
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        </svg>
+        {% elif gem_category == "Faction" %}
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+            d="M3 21h18M9 8h6m-6 4h6m-8 4h10a2 2 0 002-2V6a2 2 0 00-2-2H7a2 2 0 00-2 2v8a2 2 0 002 2z" />
+        </svg>
+        {% elif gem_category == "Item" %}
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+            d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+        </svg>
+        {% elif gem_category == "Deity" %}
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+            d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+        </svg>
+        {% elif gem_category == "Creature" %}
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+            d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
+        </svg>
+        {% else %}
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+        </svg>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="gem-highlight"></div>
+    <div class="gem-border"></div>
+  </div>
+
+  <p class="gem-label group-hover:text-ice-300 transition-colors">
+    {{ gem_title }}
+    {% if not is_revealed and dm_override %}
+    <span class="block text-[8px] text-amber-300/60 tracking-widest uppercase mt-0.5">Unrevealed</span>
+    {% endif %}
+  </p>
+</a>
+
+{% else %}
+
+{# === FROST-LOCKED GEM === #}
+<div class="gem-slot">
+  <div class="gem-stone gem-frozen">
+    <div class="gem-body gem-body-frozen">
+      <div class="gem-frost-fill"></div>
+    </div>
+    <div class="gem-border gem-border-frozen"></div>
+  </div>
+  <p class="gem-label gem-label-frozen">???</p>
+</div>
+
+{% endif %}

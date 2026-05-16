@@ -93,120 +93,66 @@ gated behind the auth check.
   {#
   =============================================
   THE WORLD AT LARGE (NPCs)
-  =============================================
-  Movie-credits style with importance tiers.
-  Only renders sections that have entries —
-  if you have no Cameo NPCs, the "AND" tier
-  simply doesn't appear.
-  #}
-  {% if npcs_major or npcs_minor or npcs_cameo or npcs_other %}
-  <section>
-
-    <div class="text-center mb-16">
-      <p class="font-display text-xs tracking-[0.4em] uppercase text-ice-300/50">The World At Large</p>
-      <p class="mt-2 text-[10px] tracking-[0.2em] uppercase text-silver-400/40 italic">Allies, enemies, witnesses,
-        ghosts</p>
-    </div>
-
-    {# --- STARRING (major) --- #}
-    {% if npcs_major %}
-    <div class="mb-16">
-      {#
-      Tier divider — left-aligned with
-      a small ornamental flourish.
-      Mimics film credits: the title
-      of the role, then the cast list.
-      #}
-      <div class="flex items-center gap-4 mb-6">
-        <div class="h-px w-8 bg-ice-500/40"></div>
-        <p class="font-display text-xs tracking-[0.4em] uppercase text-ice-300">Starring</p>
-        <div class="flex-1 h-px bg-frost-700/60"></div>
-      </div>
-
-      <div class="space-y-4">
-        {% for character in npcs_major %}
-        {% include "characters/_npc_row.html" %}
-        {% endfor %}
-      </div>
-    </div>
-    {% endif %}
-
-    {# --- WITH (minor) --- #}
-    {% if npcs_minor %}
-    <div class="mb-16">
-      <div class="flex items-center gap-4 mb-6">
-        <div class="h-px w-8 bg-ice-500/30"></div>
-        <p class="font-display text-xs tracking-[0.4em] uppercase text-ice-300/80">With</p>
-        <div class="flex-1 h-px bg-frost-700/60"></div>
-      </div>
-
-      <div class="space-y-4">
-        {% for character in npcs_minor %}
-        {% include "characters/_npc_row.html" %}
-        {% endfor %}
-      </div>
-    </div>
-    {% endif %}
-
-    {# --- AND (cameo) --- #}
-    {% if npcs_cameo %}
-    <div class="mb-16">
-      <div class="flex items-center gap-4 mb-6">
-        <div class="h-px w-8 bg-ice-500/20"></div>
-        <p class="font-display text-xs tracking-[0.4em] uppercase text-ice-300/60">And</p>
-        <div class="flex-1 h-px bg-frost-700/60"></div>
-      </div>
-
-      <div class="space-y-4">
-        {% for character in npcs_cameo %}
-        {% include "characters/_npc_row.html" %}
-        {% endfor %}
-      </div>
-    </div>
-    {% endif %}
-
-    {# --- UNCATEGORIZED (catch-all) --- #}
-    {#
-    Anything with a missing or unexpected
-    importance value lands here. Better
-    than dropping them silently.
-    #}
-    {% if npcs_other %}
-    <div class="mb-16">
-      <div class="flex items-center gap-4 mb-6">
-        <div class="h-px w-8 bg-frost-700"></div>
-        <p class="font-display text-xs tracking-[0.4em] uppercase text-silver-400/60">Also</p>
-        <div class="flex-1 h-px bg-frost-700/60"></div>
-      </div>
-
-      <div class="space-y-4">
-        {% for character in npcs_other %}
-        {% include "characters/_npc_row.html" %}
-        {% endfor %}
-      </div>
-    </div>
-    {% endif %}
-
-  </section>
-  {% endif %}
-
-  {#
-  --- EMPTY STATE ---
-  If no characters at all, show the original
-  "begin the chronicle" call-to-action.
-  Should rarely render in practice.
-  #}
-  {% if not pcs and not npcs_major and not npcs_minor and not npcs_cameo and not npcs_other %}
-  <div class="text-center py-20 border border-frost-700 border-dashed">
-    <p class="text-silver-400 mb-6 italic">The roster is empty. The flames have not yet been lit.</p>
-    {% if request.state.user %}
-    <a href="/characters/new"
-      class="inline-flex items-center gap-2 px-5 py-2 border border-ice-500/40 text-ice-300 hover:bg-ice-500/10 hover:border-ice-300 font-display text-sm tracking-widest uppercase transition-colors">
-      Add the First Character
+  =============================================#}
+  
+  {# --- CODEX LINK --- #}
+  <div class="text-center mt-16">
+    <a href="/lore/chapter/allies-enemies-and-other-dalefolk"
+      class="group inline-flex items-center gap-3 text-ice-300/50 hover:text-ice-300 transition-colors">
+      <span class="text-xs tracking-[0.3em] uppercase">Allies, enemies &amp; other Dalefolk</span>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 group-hover:translate-x-1 transition-transform" fill="none"
+        viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5l7 7-7 7" />
+      </svg>
     </a>
-    {% endif %}
+    <p class="mt-2 text-[10px] tracking-[0.2em] uppercase text-silver-400/40 italic">
+      Found in the Codex
+    </p>
+  </div>
+
+  {# --- UNCATEGORIZED (catch-all) --- #}
+  {#
+  Anything with a missing or unexpected
+  importance value lands here. Better
+  than dropping them silently.
+  #}
+  {% if npcs_other %}
+  <div class="mb-16">
+    <div class="flex items-center gap-4 mb-6">
+      <div class="h-px w-8 bg-frost-700"></div>
+      <p class="font-display text-xs tracking-[0.4em] uppercase text-silver-400/60">Also</p>
+      <div class="flex-1 h-px bg-frost-700/60"></div>
+    </div>
+
+    <div class="space-y-4">
+      {% for character in npcs_other %}
+      {% include "characters/_npc_row.html" %}
+      {% endfor %}
+    </div>
   </div>
   {% endif %}
+
+</section>
+{% endif %}
+
+{#
+--- EMPTY STATE ---
+If no characters at all, show the original
+"begin the chronicle" call-to-action.
+Should rarely render in practice.
+#}
+{% if not pcs %}
+<div class="text-center py-20 border border-frost-700 border-dashed">
+  <p class="text-silver-400 mb-6 italic">The roster is empty. The flames have not yet been lit.</p>
+  {% if request.state.user %}
+  <a href="/characters/new"
+    class="inline-flex items-center gap-2 px-5 py-2 border border-ice-500/40 text-ice-300 hover:bg-ice-500/10 hover:border-ice-300 font-display text-sm tracking-widest uppercase transition-colors">
+    Add the First Character
+  </a>
+  {% endif %}
+  
+</div>
+{% endif %}
 
 </section>
 

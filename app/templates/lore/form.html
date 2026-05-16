@@ -86,16 +86,14 @@ template handles both new and edit.
             {% set current_chapter = entry.folio_chapter if editing else "Places of the North" %}
             <option value="Places of the North" {% if current_chapter=="Places of the North" %}selected{% endif %}>
               Places of the North</option>
-            <option value="Allies & Enemies" {% if current_chapter=="Allies & Enemies" %}selected{% endif %}>Allies
-              &amp; Enemies</option>
-            <option value="The Frostmaiden's Court" {% if current_chapter=="The Frostmaiden's Court" %}selected{% endif
-              %}>The Frostmaiden's Court</option>
+            <option value="Allies, Enemies & Other Dalefolk" {% if current_chapter=="Allies, Enemies & Other Dalefolk"
+              %}selected{% endif %}>Allies, Enemies &amp; Other Dalefolk</option>
             <option value="Relics & Curiosities" {% if current_chapter=="Relics & Curiosities" %}selected{% endif %}>
               Relics &amp; Curiosities</option>
+            <option value="Gods & Mysteries" {% if current_chapter=="Gods & Mysteries" %}selected{% endif %}>Gods &amp;
+              Mysteries</option>
             <option value="Whispers & Rumors" {% if current_chapter=="Whispers & Rumors" %}selected{% endif %}>Whispers
               &amp; Rumors</option>
-            <option value="The Forgotten" {% if current_chapter=="The Forgotten" %}selected{% endif %}>The Forgotten
-            </option>
           </select>
           <p class="mt-2 text-xs text-silver-400/60 italic">
             Which section of the codex this entry lives in.

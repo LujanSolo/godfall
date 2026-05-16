@@ -1,157 +1,146 @@
 {#
-GODFALL - lore/chapter.html
-============================
-A single chapter's spread.
+    GODFALL - lore/chapter.html
+    ============================
+    A chapter's gem grid. Each lore entry
+    is a faceted diamond — thawed and
+    clickable if revealed, frost-locked
+    if not yet discovered.
 
-Entries appear grouped by their layout
-treatment:
-- Cathedral entries get their own
-spotlight blocks at the top
-- Bestiary entries fill a grid in the
-middle
-- Glossary entries form a textual
-listing at the bottom
-
-Navigation between chapters appears at
-the bottom of the spread.
+    The grid adapts to screen size: more
+    gems per row on desktop, fewer on
+    mobile. No scrolling needed for even
+    large chapters.
 #}
 {% extends "base.html" %}
 
 {% block content %}
 
-<article class="max-w-5xl mx-auto px-6 py-12">
+<article class="max-w-6xl mx-auto px-6 py-12">
 
-  {# --- BREADCRUMB --- #}
-  <div class="mb-8">
-    <a href="/lore"
-      class="text-ice-300/50 hover:text-ice-300 text-xs tracking-[0.3em] uppercase transition-colors inline-flex items-center gap-2">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-      </svg>
-      Table of Contents
-    </a>
-  </div>
-
-  {# --- CHAPTER HEADING --- #}
-  <header class="text-center mb-12 pb-8 border-b border-frost-700/60">
-    <p class="font-display text-xs tracking-[0.4em] uppercase text-ice-300/40 mb-3">
-      Chapter {{ "%02d" | format(chapter_number) }}
-    </p>
-    <h1
-      class="font-display text-3xl md:text-5xl font-black tracking-[0.15em] uppercase text-silver-200 frost-glow leading-tight">
-      {{ chapter_name }}
-    </h1>
-  </header>
-
-  {# --- CATHEDRAL ENTRIES --- #}
-  {% if cathedral_entries %}
-  <section class="mb-16 space-y-12">
-    {% for entry in cathedral_entries %}
-    {% include "lore/_cathedral.html" %}
-    {% endfor %}
-  </section>
-  {% endif %}
-
-  {# --- BESTIARY GRID --- #}
-  {% if bestiary_entries %}
-  <section class="mb-16">
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      {% for entry in bestiary_entries %}
-      {% include "lore/_bestiary.html" %}
-      {% endfor %}
+    {# --- BREADCRUMB --- #}
+    <div class="mb-8">
+        <a href="/lore" class="text-ice-300/50 hover:text-ice-300 text-xs tracking-[0.3em] uppercase transition-colors inline-flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Table of Contents
+        </a>
     </div>
-  </section>
-  {% endif %}
 
-  {# --- GLOSSARY LIST --- #}
-  {% if glossary_entries %}
-  <section class="mb-16">
-    <div class="border-t border-b border-frost-700/40 divide-y divide-frost-700/40">
-      {% for entry in glossary_entries %}
-      {% include "lore/_glossary.html" %}
-      {% endfor %}
+    {# --- CHAPTER HEADING --- #}
+    <header class="text-center mb-12 pb-8 border-b border-frost-700/60">
+        <p class="font-display text-xs tracking-[0.4em] uppercase text-ice-300/40 mb-3">
+            Chapter {{ "%02d" | format(chapter_number) }}
+        </p>
+        <h1 class="font-display text-3xl md:text-5xl font-black tracking-[0.15em] uppercase text-silver-200 frost-glow leading-tight">
+            {{ chapter_name }}
+        </h1>
+
+        {# Discovery progress #}
+        {% set revealed_count = revealed_entries | length %}
+        {% set total_count = revealed_count + unrevealed_entries | length %}
+        {% if total_count > 0 %}
+        <p class="mt-4 text-xs tracking-[0.2em] uppercase text-ice-300/40">
+            {% if request.state.user %}
+                {{ total_count }} {% if total_count == 1 %}entry{% else %}entries{% endif %}
+            {% else %}
+                {{ revealed_count }} of {{ total_count }} discovered
+            {% endif %}
+        </p>
+        {% endif %}
+    </header>
+
+    {# --- THE GEM GRID --- #}
+    {% if revealed_entries or unrevealed_entries %}
+    <div class="gem-grid">
+
+        {# Revealed gems first — alphabetical, clickable #}
+        {% for entry in revealed_entries %}
+            {% set is_revealed = true %}
+            {% include "lore/_gem.html" %}
+        {% endfor %}
+
+        {# Unrevealed gems — anonymous, frost-locked #}
+        {% for entry in unrevealed_entries %}
+            {% set is_revealed = false %}
+            {% include "lore/_gem.html" %}
+        {% endfor %}
+
     </div>
-  </section>
-  {% endif %}
 
-  {# --- EMPTY STATE --- #}
-  {% if not cathedral_entries and not bestiary_entries and not glossary_entries %}
-  <div class="text-center py-20 border border-frost-700 border-dashed">
-    <p class="text-silver-400 italic font-light">
-      This chapter holds no entries yet.
-    </p>
-    {% if request.state.user %}
-    <a href="/lore/new"
-      class="inline-flex items-center gap-2 mt-6 px-5 py-2 border border-ice-500/40 text-ice-300 hover:bg-ice-500/10 hover:border-ice-300 font-display text-sm tracking-widest uppercase transition-colors">
-      Add an Entry
-    </a>
+    {% else %}
+
+    {# --- EMPTY STATE --- #}
+    <div class="text-center py-20 border border-frost-700 border-dashed">
+        <p class="text-silver-400 italic font-light">
+            This chapter holds no entries yet.
+        </p>
+        {% if request.state.user %}
+        <a href="/lore/new"
+           class="inline-flex items-center gap-2 mt-6 px-5 py-2 border border-ice-500/40 text-ice-300 hover:bg-ice-500/10 hover:border-ice-300 font-display text-sm tracking-widest uppercase transition-colors">
+            Add an Entry
+        </a>
+        {% endif %}
+    </div>
+
     {% endif %}
-  </div>
-  {% endif %}
 
-  {# --- CHAPTER NAVIGATION FOOTER --- #}
-  <footer class="mt-16 pt-8 border-t border-frost-700/60">
-    <div class="flex items-center justify-between gap-4">
+    {# --- CHAPTER NAVIGATION FOOTER --- #}
+    <footer class="mt-16 pt-8 border-t border-frost-700/60">
+        <div class="flex items-center justify-between gap-4">
 
-      {# Previous chapter #}
-      <div class="flex-1">
-        {% if prev_chapter %}
-        <a href="/lore/chapter/{{ chapter_to_slug(prev_chapter) }}"
-          class="group inline-flex items-center gap-3 text-left">
-          <svg xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5 text-silver-400/60 group-hover:text-ice-300 group-hover:-translate-x-1 transition-all flex-shrink-0"
-            fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 19l-7-7 7-7" />
-          </svg>
-          <div>
-            <p
-              class="text-[10px] tracking-[0.3em] uppercase text-ice-300/40 group-hover:text-ice-300/70 transition-colors">
-              Previous</p>
-            <p class="font-display text-sm tracking-wider text-silver-300 group-hover:text-ice-300 transition-colors">
-              {{ prev_chapter }}
-            </p>
-          </div>
-        </a>
-        {% endif %}
-      </div>
+            {# Previous chapter #}
+            <div class="flex-1">
+                {% if prev_chapter %}
+                <a href="/lore/chapter/{{ chapter_to_slug(prev_chapter) }}"
+                   class="group inline-flex items-center gap-3 text-left">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-silver-400/60 group-hover:text-ice-300 group-hover:-translate-x-1 transition-all flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 19l-7-7 7-7" />
+                    </svg>
+                    <div>
+                        <p class="text-[10px] tracking-[0.3em] uppercase text-ice-300/40 group-hover:text-ice-300/70 transition-colors">Previous</p>
+                        <p class="font-display text-sm tracking-wider text-silver-300 group-hover:text-ice-300 transition-colors">
+                            {{ prev_chapter }}
+                        </p>
+                    </div>
+                </a>
+                {% endif %}
+            </div>
 
-      {# Table of contents (center) #}
-      <div class="flex-shrink-0">
-        <a href="/lore"
-          class="inline-flex items-center justify-center w-10 h-10 border border-frost-700 hover:border-ice-500/40 text-silver-400/60 hover:text-ice-300 transition-colors"
-          aria-label="Back to table of contents">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-              d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-          </svg>
-        </a>
-      </div>
+            {# Table of contents (center) #}
+            <div class="flex-shrink-0">
+                <a href="/lore"
+                   class="inline-flex items-center justify-center w-10 h-10 border border-frost-700 hover:border-ice-500/40 text-silver-400/60 hover:text-ice-300 transition-colors"
+                   aria-label="Back to table of contents">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                    </svg>
+                </a>
+            </div>
 
-      {# Next chapter #}
-      <div class="flex-1 text-right">
-        {% if next_chapter %}
-        <a href="/lore/chapter/{{ chapter_to_slug(next_chapter) }}"
-          class="group inline-flex items-center gap-3 text-right">
-          <div>
-            <p
-              class="text-[10px] tracking-[0.3em] uppercase text-ice-300/40 group-hover:text-ice-300/70 transition-colors">
-              Next</p>
-            <p class="font-display text-sm tracking-wider text-silver-300 group-hover:text-ice-300 transition-colors">
-              {{ next_chapter }}
-            </p>
-          </div>
-          <svg xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5 text-silver-400/60 group-hover:text-ice-300 group-hover:translate-x-1 transition-all flex-shrink-0"
-            fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5l7 7-7 7" />
-          </svg>
-        </a>
-        {% endif %}
-      </div>
-    </div>
-  </footer>
+            {# Next chapter #}
+            <div class="flex-1 text-right">
+                {% if next_chapter %}
+                <a href="/lore/chapter/{{ chapter_to_slug(next_chapter) }}"
+                   class="group inline-flex items-center gap-3 text-right">
+                    <div>
+                        <p class="text-[10px] tracking-[0.3em] uppercase text-ice-300/40 group-hover:text-ice-300/70 transition-colors">Next</p>
+                        <p class="font-display text-sm tracking-wider text-silver-300 group-hover:text-ice-300 transition-colors">
+                            {{ next_chapter }}
+                        </p>
+                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-silver-400/60 group-hover:text-ice-300 group-hover:translate-x-1 transition-all flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5l7 7-7 7" />
+                    </svg>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </footer>
 
 </article>
+
 {# Codex search (Cmd/Ctrl+K to open) #}
 {% include "lore/_search_overlay.html" %}
+
 {% endblock %}

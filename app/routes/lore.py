@@ -68,11 +68,10 @@ from app.templating import templates
 # dropdown values in the lore form template.
 CODEX_CHAPTERS = [
     "Places of the North",
-    "Allies & Enemies",
-    "The Frostmaiden's Court",
+    "Allies, Enemies & Other Dalefolk",
     "Relics & Curiosities",
+    "Gods & Mysteries",
     "Whispers & Rumors",
-    "The Forgotten",
 ]
 
 
@@ -149,22 +148,12 @@ async def search_data(
 ):
     query = db.query(LoreEntry)
 
-    # Apply the same visibility rules as
-    # everywhere else: hide secrets from
-    # non-DMs, hide unrevealed entries from
-    # non-DMs (those shouldn't be searchable
-    # by players — they don't know they exist).
     if user is None or user.role != "dm":
         query = query.filter(LoreEntry.is_secret == 0)
         query = query.filter(LoreEntry.is_revealed == 1)
 
     entries = query.order_by(LoreEntry.title).all()
 
-    # Build the JSON-serializable list. We only
-    # include the fields the overlay needs:
-    # title for matching/display, subtitle for
-    # display, category and chapter for context,
-    # id for the link target.
     results = [
         {
             "id": entry.id,
@@ -172,11 +161,36 @@ async def search_data(
             "subtitle": entry.subtitle or "",
             "category": entry.category or "",
             "chapter": entry.folio_chapter or "",
+            "url": f"/lore/{entry.id}",
         }
         for entry in entries
     ]
 
+    # Add NPCs to search results
+    npcs = (
+        db.query(Character)
+        .filter(Character.character_type == "npc")
+        .order_by(Character.name)
+        .all()
+    )
+
+    for npc in npcs:
+        results.append(
+            {
+                "id": npc.id,
+                "title": npc.name,
+                "subtitle": npc.one_liner or "",
+                "category": "NPC",
+                "chapter": "Allies, Enemies & Other Dalefolk",
+                "url": f"/characters/{npc.id}",
+            }
+        )
+
+    # Sort combined results alphabetically
+    results.sort(key=lambda r: r["title"].lower())
+
     return {"entries": results}
+
 
 # ============================================
 # ROUTE: LORE LIST
@@ -213,9 +227,7 @@ async def lore_list(
         query = query.filter(LoreEntry.is_secret == 0)
 
     entries = query.order_by(
-        LoreEntry.folio_chapter,
-        LoreEntry.folio_position,
-        LoreEntry.title
+        LoreEntry.folio_chapter, LoreEntry.folio_position, LoreEntry.title
     ).all()
 
     # Group entries by chapter into a dictionary.
@@ -229,6 +241,21 @@ async def lore_list(
             chapters[chapter] = []
         chapters[chapter].append(entry)
 
+        # Sort chapters into canonical order.
+        # Python dicts preserve insertion order,
+        # so rebuilding the dict in the right
+        # order gives us ordered iteration in
+        # the template.
+        ordered_chapters = {}
+        for chapter_name in CODEX_CHAPTERS:
+            if chapter_name in chapters:
+                ordered_chapters[chapter_name] = chapters[chapter_name]
+        # Catch any chapters not in the canonical list
+        for chapter_name, entries_list in chapters.items():
+            if chapter_name not in ordered_chapters:
+                ordered_chapters[chapter_name] = entries_list
+        chapters = ordered_chapters
+
     # Also count revealed vs total for each chapter,
     # which the template uses to show "X of Y known"
     # progress. For DMs this just shows the totals.
@@ -241,6 +268,28 @@ async def lore_list(
             "revealed": revealed,
         }
 
+    # Add NPC count to the Dalefolk chapter stats
+    dalefolk_chapter = "Allies, Enemies & Other Dalefolk"
+    if dalefolk_chapter in chapter_stats:
+        npc_count = (
+            db.query(Character).filter(Character.character_type == "npc").count()
+        )
+        chapter_stats[dalefolk_chapter]["total"] += npc_count
+        chapter_stats[dalefolk_chapter]["revealed"] += npc_count
+    elif dalefolk_chapter not in chapters:
+        # Chapter might not exist yet in lore entries
+        # but should appear if there are NPCs
+        npc_count = (
+            db.query(Character).filter(Character.character_type == "npc").count()
+        )
+        if npc_count > 0:
+            chapters[dalefolk_chapter] = []
+            chapter_stats[dalefolk_chapter] = {
+                "total": npc_count,
+                "revealed": npc_count,
+            }
+
+    # template content dictionary
     return templates.TemplateResponse(
         "lore/list.html",
         {
@@ -248,6 +297,7 @@ async def lore_list(
             "title": "The Codex — Godfall",
             "chapters": chapters,
             "chapter_stats": chapter_stats,
+            "codex_chapters": CODEX_CHAPTERS,
         },
     )
 
@@ -399,7 +449,6 @@ async def chapter_spread(
     db: Session = Depends(get_db),
     user: Optional[User] = Depends(get_current_user),
 ):
-    # Resolve the slug to a real chapter name
     chapter_name = slug_to_chapter(slug)
     if chapter_name is None:
         return HTMLResponse(
@@ -408,35 +457,72 @@ async def chapter_spread(
             status_code=404,
         )
 
-    # Query entries for this chapter.
+    # --- LORE ENTRIES ---
     query = db.query(LoreEntry).filter(LoreEntry.folio_chapter == chapter_name)
 
-    # Non-DMs never see secret entries
     if user is None or user.role != "dm":
         query = query.filter(LoreEntry.is_secret == 0)
 
-    # Order by position, then title as tiebreaker
-    entries = query.order_by(LoreEntry.folio_position, LoreEntry.title).all()
+    lore_entries = query.all()
 
-    # Group entries by layout treatment.
-    # Each group will be rendered with its own
-    # template fragment.
-    cathedral_entries = [e for e in entries if e.folio_layout == "cathedral"]
-    bestiary_entries = [e for e in entries if e.folio_layout == "bestiary"]
-    glossary_entries = [e for e in entries if e.folio_layout == "glossary"]
-    # Any entry with an unexpected layout falls
-    # back to bestiary. Better than dropping.
-    other_entries = [
-        e
-        for e in entries
-        if e.folio_layout not in ("cathedral", "bestiary", "glossary")
-    ]
-    if other_entries:
-        bestiary_entries.extend(other_entries)
+    # --- NPCs (only in the Dalefolk chapter) ---
+    # NPCs live in the Character table but appear
+    # as gems in the codex. We query them separately
+    # and wrap them in a lightweight object that the
+    # gem template can render uniformly alongside
+    # lore entries.
+    npc_gems = []
+    if chapter_name == "Allies, Enemies & Other Dalefolk":
+        npcs = (
+            db.query(Character)
+            .filter(Character.character_type == "npc")
+            .order_by(Character.name)
+            .all()
+        )
 
-    # Figure out previous and next chapters for
-    # navigation. The CODEX_CHAPTERS list defines
-    # the canonical order.
+        for npc in npcs:
+            # Build a gem-compatible wrapper.
+            # The template expects: id, title,
+            # category, images, is_revealed,
+            # is_secret, and a URL to link to.
+            npc_gems.append(
+                {
+                    "id": npc.id,
+                    "title": npc.name,
+                    "category": "NPC",
+                    "images": npc.images,
+                    "is_revealed": 1,  # NPCs are visible once created
+                    "is_secret": 0,
+                    "is_npc": True,  # Flag so the template can build the right URL
+                    "importance": npc.importance or "minor",
+                }
+            )
+
+    # --- COMBINE AND SORT ---
+    # Build unified lists of revealed and
+    # unrevealed items. Each item is either
+    # a LoreEntry object or an NPC dict.
+
+    def get_title(item):
+        if isinstance(item, dict):
+            return item["title"].lower()
+        return item.title.lower()
+
+    def is_item_revealed(item):
+        if isinstance(item, dict):
+            return item["is_revealed"] == 1
+        return item.is_revealed == 1
+
+    all_items = list(lore_entries) + npc_gems
+
+    revealed_entries = sorted(
+        [e for e in all_items if is_item_revealed(e)], key=get_title
+    )
+    unrevealed_entries = sorted(
+        [e for e in all_items if not is_item_revealed(e)], key=get_title
+    )
+
+    # Chapter navigation
     try:
         current_idx = CODEX_CHAPTERS.index(chapter_name)
         prev_chapter = CODEX_CHAPTERS[current_idx - 1] if current_idx > 0 else None
@@ -456,9 +542,8 @@ async def chapter_spread(
             "title": f"{chapter_name} — The Codex",
             "chapter_name": chapter_name,
             "chapter_number": current_idx + 1,
-            "cathedral_entries": cathedral_entries,
-            "bestiary_entries": bestiary_entries,
-            "glossary_entries": glossary_entries,
+            "revealed_entries": revealed_entries,
+            "unrevealed_entries": unrevealed_entries,
             "prev_chapter": prev_chapter,
             "next_chapter": next_chapter,
             "chapter_to_slug": chapter_to_slug,
