@@ -18,14 +18,22 @@ New Jinja2 concepts in this template:
 
   {# --- BREADCRUMB / BACK LINK --- #}
   <div class="mb-8">
-    <a href="/characters"
-      class="text-ice-300/60 hover:text-ice-300 text-sm tracking-widest uppercase transition-colors inline-flex items-center gap-2">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-      </svg>
-      Back to Roster
+    {% if character.character_type == "npc" %}
+    <a href="/lore/chapter/allies-enemies-and-other-dalefolk" class="text-ice-300/60 hover:text-ice-300 text-sm tracking-widest uppercase transition-colors inline-flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+        Back to Codex
     </a>
-  </div>
+    {% else %}
+    <a href="/characters" class="text-ice-300/60 hover:text-ice-300 text-sm tracking-widest uppercase transition-colors inline-flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+        Back to Roster
+    </a>
+    {% endif %}
+</div>
 
   {#
   --- HERO SECTION ---

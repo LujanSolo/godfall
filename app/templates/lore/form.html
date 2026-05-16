@@ -100,26 +100,6 @@ template handles both new and edit.
           </p>
         </div>
 
-        {# --- LAYOUT --- #}
-        <div>
-          <label for="folio_layout" class="block text-xs tracking-widest uppercase text-silver-400 mb-2">
-            Page Treatment
-          </label>
-          <select id="folio_layout" name="folio_layout"
-            class="w-full px-4 py-2.5 bg-frost-800/60 border border-frost-700 text-silver-200 focus:border-ice-500/60 focus:outline-none transition-colors">
-            {% set current_layout = entry.folio_layout if editing else "bestiary" %}
-            <option value="cathedral" {% if current_layout=="cathedral" %}selected{% endif %}>Cathedral — one spotlight
-              entry per page</option>
-            <option value="bestiary" {% if current_layout=="bestiary" %}selected{% endif %}>Bestiary — grid alongside
-              related entries</option>
-            <option value="glossary" {% if current_layout=="glossary" %}selected{% endif %}>Glossary — compact textual
-              listing</option>
-          </select>
-          <p class="mt-2 text-xs text-silver-400/60 italic">
-            Visual treatment on the codex spread.
-          </p>
-        </div>
-
         {# --- POSITION --- #}
         <div>
           <label for="folio_position" class="block text-xs tracking-widest uppercase text-silver-400 mb-2">

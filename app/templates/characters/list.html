@@ -97,7 +97,7 @@ gated behind the auth check.
   
   {# --- CODEX LINK --- #}
   <div class="text-center mt-16">
-    <a href="/lore/chapter/allies-enemies-and-other-dalefolk"
+    <a href="/lore/chapter/allies,-enemies-and-other-dalefolk"
       class="group inline-flex items-center gap-3 text-ice-300/50 hover:text-ice-300 transition-colors">
       <span class="text-xs tracking-[0.3em] uppercase">Allies, enemies &amp; other Dalefolk</span>
       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 group-hover:translate-x-1 transition-transform" fill="none"
@@ -116,24 +116,6 @@ gated behind the auth check.
   importance value lands here. Better
   than dropping them silently.
   #}
-  {% if npcs_other %}
-  <div class="mb-16">
-    <div class="flex items-center gap-4 mb-6">
-      <div class="h-px w-8 bg-frost-700"></div>
-      <p class="font-display text-xs tracking-[0.4em] uppercase text-silver-400/60">Also</p>
-      <div class="flex-1 h-px bg-frost-700/60"></div>
-    </div>
-
-    <div class="space-y-4">
-      {% for character in npcs_other %}
-      {% include "characters/_npc_row.html" %}
-      {% endfor %}
-    </div>
-  </div>
-  {% endif %}
-
-</section>
-{% endif %}
 
 {#
 --- EMPTY STATE ---

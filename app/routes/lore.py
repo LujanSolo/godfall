@@ -76,9 +76,13 @@ CODEX_CHAPTERS = [
 
 
 def chapter_to_slug(chapter_name: str) -> str:
-    """Convert a chapter name to its URL slug."""
     return (
-        chapter_name.lower().replace(" & ", "-and-").replace(" ", "-").replace("'", "")
+        chapter_name
+        .lower()
+        .replace(" & ", "-and-")
+        .replace(",", "")
+        .replace(" ", "-")
+        .replace("'", "")
     )
 
 

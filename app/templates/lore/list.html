@@ -56,8 +56,8 @@ The DM also sees an "Add Entry" button.
     chapter name — this matches what the
     spread route will expect.
     #}
-    {% set slug = chapter_name | lower | replace(" & ", "-and-") | replace(" ", "-") | replace("'", "") %}
-
+    {% set slug = chapter_name | lower | replace(" & ", "-and-") | replace(",", "") | replace(" ", "-") | replace("'",
+    "") %}
     <a href="/lore/chapter/{{ slug }}"
       class="group block py-6 px-4 border-b border-frost-700/40 last:border-b-0 hover:bg-ice-500/5 transition-colors">
 
