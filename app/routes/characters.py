@@ -221,8 +221,6 @@ async def character_create(
     _dm: User = Depends(require_dm),
     name: str = Form(...),
     player_name: Optional[str] = Form(None),
-    character_type: str = Form("player"),
-    importance: str = Form("major"),
     race: str = Form(...),
     character_class: str = Form(...),
     level: int = Form(1),
@@ -240,8 +238,6 @@ async def character_create(
     character = Character(
         name=name,
         player_name=player_name,
-        character_type=character_type,
-        importance=importance,
         race=race,
         character_class=character_class,
         level=level,

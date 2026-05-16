@@ -408,6 +408,19 @@ lost in the snowstorm.
   `{% include %}`. The "two-times rule" applies once we have three
   callers.
 
+- **Centralize `chapter_to_slug` for templates** — the slug
+  generation logic for codex chapter URLs currently exists in two
+  places: the Python function `chapter_to_slug()` in `lore.py`
+  (canonical) and inline Jinja2 filter chains in templates
+  (`list.html`, `detail.html`, `characters/detail.html`). The
+  inline versions have repeatedly fallen out of sync (missing
+  comma stripping, etc.), causing 404s on chapter links.
+
+  Fix: pass `chapter_to_slug` into the template context (the
+  chapter spread route already does this) and use it everywhere
+  instead of the inline filter chains. One source of truth, no
+  more duplication bugs. Small change, high reliability payoff.
+
 - **Backup strategy for the database and uploads** — `godfall.db` and
   `app/static/uploads/` contain everything that isn't reproducible
   from code: characters, sessions, timeline events, lore entries,
