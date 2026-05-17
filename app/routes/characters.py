@@ -129,10 +129,7 @@ router = APIRouter(
 # Protocol droid doing its job.
 # ============================================
 @router.get("/")
-async def character_list(
-    request: Request,
-    db: Session = Depends(get_db)
-):
+async def character_list(request: Request, db: Session = Depends(get_db)):
     # --- Player characters: alphabetical ---
     pcs = (
         db.query(Character)
@@ -146,7 +143,7 @@ async def character_list(
             "request": request,
             "title": "The Roster — Godfall",
             "pcs": pcs,
-        }
+        },
     )
 
 
@@ -223,9 +220,17 @@ async def character_create(
     player_name: Optional[str] = Form(None),
     race: str = Form(...),
     character_class: str = Form(...),
+    character_subclass: Optional[str] = Form(None),
+    level_display: Optional[str] = Form(None),
     level: int = Form(1),
     age: str = Form(None),
     one_liner: str = Form(None),
+    armor_class: Optional[int] = Form(None),
+    proficiency_bonus: Optional[int] = Form(None),
+    spell_dc: Optional[int] = Form(None),
+    hit_points: Optional[int] = Form(None),
+    speed: Optional[str] = Form(None),
+    initiative_bonus: Optional[int] = Form(None),
     backstory: str = Form(None),
     top_magic_items: str = Form(None),
     notable_traits: str = Form(None),
@@ -243,6 +248,14 @@ async def character_create(
         level=level,
         age=age,
         one_liner=one_liner,
+        character_subclass=character_subclass,
+        level_display=level_display,
+        armor_class=armor_class,
+        proficiency_bonus=proficiency_bonus,
+        spell_dc=spell_dc,
+        hit_points=hit_points,
+        speed=speed,
+        initiative_bonus=initiative_bonus,
         backstory=backstory,
         top_magic_items=top_magic_items,
         notable_traits=notable_traits,
@@ -378,13 +391,19 @@ async def character_update(
     _dm: User = Depends(require_dm),
     name: str = Form(...),
     player_name: Optional[str] = Form(None),
-    character_type: str = Form("player"),
-    importance: str = Form("major"),
     race: str = Form(...),
     character_class: str = Form(...),
+    character_subclass: Optional[str] = Form(None),
+    level_display: Optional[str] = Form(None),
     level: int = Form(1),
     age: str = Form(None),
     one_liner: str = Form(None),
+    armor_class: Optional[int] = Form(None),
+    proficiency_bonus: Optional[int] = Form(None),
+    spell_dc: Optional[int] = Form(None),
+    hit_points: Optional[int] = Form(None),
+    speed: Optional[str] = Form(None),
+    initiative_bonus: Optional[int] = Form(None),
     backstory: str = Form(None),
     top_magic_items: str = Form(None),
     notable_traits: str = Form(None),
@@ -400,13 +419,19 @@ async def character_update(
     # the changes automatically.
     character.name = name
     character.player_name = player_name
-    character.character_type = character_type
-    character.importance = importance
     character.race = race
     character.character_class = character_class
+    character.character_subclass = character_subclass
+    character.level_display = level_display
     character.level = level
     character.age = age
     character.one_liner = one_liner
+    character.armor_class = armor_class
+    character.proficiency_bonus = proficiency_bonus
+    character.spell_dc = spell_dc
+    character.hit_points = hit_points
+    character.speed = speed
+    character.initiative_bonus = initiative_bonus
     character.backstory = backstory
     character.top_magic_items = top_magic_items
     character.notable_traits = notable_traits

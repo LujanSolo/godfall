@@ -848,3 +848,54 @@ a.gem-slot:hover .gem-glow {
 a.gem-slot:hover .gem-dm-unrevealed .gem-border {
   background: rgba(251, 191, 36, 0.4);
 }
+
+/* ============================================
+   CHARACTER STAT BLOCKS
+   ============================================
+   Compact iconic stat displays for the
+   character detail page. Each stat is a
+   small centered column: big number on top,
+   icon + label below.
+   ============================================ */
+
+.stat-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 4.5rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid rgba(125, 211, 252, 0.15);
+    background: rgba(10, 14, 23, 0.4);
+    transition: border-color 0.3s ease, background 0.3s ease;
+}
+
+.stat-block:hover {
+    border-color: rgba(125, 211, 252, 0.35);
+    background: rgba(125, 211, 252, 0.05);
+}
+
+.stat-value {
+    font-family: 'Cinzel', serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: rgba(214, 221, 232, 0.9);
+    line-height: 1;
+    letter-spacing: 0.05em;
+}
+
+.stat-label {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-top: 0.5rem;
+    font-family: 'Cinzel', serif;
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(125, 211, 252, 0.5);
+}
+
+.stat-icon {
+    width: 0.875rem;
+    height: 0.875rem;
+}

@@ -117,6 +117,7 @@ class Character(Base):
     importance = Column(String(20), default="major", nullable=True)
     race = Column(String(50), nullable=False)
     character_class = Column(String(50), nullable=False)
+    character_subclass = Column(String(100))
 
     # We call it "character_class" instead of
     # "class" because "class" is a reserved
@@ -125,7 +126,26 @@ class Character(Base):
     # as a column name would confuse Python.
 
     level = Column(Integer, default=1)
+    level_display = Column(String(50))
     age = Column(String(30))
+
+    # --- MULTICLASS & COMBAT STATS ---
+    # class_detail is a free-text field for
+    # multiclass breakdowns: "Ranger 5 / Rogue 2".
+    # Displayed alongside the total level.
+    class_detail = Column(String(100))
+
+    # Quick-glance combat stats. These are the
+    # numbers a player checks most often during
+    # play. Nullable because not every field
+    # applies to every character (spell_dc is
+    # irrelevant for non-casters).
+    armor_class = Column(Integer)
+    proficiency_bonus = Column(Integer)
+    spell_dc = Column(Integer)
+    hit_points = Column(Integer)
+    speed = Column(String(50))
+    initiative_bonus = Column(Integer)
 
     # --- THE ONE-LINER ---
     # A punchy sentence that captures who
@@ -212,10 +232,7 @@ class Character(Base):
     # new way to look at what's already there.
     # Like turning the holocron over and reading
     # the reflection on the other side.
-    lore_links = relationship(
-        "LoreCharacter",
-        back_populates="character"
-    )
+    lore_links = relationship("LoreCharacter", back_populates="character")
 
     # --- STRING REPRESENTATION ---
     # __repr__ defines what Python prints when
@@ -512,10 +529,7 @@ class TimelineEvent(Base):
         "EventCharacter", back_populates="event", cascade="all, delete-orphan"
     )
 
-    lore_links = relationship(
-        "LoreEvent",
-        back_populates="event"
-    )
+    lore_links = relationship("LoreEvent", back_populates="event")
 
     def __repr__(self):
         return f"<TimelineEvent: {self.title}>"
@@ -697,7 +711,7 @@ class LoreEntry(Base):
     # Stored as Integer (0/1) for SQLite
     # consistency with our other booleans.
     is_secret = Column(Integer, default=0, nullable=False)
-    
+
     # --- FOLIO / CODEX FIELDS ---
     # Which chapter this entry belongs to in
     # the codex (e.g. "Places of the North",
@@ -838,7 +852,7 @@ class LoreEvent(Base):
 
     def __repr__(self):
         return f"<LoreEvent: Lore #{self.lore_id} ↔ Event #{self.event_id}>"
-    
+
 
 # ============================================
 # USER MODEL
