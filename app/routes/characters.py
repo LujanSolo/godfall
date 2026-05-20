@@ -39,7 +39,7 @@
 # File: marker that tells FastAPI "this
 # parameter is an uploaded file."
 from app.auth import require_dm
-from typing import Optional
+from typing import Optional, List
 from fastapi import (
     APIRouter,
     Request,
@@ -48,6 +48,7 @@ from fastapi import (
     UploadFile,
     File,
 )
+import json
 
 # RedirectResponse: sends the browser to a
 # different URL. After creating a character,
@@ -231,6 +232,17 @@ async def character_create(
     hit_points: Optional[int] = Form(None),
     speed: Optional[str] = Form(None),
     initiative_bonus: Optional[int] = Form(None),
+    passive_perception: Optional[int] = Form(None),
+    passive_investigation: Optional[int] = Form(None),
+    passive_insight: Optional[int] = Form(None),
+    has_inspiration: int = Form(0),
+    languages: List[str] = Form(default=[]),
+    sense_names: List[str] = Form(default=[]),
+    sense_detail_darkvision: Optional[str] = Form(None),
+    sense_detail_blindsight: Optional[str] = Form(None),
+    sense_detail_tremorsense: Optional[str] = Form(None),
+    sense_detail_truesight: Optional[str] = Form(None),
+    sense_detail_devils_sight: Optional[str] = Form(None),
     backstory: str = Form(None),
     top_magic_items: str = Form(None),
     notable_traits: str = Form(None),
@@ -256,6 +268,30 @@ async def character_create(
         hit_points=hit_points,
         speed=speed,
         initiative_bonus=initiative_bonus,
+        passive_perception=passive_perception,
+        passive_investigation=passive_investigation,
+        passive_insight=passive_insight,
+        has_inspiration=has_inspiration,
+        languages=json.dumps(languages) if languages else None,
+        senses=(
+            json.dumps(
+                [
+                    {
+                        "name": name,
+                        "detail": {
+                            "darkvision": sense_detail_darkvision,
+                            "blindsight": sense_detail_blindsight,
+                            "tremorsense": sense_detail_tremorsense,
+                            "truesight": sense_detail_truesight,
+                            "devils_sight": sense_detail_devils_sight,
+                        }.get(name.lower().replace(" ", "_").replace("'", ""), ""),
+                    }
+                    for name in sense_names
+                ]
+            )
+            if sense_names
+            else None
+        ),
         backstory=backstory,
         top_magic_items=top_magic_items,
         notable_traits=notable_traits,
@@ -404,6 +440,17 @@ async def character_update(
     hit_points: Optional[int] = Form(None),
     speed: Optional[str] = Form(None),
     initiative_bonus: Optional[int] = Form(None),
+    passive_perception: Optional[int] = Form(None),
+    passive_investigation: Optional[int] = Form(None),
+    passive_insight: Optional[int] = Form(None),
+    has_inspiration: int = Form(0),
+    languages: List[str] = Form(default=[]),
+    sense_names: List[str] = Form(default=[]),
+    sense_detail_darkvision: Optional[str] = Form(None),
+    sense_detail_blindsight: Optional[str] = Form(None),
+    sense_detail_tremorsense: Optional[str] = Form(None),
+    sense_detail_truesight: Optional[str] = Form(None),
+    sense_detail_devils_sight: Optional[str] = Form(None),
     backstory: str = Form(None),
     top_magic_items: str = Form(None),
     notable_traits: str = Form(None),
@@ -432,6 +479,30 @@ async def character_update(
     character.hit_points = hit_points
     character.speed = speed
     character.initiative_bonus = initiative_bonus
+    character.passive_perception = passive_perception
+    character.passive_investigation = passive_investigation
+    character.passive_insight = passive_insight
+    character.has_inspiration = has_inspiration
+    character.languages = json.dumps(languages) if languages else None
+    character.senses = (
+        json.dumps(
+            [
+                {
+                    "name": name,
+                    "detail": {
+                        "darkvision": sense_detail_darkvision,
+                        "blindsight": sense_detail_blindsight,
+                        "tremorsense": sense_detail_tremorsense,
+                        "truesight": sense_detail_truesight,
+                        "devils_sight": sense_detail_devils_sight,
+                    }.get(name.lower().replace(" ", "_").replace("'", ""), ""),
+                }
+                for name in sense_names
+            ]
+        )
+        if sense_names
+        else None
+    )
     character.backstory = backstory
     character.top_magic_items = top_magic_items
     character.notable_traits = notable_traits

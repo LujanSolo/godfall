@@ -20,10 +20,21 @@
 from fastapi.templating import Jinja2Templates
 from pathlib import Path
 import markdown as md_lib
+import json
 
 BASE_DIR = Path(__file__).resolve().parent
 templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
+
+def from_json_filter(text):
+    if not text:
+        return []
+    try:
+        return json.loads(text)
+    except (json.JSONDecodeError, TypeError):
+        return []
+
+templates.env.filters["from_json"] = from_json_filter
 
 # --- MARKDOWN FILTER ---
 def markdown_filter(text):

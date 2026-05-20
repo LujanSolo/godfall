@@ -114,12 +114,8 @@ back to the first image if no primary set #}
         {{ character.name }}
       </h2>
       <p class="mt-2 text-xs tracking-[0.2em] uppercase text-ice-300/60 text-center">
-        {{ character.race }}
         {% if character.character_class %}
-        &middot; {{ character.character_class }}
-        {% endif %}
-        {% if character.level_display %}
-        &middot; Lvl {{ character.level_display }}
+        {{ character.character_class }}
         {% endif %}
       </p>
     </div>

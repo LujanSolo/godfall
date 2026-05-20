@@ -899,3 +899,60 @@ a.gem-slot:hover .gem-dm-unrevealed .gem-border {
     width: 0.875rem;
     height: 0.875rem;
 }
+
+
+/* ============================================
+   COMPACT STAT CELLS
+   ============================================
+   Dense inline stat display for the character
+   detail sheet zone. Like readouts on the
+   Falcon's dashboard — label on the left,
+   value on the right, everything in a tight
+   horizontal strip.
+   ============================================ */
+
+.stat-compact {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-right: 1px solid rgba(125, 211, 252, 0.1);
+    flex-shrink: 0;
+}
+
+.stat-compact:last-child {
+    border-right: none;
+}
+
+.stat-compact-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.55rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(125, 211, 252, 0.4);
+    white-space: nowrap;
+}
+
+.stat-compact-value {
+    font-family: 'Cinzel', serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: rgba(214, 221, 232, 0.9);
+    line-height: 1;
+    letter-spacing: 0.05em;
+}
+
+/* Mobile: stack the stat cells in a grid
+   rather than a single flex row */
+@media (max-width: 640px) {
+    .stat-compact {
+        border-right: none;
+        border-bottom: 1px solid rgba(125, 211, 252, 0.06);
+        flex: 1 1 33%;
+        justify-content: center;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.5rem;
+    }
+}

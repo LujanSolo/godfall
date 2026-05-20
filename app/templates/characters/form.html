@@ -23,7 +23,7 @@ New concepts here:
 
 <section class="max-w-3xl mx-auto px-6 py-12">
 
-  {# --- BACK LINK --- #}
+  {# --- BACK LINfK --- #}
   <div class="mb-8">
     {#
     If editing, back goes to the
@@ -74,229 +74,271 @@ New concepts here:
   ships depending on the mission.
   #}
   <form action="{% if editing %}/characters/{{ character.id }}/edit{% else %}/characters/new{% endif %}" method="POST"
-    class="space-y-8">
+    class="space-y-6">
 
-    {#
-    --- IDENTITY SECTION ---
-    Required fields are marked with a
-    small red asterisk so the user knows
-    they're mandatory.
+    {# ==========================================
+    ZONE 1: THE SHEET
+    Dense, compact, cockpit-readout style.
+    Like an X-wing's status display — every
+    gauge visible, nothing wasted.
+    ========================================== #}
 
-    "value" attribute pre-fills the input
-    when editing. The | default('') filter
-    ensures we get an empty string if the
-    field is somehow None — without it,
-    "None" would literally appear in the
-    input. Like a droid speaking out loud:
-    "ERROR: NULL VALUE" instead of staying
-    quiet.
-    #}
-    <fieldset class="space-y-6">
-      <legend class="font-display text-sm tracking-[0.3em] uppercase text-ice-300/60 mb-4">Identity</legend>
-
-      {# Name + Player Name (side-by-side on desktop) #}
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label for="name" class="block text-xs tracking-widest uppercase text-silver-400 mb-2">
-            Character Name <span class="text-red-400">*</span>
-          </label>
-          <input type="text" id="name" name="name" required
-            value="{% if editing %}{{ character.name | default('') }}{% endif %}"
-            class="w-full px-4 py-2.5 bg-frost-800/60 border border-frost-700 text-silver-200 placeholder:text-silver-400/40 focus:border-ice-500/60 focus:outline-none transition-colors">
-        </div>
-
-        <div>
-          <label for="player_name" class="block text-xs tracking-widest uppercase text-silver-400 mb-2">
-            Player Name
-          </label>
-          <input type="text" id="player_name" name="player_name"
-            value="{% if editing %}{{ character.player_name | default('') }}{% endif %}"
-            placeholder="The real human behind this character"
-            class="w-full px-4 py-2.5 bg-frost-800/60 border border-frost-700 text-silver-200 placeholder:text-silver-400/40 focus:border-ice-500/60 focus:outline-none transition-colors">
-        </div>
-      </div>
-
-      {# Race + Class + Level (three columns on desktop) #}
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div>
-          <label for="race" class="block text-xs tracking-widest uppercase text-silver-400 mb-2">
-            Race <span class="text-red-400">*</span>
-          </label>
-          <input type="text" id="race" name="race" required
-            value="{% if editing %}{{ character.race | default('') }}{% endif %}" placeholder="Tiefling, Half-Elf, etc."
-            class="w-full px-4 py-2.5 bg-frost-800/60 border border-frost-700 text-silver-200 placeholder:text-silver-400/40 focus:border-ice-500/60 focus:outline-none transition-colors">
-        </div>
-
-        <div>
-          <label for="character_class" class="block text-xs tracking-widest uppercase text-silver-400 mb-2">
-            Class
-          </label>
-          <input type="text" id="character_class" name="character_class"
-            value="{% if editing %}{{ character.character_class | default('') }}{% endif %}"
-            placeholder="e.g. Wizard or Wizard/Fighter"
-            class="w-full px-4 py-2.5 bg-frost-800/60 border border-frost-700 text-silver-200 placeholder:text-silver-400/40 focus:border-ice-500/60 focus:outline-none transition-colors">
-        </div>
-        <div>
-          <label for="character_subclass" class="block text-xs tracking-widest uppercase text-silver-400 mb-2">
-            Subclass
-          </label>
-          <input type="text" id="character_subclass" name="character_subclass"
-            value="{% if editing %}{{ character.character_subclass | default('') }}{% endif %}"
-            placeholder="e.g. Bladesinger"
-            class="w-full px-4 py-2.5 bg-frost-800/60 border border-frost-700 text-silver-200 placeholder:text-silver-400/40 focus:border-ice-500/60 focus:outline-none transition-colors">
-        </div>
-        <!-- <div>
-          <label for="class_detail" class="block text-xs tracking-widest uppercase text-silver-400 mb-2">
-            Class Breakdown
-          </label>
-          <input type="text" id="class_detail" name="class_detail"
-            value="{% if editing %}{{ character.class_detail | default('') }}{% endif %}"
-            placeholder="e.g. Ranger 5 / Rogue 2"
-            class="w-full px-4 py-2.5 bg-frost-800/60 border border-frost-700 text-silver-200 placeholder:text-silver-400/40 focus:border-ice-500/60 focus:outline-none transition-colors">
-          <p class="mt-2 text-xs text-silver-400/60 italic">
-            Optional. For multiclassed characters.
-          </p>
-        </div> -->
-        <div>
-          <label for="level_display" class="block text-xs tracking-widest uppercase text-silver-400 mb-2">
-            Level
-          </label>
-          <input type="text" id="level_display" name="level_display"
-            value="{% if editing %}{{ character.level_display | default('') }}{% endif %}" placeholder="e.g. 7 or 6/1"
-            class="w-full px-4 py-2.5 bg-frost-800/60 border border-frost-700 text-silver-200 placeholder:text-silver-400/40 focus:border-ice-500/60 focus:outline-none transition-colors">
-        </div>
-      </div>
-
-      {# Age + Status #}
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label for="age" class="block text-xs tracking-widest uppercase text-silver-400 mb-2">
-            Age
-          </label>
-          <input type="text" id="age" name="age" value="{% if editing %}{{ character.age | default('') }}{% endif %}"
-            placeholder="142, ageless, unknown..."
-            class="w-full px-4 py-2.5 bg-frost-800/60 border border-frost-700 text-silver-200 placeholder:text-silver-400/40 focus:border-ice-500/60 focus:outline-none transition-colors">
-        </div>
-
-        {#
-        SELECT DROPDOWN
-        The "selected" attribute marks
-        which option should be pre-chosen
-        when editing. We use Jinja2 to
-        add it conditionally.
-
-        Notice how the {% if %} blocks
-        are tucked INSIDE the option
-        tag. Looks ugly but is the
-        cleanest way to handle it.
-        #}
-        <div>
-          <label for="status" class="block text-xs tracking-widest uppercase text-silver-400 mb-2">
-            Status
-          </label>
-          <select id="status" name="status"
-            class="w-full px-4 py-2.5 bg-frost-800/60 border border-frost-700 text-silver-200 focus:border-ice-500/60 focus:outline-none transition-colors">
-            <option value="Active" {% if editing and character.status=="Active" %}selected{% endif %}>Active</option>
-            <option value="Dead" {% if editing and character.status=="Dead" %}selected{% endif %}>Dead</option>
-            <option value="Missing" {% if editing and character.status=="Missing" %}selected{% endif %}>Missing</option>
-            <option value="Unknown" {% if editing and character.status=="Unknown" %}selected{% endif %}>Unknown</option>
-          </select>
-        </div>
-      </div>
-    </fieldset>
-
-    {#
-    --- THE ONE-LINER ---
-    Standalone because it's the most
-    important narrative field — the hook.
-    #}
-    <fieldset>
-      <legend class="font-display text-sm tracking-[0.3em] uppercase text-ice-300/60 mb-4">The Hook</legend>
-
+    {# --- ROW 1: Name + Player --- #}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
       <div>
-        <label for="one_liner" class="block text-xs tracking-widest uppercase text-silver-400 mb-2">
-          One-Liner
+        <label for="name" class="block text-[10px] tracking-widest uppercase text-silver-400/70 mb-1">
+          Character Name <span class="text-red-400">*</span>
         </label>
-        <input type="text" id="one_liner" name="one_liner" maxlength="255"
-          value="{% if editing %}{{ character.one_liner | default('') }}{% endif %}"
-          placeholder="A single sentence that captures who they are."
-          class="w-full px-4 py-2.5 bg-frost-800/60 border border-frost-700 text-silver-200 placeholder:text-silver-400/40 focus:border-ice-500/60 focus:outline-none transition-colors">
+        <input type="text" id="name" name="name" required
+          value="{% if editing %}{{ character.name | default('') }}{% endif %}"
+          class="w-full px-3 py-1.5 bg-frost-800/60 border border-frost-700 text-silver-200 text-sm focus:border-ice-500/60 focus:outline-none transition-colors">
       </div>
-    </fieldset>
-    {#
-    --- COMBAT STATS ---
-    Quick-glance numbers that players check
-    most often. All optional — fill in what
-    applies to this character.
-    #}
-    <fieldset>
-      <legend class="font-display text-sm tracking-[0.3em] uppercase text-ice-300/60 mb-4">Combat Stats</legend>
-
-      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-
-        <div>
-          <label for="hit_points" class="block text-xs tracking-widest uppercase text-silver-400 mb-2">
-            Hit Points
-          </label>
-          <input type="number" id="hit_points" name="hit_points"
-            value="{% if editing and character.hit_points %}{{ character.hit_points }}{% endif %}" placeholder="—"
-            class="w-full px-4 py-2.5 bg-frost-800/60 border border-frost-700 text-silver-200 placeholder:text-silver-400/40 focus:border-ice-500/60 focus:outline-none transition-colors text-center">
-        </div>
-
-        <div>
-          <label for="armor_class" class="block text-xs tracking-widest uppercase text-silver-400 mb-2">
-            Armor Class
-          </label>
-          <input type="number" id="armor_class" name="armor_class"
-            value="{% if editing and character.armor_class %}{{ character.armor_class }}{% endif %}" placeholder="—"
-            class="w-full px-4 py-2.5 bg-frost-800/60 border border-frost-700 text-silver-200 placeholder:text-silver-400/40 focus:border-ice-500/60 focus:outline-none transition-colors text-center">
-        </div>
-
-        <div>
-          <label for="proficiency_bonus" class="block text-xs tracking-widest uppercase text-silver-400 mb-2">
-            Proficiency
-          </label>
-          <input type="number" id="proficiency_bonus" name="proficiency_bonus"
-            value="{% if editing and character.proficiency_bonus %}{{ character.proficiency_bonus }}{% endif %}"
-            placeholder="—"
-            class="w-full px-4 py-2.5 bg-frost-800/60 border border-frost-700 text-silver-200 placeholder:text-silver-400/40 focus:border-ice-500/60 focus:outline-none transition-colors text-center">
-        </div>
-
-        <div>
-          <label for="initiative_bonus" class="block text-xs tracking-widest uppercase text-silver-400 mb-2">
-            Initiative
-          </label>
-          <input type="number" id="initiative_bonus" name="initiative_bonus"
-            value="{% if editing and character.initiative_bonus %}{{ character.initiative_bonus }}{% endif %}"
-            placeholder="—"
-            class="w-full px-4 py-2.5 bg-frost-800/60 border border-frost-700 text-silver-200 placeholder:text-silver-400/40 focus:border-ice-500/60 focus:outline-none transition-colors text-center">
-        </div>
-
-        <div>
-          <label for="spell_dc" class="block text-xs tracking-widest uppercase text-silver-400 mb-2">
-            Spell DC
-          </label>
-          <input type="number" id="spell_dc" name="spell_dc"
-            value="{% if editing and character.spell_dc %}{{ character.spell_dc }}{% endif %}" placeholder="—"
-            class="w-full px-4 py-2.5 bg-frost-800/60 border border-frost-700 text-silver-200 placeholder:text-silver-400/40 focus:border-ice-500/60 focus:outline-none transition-colors text-center">
-        </div>
-
+      <div>
+        <label for="player_name" class="block text-[10px] tracking-widest uppercase text-silver-400/70 mb-1">
+          Player Name
+        </label>
+        <input type="text" id="player_name" name="player_name"
+          value="{% if editing %}{{ character.player_name | default('') }}{% endif %}"
+          placeholder="The human behind the hero"
+          class="w-full px-3 py-1.5 bg-frost-800/60 border border-frost-700 text-silver-200 text-sm placeholder:text-silver-400/30 focus:border-ice-500/60 focus:outline-none transition-colors">
       </div>
+    </div>
 
-      <div class="mt-4">
-        <label for="speed" class="block text-xs tracking-widest uppercase text-silver-400 mb-2">
+    {# --- ROW 2: Race + Class + Subclass + Level --- #}
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div>
+        <label for="race" class="block text-[10px] tracking-widest uppercase text-silver-400/70 mb-1">
+          Race <span class="text-red-400">*</span>
+        </label>
+        <input type="text" id="race" name="race" required
+          value="{% if editing %}{{ character.race | default('') }}{% endif %}" placeholder="Half-Elf, Tiefling..."
+          class="w-full px-3 py-1.5 bg-frost-800/60 border border-frost-700 text-silver-200 text-sm placeholder:text-silver-400/30 focus:border-ice-500/60 focus:outline-none transition-colors">
+      </div>
+      <div>
+        <label for="character_class" class="block text-[10px] tracking-widest uppercase text-silver-400/70 mb-1">
+          Class
+        </label>
+        <input type="text" id="character_class" name="character_class"
+          value="{% if editing %}{{ character.character_class | default('') }}{% endif %}" placeholder="Wizard/Fighter"
+          class="w-full px-3 py-1.5 bg-frost-800/60 border border-frost-700 text-silver-200 text-sm placeholder:text-silver-400/30 focus:border-ice-500/60 focus:outline-none transition-colors">
+      </div>
+      <div>
+        <label for="character_subclass" class="block text-[10px] tracking-widest uppercase text-silver-400/70 mb-1">
+          Subclass
+        </label>
+        <input type="text" id="character_subclass" name="character_subclass"
+          value="{% if editing %}{{ character.character_subclass | default('') }}{% endif %}" placeholder="Bladesinger"
+          class="w-full px-3 py-1.5 bg-frost-800/60 border border-frost-700 text-silver-200 text-sm placeholder:text-silver-400/30 focus:border-ice-500/60 focus:outline-none transition-colors">
+      </div>
+      <div>
+        <label for="level_display" class="block text-[10px] tracking-widest uppercase text-silver-400/70 mb-1">
+          Level
+        </label>
+        <input type="text" id="level_display" name="level_display"
+          value="{% if editing %}{{ character.level_display | default('') }}{% endif %}" placeholder="7 or 6/1"
+          class="w-full px-3 py-1.5 bg-frost-800/60 border border-frost-700 text-silver-200 text-sm placeholder:text-silver-400/30 focus:border-ice-500/60 focus:outline-none transition-colors">
+      </div>
+    </div>
+
+    {# --- ROW 3: Age + Status + Speed --- #}
+    <div class="grid grid-cols-3 gap-3">
+      <div>
+        <label for="age" class="block text-[10px] tracking-widest uppercase text-silver-400/70 mb-1">
+          Age
+        </label>
+        <input type="text" id="age" name="age" value="{% if editing %}{{ character.age | default('') }}{% endif %}"
+          placeholder="142, ageless..."
+          class="w-full px-3 py-1.5 bg-frost-800/60 border border-frost-700 text-silver-200 text-sm placeholder:text-silver-400/30 focus:border-ice-500/60 focus:outline-none transition-colors">
+      </div>
+      <div>
+        <label for="status" class="block text-[10px] tracking-widest uppercase text-silver-400/70 mb-1">
+          Status
+        </label>
+        <select id="status" name="status"
+          class="w-full px-3 py-1.5 bg-frost-800/60 border border-frost-700 text-silver-200 text-sm focus:border-ice-500/60 focus:outline-none transition-colors">
+          <option value="Active" {% if editing and character.status=="Active" %}selected{% endif %}>Active</option>
+          <option value="Dead" {% if editing and character.status=="Dead" %}selected{% endif %}>Dead</option>
+          <option value="Missing" {% if editing and character.status=="Missing" %}selected{% endif %}>Missing</option>
+          <option value="Unknown" {% if editing and character.status=="Unknown" %}selected{% endif %}>Unknown</option>
+        </select>
+      </div>
+      <div>
+        <label for="speed" class="block text-[10px] tracking-widest uppercase text-silver-400/70 mb-1">
           Speed
         </label>
         <input type="text" id="speed" name="speed"
-          value="{% if editing %}{{ character.speed | default('') }}{% endif %}" placeholder="e.g. 30 ft."
-          class="w-full sm:w-1/3 px-4 py-2.5 bg-frost-800/60 border border-frost-700 text-silver-200 placeholder:text-silver-400/40 focus:border-ice-500/60 focus:outline-none transition-colors">
+          value="{% if editing %}{{ character.speed | default('') }}{% endif %}" placeholder="30 ft."
+          class="w-full px-3 py-1.5 bg-frost-800/60 border border-frost-700 text-silver-200 text-sm placeholder:text-silver-400/30 focus:border-ice-500/60 focus:outline-none transition-colors">
       </div>
-    </fieldset>
-    {#
-    --- LONGER NARRATIVE FIELDS ---
-    Textareas instead of single-line inputs.
-    "rows" sets the initial height.
-    #}
+    </div>
+
+    {# --- ROW 4: One-Liner (full width) --- #}
+    <div>
+      <label for="one_liner" class="block text-[10px] tracking-widest uppercase text-silver-400/70 mb-1">
+        One-Liner
+      </label>
+      <input type="text" id="one_liner" name="one_liner" maxlength="255"
+        value="{% if editing %}{{ character.one_liner | default('') }}{% endif %}"
+        placeholder="A single sentence that captures who they are."
+        class="w-full px-3 py-1.5 bg-frost-800/60 border border-frost-700 text-silver-200 text-sm placeholder:text-silver-400/30 focus:border-ice-500/60 focus:outline-none transition-colors">
+    </div>
+
+    {# --- ROW 5: Combat Stats (compact number boxes) --- #}
+    <div>
+      <p class="text-[10px] tracking-[0.3em] uppercase text-ice-300/50 mb-2">Combat</p>
+      <div class="grid grid-cols-5 gap-2">
+        <div class="text-center">
+          <label for="hit_points" class="block text-[9px] tracking-widest uppercase text-silver-400/50 mb-1">HP</label>
+          <input type="number" id="hit_points" name="hit_points"
+            value="{% if editing and character.hit_points %}{{ character.hit_points }}{% endif %}" placeholder="—"
+            class="w-full px-2 py-1.5 bg-frost-800/60 border border-frost-700 text-silver-200 text-sm text-center focus:border-ice-500/60 focus:outline-none transition-colors">
+        </div>
+        <div class="text-center">
+          <label for="armor_class" class="block text-[9px] tracking-widest uppercase text-silver-400/50 mb-1">AC</label>
+          <input type="number" id="armor_class" name="armor_class"
+            value="{% if editing and character.armor_class %}{{ character.armor_class }}{% endif %}" placeholder="—"
+            class="w-full px-2 py-1.5 bg-frost-800/60 border border-frost-700 text-silver-200 text-sm text-center focus:border-ice-500/60 focus:outline-none transition-colors">
+        </div>
+        <div class="text-center">
+          <label for="proficiency_bonus"
+            class="block text-[9px] tracking-widest uppercase text-silver-400/50 mb-1">Prof</label>
+          <input type="number" id="proficiency_bonus" name="proficiency_bonus"
+            value="{% if editing and character.proficiency_bonus %}{{ character.proficiency_bonus }}{% endif %}"
+            placeholder="—"
+            class="w-full px-2 py-1.5 bg-frost-800/60 border border-frost-700 text-silver-200 text-sm text-center focus:border-ice-500/60 focus:outline-none transition-colors">
+        </div>
+        <div class="text-center">
+          <label for="initiative_bonus"
+            class="block text-[9px] tracking-widest uppercase text-silver-400/50 mb-1">Init</label>
+          <input type="number" id="initiative_bonus" name="initiative_bonus"
+            value="{% if editing and character.initiative_bonus %}{{ character.initiative_bonus }}{% endif %}"
+            placeholder="—"
+            class="w-full px-2 py-1.5 bg-frost-800/60 border border-frost-700 text-silver-200 text-sm text-center focus:border-ice-500/60 focus:outline-none transition-colors">
+        </div>
+        <div class="text-center">
+          <label for="spell_dc" class="block text-[9px] tracking-widest uppercase text-silver-400/50 mb-1">Spell
+            DC</label>
+          <input type="number" id="spell_dc" name="spell_dc"
+            value="{% if editing and character.spell_dc %}{{ character.spell_dc }}{% endif %}" placeholder="—"
+            class="w-full px-2 py-1.5 bg-frost-800/60 border border-frost-700 text-silver-200 text-sm text-center focus:border-ice-500/60 focus:outline-none transition-colors">
+        </div>
+      </div>
+    </div>
+
+    {# --- ROW 6: Passives + Inspiration --- #}
+    <div>
+      <p class="text-[10px] tracking-[0.3em] uppercase text-ice-300/50 mb-2">Passives</p>
+      <div class="grid grid-cols-4 gap-2">
+        <div class="text-center">
+          <label for="passive_perception"
+            class="block text-[9px] tracking-widest uppercase text-silver-400/50 mb-1">Perception</label>
+          <input type="number" id="passive_perception" name="passive_perception"
+            value="{% if editing and character.passive_perception %}{{ character.passive_perception }}{% endif %}"
+            placeholder="—"
+            class="w-full px-2 py-1.5 bg-frost-800/60 border border-frost-700 text-silver-200 text-sm text-center focus:border-ice-500/60 focus:outline-none transition-colors">
+        </div>
+        <div class="text-center">
+          <label for="passive_investigation"
+            class="block text-[9px] tracking-widest uppercase text-silver-400/50 mb-1">Investigation</label>
+          <input type="number" id="passive_investigation" name="passive_investigation"
+            value="{% if editing and character.passive_investigation %}{{ character.passive_investigation }}{% endif %}"
+            placeholder="—"
+            class="w-full px-2 py-1.5 bg-frost-800/60 border border-frost-700 text-silver-200 text-sm text-center focus:border-ice-500/60 focus:outline-none transition-colors">
+        </div>
+        <div class="text-center">
+          <label for="passive_insight"
+            class="block text-[9px] tracking-widest uppercase text-silver-400/50 mb-1">Insight</label>
+          <input type="number" id="passive_insight" name="passive_insight"
+            value="{% if editing and character.passive_insight %}{{ character.passive_insight }}{% endif %}"
+            placeholder="—"
+            class="w-full px-2 py-1.5 bg-frost-800/60 border border-frost-700 text-silver-200 text-sm text-center focus:border-ice-500/60 focus:outline-none transition-colors">
+        </div>
+        <div class="flex items-end">
+          <label
+            class="flex items-center gap-2 cursor-pointer px-3 py-1.5 border border-frost-700 bg-frost-800/60 w-full justify-center hover:border-ice-500/40 transition-colors">
+            <input type="checkbox" name="has_inspiration" value="1" {% if editing and character.has_inspiration==1
+              %}checked{% endif %} class="accent-ice-500">
+            <span class="text-[9px] tracking-widest uppercase text-silver-400">Inspired</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    {# --- ROW 7: Languages --- #}
+    <div>
+      <p class="text-[10px] tracking-[0.3em] uppercase text-ice-300/50 mb-2">Languages</p>
+      <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-x-3 gap-y-1">
+        {% set language_list = [
+        "Common", "Dwarvish", "Elvish", "Giant", "Gnomish",
+        "Goblin", "Halfling", "Orc", "Abyssal", "Celestial",
+        "Draconic", "Deep Speech", "Infernal", "Primordial",
+        "Sylvan", "Undercommon", "Druidic", "Thieves' Cant"
+        ] %}
+
+        {% set selected_languages = [] %}
+        {% if editing and character.languages %}
+        {% set selected_languages = character.languages | from_json %}
+        {% endif %}
+
+        {% for lang in language_list %}
+        <label class="flex items-center gap-1.5 py-1 cursor-pointer hover:bg-ice-500/5 transition-colors">
+          <input type="checkbox" name="languages" value="{{ lang }}" {% if lang in selected_languages %}checked{% endif
+            %} class="accent-ice-500 scale-90">
+          <span class="text-xs text-silver-300">{{ lang }}</span>
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    {# --- ROW 8: Senses --- #}
+    <div>
+      <p class="text-[10px] tracking-[0.3em] uppercase text-ice-300/50 mb-2">Senses</p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+        {% set sense_list = [
+        "Darkvision", "Blindsight", "Tremorsense",
+        "Truesight", "Devil's Sight"
+        ] %}
+
+        {% set selected_senses = {} %}
+        {% if editing and character.senses %}
+        {% for s in character.senses | from_json %}
+        {% if selected_senses.update({s.name: s.detail | default("")}) %}{% endif %}
+        {% endfor %}
+        {% endif %}
+
+        {% for sense in sense_list %}
+        <div class="flex items-center gap-2 border border-frost-700/60 bg-frost-800/30 px-3 py-1.5">
+          <input type="checkbox" name="sense_names" value="{{ sense }}" {% if sense in selected_senses %}checked{% endif
+            %} class="accent-ice-500 scale-90 sense-checkbox flex-shrink-0" data-sense="{{ sense }}">
+          <span class="text-xs text-silver-300 flex-shrink-0">{{ sense }}</span>
+          <input type="text" name="sense_detail_{{ sense | lower | replace(' ', '_') | replace("'", "") }}"
+            value="{{ selected_senses.get(sense, '') }}"
+            placeholder="range"
+            class="flex-1 min-w-0 px-2 py-0.5 bg-transparent border-b border-frost-700/40 text-silver-200 text-xs placeholder:text-silver-400/30 focus:border-ice-500/60 focus:outline-none transition-colors
+                   {% if sense not in selected_senses %}opacity-40{% endif %}"
+            id="sense_detail_{{ sense | lower | replace(' ', ' _') | replace("'", "" ) }}">
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    {# ==========================================
+    DIVIDER — sheet zone ends, story zone begins
+    ========================================== #}
+    <div class="flex items-center justify-center gap-3 py-4" aria-hidden="true">
+      <span class="text-ice-300/30 text-lg">✦</span>
+      <span class="h-px w-24 bg-ice-300/20"></span>
+      <span class="text-ice-300/50">·</span>
+      <span class="h-px w-24 bg-ice-300/20"></span>
+      <span class="text-ice-300/30 text-lg">✦</span>
+    </div>
+
+    {# ==========================================
+    ZONE 2: THE STORY
+    Spacious narrative fields. These deserve
+    room to breathe — they're paragraphs,
+    not data points.
+    ========================================== #}
     <fieldset class="space-y-6">
       <legend class="font-display text-sm tracking-[0.3em] uppercase text-ice-300/60 mb-4">The Story</legend>
 
@@ -349,20 +391,15 @@ New concepts here:
       </div>
     </fieldset>
 
-    {#
-    --- SUBMIT BUTTONS ---
-    Two buttons: save (primary) and cancel
-    (secondary). Cancel is just a link
-    styled like a button — no form submit.
-    #}
+    {# --- SUBMIT --- #}
     <div class="flex items-center gap-4 pt-6 border-t border-frost-700">
       <button type="submit"
-        class="px-6 py-2.5 border border-ice-500/60 bg-ice-500/10 text-ice-300 hover:bg-ice-500/20 hover:border-ice-300 font-display text-sm tracking-widest uppercase transition-colors">
+        class="px-6 py-2 border border-ice-500/60 bg-ice-500/10 text-ice-300 hover:bg-ice-500/20 hover:border-ice-300 font-display text-sm tracking-widest uppercase transition-colors">
         {% if editing %}Save Changes{% else %}Create Dossier{% endif %}
       </button>
 
       <a href="{% if editing %}/characters/{{ character.id }}{% else %}/characters{% endif %}"
-        class="px-6 py-2.5 border border-frost-700 text-silver-400 hover:text-ice-300 hover:border-ice-500/40 font-display text-sm tracking-widest uppercase transition-colors">
+        class="px-6 py-2 border border-frost-700 text-silver-400 hover:text-ice-300 hover:border-ice-500/40 font-display text-sm tracking-widest uppercase transition-colors">
         Cancel
       </a>
     </div>
@@ -370,5 +407,22 @@ New concepts here:
   </form>
 
 </section>
-
+{# Small JS to dim/brighten the detail field based on checkbox state #}
+<script>
+  document.querySelectorAll('.sense-checkbox').forEach(cb => {
+    cb.addEventListener('change', () => {
+      const senseName = cb.dataset.sense;
+      const detailId = 'sense_detail_' + senseName.toLowerCase().replace(/ /g, '_').replace(/'/g, '');
+      const detail = document.getElementById(detailId);
+      if (detail) {
+        if (cb.checked) {
+          detail.classList.remove('opacity-40');
+        } else {
+          detail.classList.add('opacity-40');
+          detail.value = '';
+        }
+      }
+    });
+  });
+</script>
 {% endblock %}

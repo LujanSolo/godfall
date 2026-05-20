@@ -147,6 +147,25 @@ class Character(Base):
     speed = Column(String(50))
     initiative_bonus = Column(Integer)
 
+    # --- OUT-OF-COMBAT REFERENCE ---
+    # The passives a DM checks without asking
+    # for a roll. Like having a sensor array
+    # that's always running in the background.
+    passive_perception = Column(Integer)
+    passive_investigation = Column(Integer)
+    passive_insight = Column(Integer)
+
+    # Inspiration — binary toggle.
+    has_inspiration = Column(Integer, default=0)
+
+    # Languages and senses stored as JSON strings.
+    # Each is a list of objects:
+    #   languages: ["Common", "Elvish", "Dwarvish"]
+    #   senses: [{"name": "Darkvision", "detail": "120 ft."},
+    #            {"name": "Blindsight", "detail": "10 ft."}]
+    languages = Column(Text)
+    senses = Column(Text)
+
     # --- THE ONE-LINER ---
     # A punchy sentence that captures who
     # this character is. String(255) caps it
