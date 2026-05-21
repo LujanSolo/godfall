@@ -243,6 +243,7 @@ async def character_create(
     sense_detail_tremorsense: Optional[str] = Form(None),
     sense_detail_truesight: Optional[str] = Form(None),
     sense_detail_devils_sight: Optional[str] = Form(None),
+    resistances: List[str] = Form(default=[]),
     backstory: str = Form(None),
     top_magic_items: str = Form(None),
     notable_traits: str = Form(None),
@@ -292,6 +293,7 @@ async def character_create(
             if sense_names
             else None
         ),
+        resistances=json.dumps(resistances) if resistances else None,
         backstory=backstory,
         top_magic_items=top_magic_items,
         notable_traits=notable_traits,
@@ -451,6 +453,7 @@ async def character_update(
     sense_detail_tremorsense: Optional[str] = Form(None),
     sense_detail_truesight: Optional[str] = Form(None),
     sense_detail_devils_sight: Optional[str] = Form(None),
+    resistances: List[str] = Form(default=[]),
     backstory: str = Form(None),
     top_magic_items: str = Form(None),
     notable_traits: str = Form(None),
@@ -503,6 +506,7 @@ async def character_update(
         if sense_names
         else None
     )
+    character.resistances = json.dumps(resistances) if resistances else None
     character.backstory = backstory
     character.top_magic_items = top_magic_items
     character.notable_traits = notable_traits

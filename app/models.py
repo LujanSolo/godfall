@@ -165,6 +165,7 @@ class Character(Base):
     #            {"name": "Blindsight", "detail": "10 ft."}]
     languages = Column(Text)
     senses = Column(Text)
+    resistances = Column(Text)
 
     # --- THE ONE-LINER ---
     # A punchy sentence that captures who

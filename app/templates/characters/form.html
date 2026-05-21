@@ -320,6 +320,32 @@ New concepts here:
         </div>
         {% endfor %}
       </div>
+
+    </div>
+
+    {# --- ROW 9: Resistances --- #}
+    <div>
+      <p class="text-[10px] tracking-[0.3em] uppercase text-ice-300/50 mb-2">Resistances</p>
+      <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-x-3 gap-y-1">
+        {% set resistance_list = [
+        "Acid", "Cold", "Fire", "Force", "Lightning",
+        "Necrotic", "Poison", "Psychic", "Radiant", "Thunder",
+        "Bludgeoning", "Piercing", "Slashing"
+        ] %}
+
+        {% set selected_resistances = [] %}
+        {% if editing and character.resistances %}
+        {% set selected_resistances = character.resistances | from_json %}
+        {% endif %}
+
+        {% for res in resistance_list %}
+        <label class="flex items-center gap-1.5 py-1 cursor-pointer hover:bg-ice-500/5 transition-colors">
+          <input type="checkbox" name="resistances" value="{{ res }}" {% if res in selected_resistances %}checked{%
+            endif %} class="accent-ice-500 scale-90">
+          <span class="text-xs text-silver-300">{{ res }}</span>
+        </label>
+        {% endfor %}
+      </div>
     </div>
 
     {# ==========================================

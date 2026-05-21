@@ -273,94 +273,50 @@ template handles both new and edit.
     </fieldset>
 
     {#
+    {#
     --- MAP COORDINATES (Location only) ---
-    Visible only when the category dropdown
-    is set to "Location". JavaScript at the
-    bottom toggles visibility.
+    A mini Leaflet map for precise pin
+    placement. Same zoom/pan controls as
+    the main map page, but clicking places
+    the pin instead of opening a popup.
 
-    The picker is an interactive map: click
-    anywhere on it to drop a pin marker.
-    Two hidden form fields (lat, lng) get
-    updated with the click coordinates as
-    percentages of the map dimensions.
-
-    This way, if we ever swap the map image
-    for a different one (different
-    resolution, different aspect ratio),
-    the percentage coordinates still work.
-    They're proportional, not absolute.
-
-    Like targeting a thermal exhaust port —
-    relative to the Death Star, not relative
-    to a fixed point in the galaxy.
+    Like the targeting display on a Y-wing —
+    zoom in, lock on, fire.
     #}
     <fieldset id="map-picker-fieldset" class="hidden">
       <legend class="font-display text-sm tracking-[0.3em] uppercase text-ice-300/60 mb-4">Map Position</legend>
 
       <p class="text-xs text-silver-400/70 mb-4 leading-relaxed">
         Click anywhere on the map below to set this location's
-        position. Click again to move it. The pin will appear
-        on the world map for players to discover.
+        position. Zoom in for precision. Click again to move it.
       </p>
 
-      {#
-      The picker container — relative
-      positioning so we can absolute-
-      position the pin marker inside it.
+      {# Leaflet CSS #}
+      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 
-      cursor-crosshair is a UX touch:
-      the cursor visually communicates
-      "you can click here to place
-      something."
-      #}
-      <div id="map-picker"
-        class="relative cursor-crosshair border border-frost-700 hover:border-ice-500/40 transition-colors overflow-hidden"
-        onclick="placePin(event)">
-
-        <img src="/static/images/world-map.jpg" alt="World map"
-          class="w-full h-auto block select-none pointer-events-none" draggable="false">
-
-        {#
-        The pin marker. Hidden by default.
-        JavaScript shows it when there's
-        a position set, and updates its
-        top/left to match the coordinates.
-
-        Translate-x/y by -50% so the pin's
-        CENTER aligns with the click point,
-        not its top-left corner. Without
-        this, the pin would always sit
-        slightly off from where the user
-        actually clicked.
-        #}
-        <div id="map-picker-pin" class="absolute w-6 h-6 -translate-x-1/2 -translate-y-1/2 pointer-events-none hidden"
-          style="top: 50%; left: 50%;">
-          <div
-            class="w-full h-full rounded-full bg-ice-300 border-2 border-frost-900 shadow-lg shadow-ice-500/50 animate-pulse">
-          </div>
-        </div>
+      {# The mini map container #}
+      <div id="map-picker-container" class="border border-frost-700 hover:border-ice-500/40 transition-colors"
+        style="height: 400px; cursor: crosshair;">
       </div>
 
-      {#
-      Coordinate readout — small text
-      showing the current percentages so
-      the DM can see what's been recorded.
-      Updates live as the pin is placed.
-      #}
-      <div id="map-picker-readout" class="mt-3 text-xs text-silver-400/60 tracking-wider">
+      {# Coordinate readout #}
+      <div id="map-picker-readout" class="mt-3 flex items-center gap-4 text-xs text-silver-400/60 tracking-wider">
         {% if editing and entry.lat is not none and entry.lng is not none %}
-        Position: <span id="map-picker-readout-x">{{ "%.1f" | format(entry.lng) }}</span>%,
-        <span id="map-picker-readout-y">{{ "%.1f" | format(entry.lat) }}</span>%
-        <button type="button" onclick="clearPin()"
-          class="ml-3 text-red-400/80 hover:text-red-300 underline-offset-2 hover:underline">
+        <span>
+          Position: <span id="map-picker-readout-x">{{ entry.lng | int }}</span>px,
+          <span id="map-picker-readout-y">{{ entry.lat | int }}</span>px
+        </span>
+        <button type="button" onclick="clearPickerPin()"
+          class="text-red-400/80 hover:text-red-300 underline-offset-2 hover:underline">
           Clear position
         </button>
         {% else %}
-        <span id="map-picker-prompt">No position set yet — click the map above.</span>
+        <span id="map-picker-prompt">No position set — click the map above.</span>
         <span id="map-picker-coords" class="hidden">
-          Position: <span id="map-picker-readout-x">0</span>%,
-          <span id="map-picker-readout-y">0</span>%
-          <button type="button" onclick="clearPin()"
+          Position: <span id="map-picker-readout-x">0</span>px,
+          <span id="map-picker-readout-y">0</span>px
+          <button type="button" onclick="clearPickerPin()"
             class="ml-3 text-red-400/80 hover:text-red-300 underline-offset-2 hover:underline">
             Clear position
           </button>
@@ -368,12 +324,7 @@ template handles both new and edit.
         {% endif %}
       </div>
 
-      {#
-      Hidden form fields. The JavaScript
-      updates these with the chosen
-      coordinates, and they get submitted
-      along with the rest of the form.
-      #}
+      {# Hidden form fields #}
       <input type="hidden" id="lat-field" name="lat"
         value="{% if editing and entry.lat is not none %}{{ entry.lat }}{% endif %}">
       <input type="hidden" id="lng-field" name="lng"
@@ -428,21 +379,17 @@ template handles both new and edit.
 
 </section>
 
-{#
---- MAP PICKER JAVASCRIPT ---
-Vanilla JS, no frameworks. Same
-minimalist approach as the mobile
-menu toggle — when the job is small
-and self-contained, plain JS is the
-right tool.
-#}
+{# Leaflet JS #}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
 <script>
-  // Get all the elements we'll be working with.
-  // Done once at script load for efficiency.
+  // ==========================================
+  // MAP PICKER — LEAFLET EDITION
+  // ==========================================
+
   const categorySelect = document.getElementById('category');
   const mapPickerFieldset = document.getElementById('map-picker-fieldset');
-  const mapPicker = document.getElementById('map-picker');
-  const mapPin = document.getElementById('map-picker-pin');
   const latField = document.getElementById('lat-field');
   const lngField = document.getElementById('lng-field');
   const readoutX = document.getElementById('map-picker-readout-x');
@@ -450,107 +397,138 @@ right tool.
   const readoutPrompt = document.getElementById('map-picker-prompt');
   const readoutCoords = document.getElementById('map-picker-coords');
 
-  // --- TOGGLE FIELDSET BASED ON CATEGORY ---
-  // Only show the map picker when the
-  // user has chosen "Location" as the
-  // category. Other categories don't
-  // belong on the map.
+  // Map dimensions (must match the world map image)
+  const pickerMapWidth = 1500;
+  const pickerMapHeight = 1054;
+
+  let pickerMap = null;
+  let pickerMarker = null;
+  let pickerInitialized = false;
+
+  // Custom icon for the picker pin
+  const pickerIcon = L.divIcon({
+    className: 'picker-marker',
+    html: '<div class="picker-dot"></div>',
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
+  });
+
+  // --- INITIALIZE THE LEAFLET MAP ---
+  // Only called once, when the fieldset
+  // first becomes visible. Avoids Leaflet
+  // rendering issues with hidden containers.
+  function initPickerMap() {
+    if (pickerInitialized) return;
+    pickerInitialized = true;
+
+    const bounds = [[0, 0], [pickerMapHeight, pickerMapWidth]];
+
+    pickerMap = L.map('map-picker-container', {
+      crs: L.CRS.Simple,
+      minZoom: -2,
+      maxZoom: 4,
+      maxBounds: bounds,
+      maxBoundsViscosity: 0.8,
+      zoomSnap: 0.25,
+      attributionControl: false,
+    });
+
+    L.imageOverlay('/static/images/world-map.jpg', bounds).addTo(pickerMap);
+    pickerMap.fitBounds(bounds);
+
+    // Click handler — place or move the pin
+    pickerMap.on('click', function (e) {
+      const pixelX = Math.max(0, Math.min(pickerMapWidth, e.latlng.lng));
+      const pixelY = Math.max(0, Math.min(pickerMapHeight, pickerMapHeight - e.latlng.lat));
+
+      placePickerPin(pixelX, pixelY);
+    });
+
+    // If editing with existing coordinates,
+    // place the pin at the saved position
+    if (latField.value && lngField.value) {
+      const existingX = parseFloat(lngField.value);
+      const existingY = parseFloat(latField.value);
+      placePickerPin(existingX, existingY);
+
+      // Center the map on the existing pin
+      pickerMap.setView(
+        [pickerMapHeight - existingY, existingX],
+        0
+      );
+    }
+  }
+
+  // --- PLACE OR MOVE THE PIN ---
+  function placePickerPin(pixelX, pixelY) {
+    const leafletY = pickerMapHeight - pixelY;
+
+    if (pickerMarker) {
+      pickerMarker.setLatLng([leafletY, pixelX]);
+    } else {
+      pickerMarker = L.marker([leafletY, pixelX], {
+        icon: pickerIcon,
+        draggable: true,
+      }).addTo(pickerMap);
+
+      // Allow dragging the pin to refine position
+      pickerMarker.on('dragend', function () {
+        const pos = pickerMarker.getLatLng();
+        const dragX = Math.max(0, Math.min(pickerMapWidth, pos.lng));
+        const dragY = Math.max(0, Math.min(pickerMapHeight, pickerMapHeight - pos.lat));
+        updatePickerFields(dragX, dragY);
+      });
+    }
+
+    updatePickerFields(pixelX, pixelY);
+  }
+
+  // --- UPDATE FORM FIELDS AND READOUT ---
+  function updatePickerFields(pixelX, pixelY) {
+    latField.value = pixelY.toFixed(2);
+    lngField.value = pixelX.toFixed(2);
+
+    readoutX.textContent = pixelX.toFixed(0);
+    readoutY.textContent = pixelY.toFixed(0);
+
+    if (readoutPrompt) readoutPrompt.classList.add('hidden');
+    if (readoutCoords) readoutCoords.classList.remove('hidden');
+  }
+
+  // --- CLEAR THE PIN ---
+  function clearPickerPin() {
+    if (pickerMarker && pickerMap) {
+      pickerMap.removeLayer(pickerMarker);
+      pickerMarker = null;
+    }
+
+    latField.value = '';
+    lngField.value = '';
+
+    if (readoutPrompt) readoutPrompt.classList.remove('hidden');
+    if (readoutCoords) readoutCoords.classList.add('hidden');
+  }
+
+  // --- TOGGLE VISIBILITY BASED ON CATEGORY ---
   function toggleMapPicker() {
     if (categorySelect.value === 'Location') {
       mapPickerFieldset.classList.remove('hidden');
-
-      // If we have existing coordinates, show the pin.
-      if (latField.value && lngField.value) {
-        showPin(parseFloat(lngField.value), parseFloat(latField.value));
-      }
+      // Leaflet needs the container to be
+      // visible before initializing. Small
+      // delay ensures the fieldset has
+      // rendered before we create the map.
+      setTimeout(() => {
+        initPickerMap();
+        if (pickerMap) pickerMap.invalidateSize();
+      }, 100);
     } else {
       mapPickerFieldset.classList.add('hidden');
     }
   }
 
-  // Run once on page load to set initial state
+  // Initialize on page load
   toggleMapPicker();
-
-  // Run again whenever the category changes
   categorySelect.addEventListener('change', toggleMapPicker);
-
-  // --- PLACE A PIN ON CLICK ---
-  // The "event" parameter is the click event,
-  // which contains the position data we need.
-  //
-  // getBoundingClientRect() gives us the map
-  // image's position and size on screen.
-  // We subtract the map's left/top from the
-  // click's clientX/clientY to get the click
-  // position RELATIVE to the map.
-  //
-  // Then we divide by the map's width/height
-  // and multiply by 100 to get percentages.
-  //
-  // Why percentages? So our coordinates work
-  // regardless of how big the map renders.
-  function placePin(event) {
-    const rect = mapPicker.getBoundingClientRect();
-    const xPercent = ((event.clientX - rect.left) / rect.width) * 100;
-    const yPercent = ((event.clientY - rect.top) / rect.height) * 100;
-
-    // Clamp to 0-100 just in case the click
-    // somehow registered slightly outside
-    // the bounds (rare but possible at edges).
-    const clampedX = Math.max(0, Math.min(100, xPercent));
-    const clampedY = Math.max(0, Math.min(100, yPercent));
-
-    showPin(clampedX, clampedY);
-  }
-
-  // --- SHOW THE PIN AT GIVEN COORDINATES ---
-  // Updates the visual marker, the hidden
-  // form fields, and the readout.
-  function showPin(xPercent, yPercent) {
-    // Position the pin visually
-    mapPin.style.left = xPercent + '%';
-    mapPin.style.top = yPercent + '%';
-    mapPin.classList.remove('hidden');
-
-    // Update the hidden form fields.
-    // Note: we store yPercent as "lat"
-    // and xPercent as "lng" — sticking
-    // with the geographic naming convention
-    // even though for our flat map they
-    // really just mean "vertical %" and
-    // "horizontal %".
-    latField.value = yPercent.toFixed(2);
-    lngField.value = xPercent.toFixed(2);
-
-    // Update the readout
-    readoutX.textContent = xPercent.toFixed(1);
-    readoutY.textContent = yPercent.toFixed(1);
-
-    // Swap the prompt/coords visibility
-    if (readoutPrompt) {
-      readoutPrompt.classList.add('hidden');
-    }
-    if (readoutCoords) {
-      readoutCoords.classList.remove('hidden');
-    }
-  }
-
-  // --- CLEAR THE PIN ---
-  // Removes the position. Useful if the DM
-  // changes their mind and wants to mark
-  // this entry as "no specific location."
-  function clearPin() {
-    mapPin.classList.add('hidden');
-    latField.value = '';
-    lngField.value = '';
-
-    if (readoutPrompt) {
-      readoutPrompt.classList.remove('hidden');
-    }
-    if (readoutCoords) {
-      readoutCoords.classList.add('hidden');
-    }
-  }
 </script>
 
 {% endblock %}

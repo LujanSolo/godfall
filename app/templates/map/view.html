@@ -1,190 +1,232 @@
 {#
     GODFALL - map/view.html
     ========================
-    The dedicated map page. Full-bleed
-    immersive layout — the map fills the
-    viewport, with floating UI elements
-    layered on top.
+    The world map powered by Leaflet.
 
-    Pins are absolutely positioned over the
-    map using the lat/lng percentages set
-    in the lore form. Hover a pin → HTMX
-    fetches the preview fragment.
+    Leaflet handles:
+      - Pan and zoom (mouse, touch, scroll wheel)
+      - Marker placement and positioning
+      - Tooltips (hover) and popups (click)
+      - Mobile touch interaction
+
+    Like upgrading from a paper star chart
+    to a proper holographic nav display.
+    Every system is where it should be, and
+    you can zoom in to see the moons.
 #}
 {% extends "base.html" %}
 
 {% block content %}
 
-{#
-    --- WRAPPER ---
-    Negative margins on the top neutralize
-    the default page padding so the map can
-    truly stretch edge-to-edge below the nav.
-    The page-level padding from main is
-    handled here instead.
-#}
+{# Leaflet CSS — loaded from CDN #}
+<link rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin="" />
+
 <div class="relative w-full">
 
-    {#
-        --- FLOATING TITLE OVERLAY ---
-        Sits at the top center of the map,
-        with a subtle backdrop blur for
-        legibility. Doesn't compete with
-        the map for attention.
-    #}
-    <div class="absolute top-6 left-1/2 -translate-x-1/2 z-30 text-center pointer-events-none">
-        <div class="px-6 py-3 bg-frost-900/70 backdrop-blur-md border border-frost-700/60">
-            <h1 class="font-display text-xl md:text-2xl tracking-[0.3em] uppercase text-silver-200 frost-glow">
+    {# --- FLOATING TITLE OVERLAY --- #}
+    <div class="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] text-center pointer-events-none">
+        <div class="px-4 py-2 bg-frost-900/70 backdrop-blur-md border border-frost-700/60">
+            <h1 class="font-display text-base md:text-xl tracking-[0.3em] uppercase text-silver-200 frost-glow">
                 The Frozen North
             </h1>
-            <p class="mt-1 text-[10px] tracking-[0.2em] uppercase text-ice-300/60 italic">
-                {% if pins %}
-                    {{ pins | length }} {% if pins | length == 1 %}Discovered Location{% else %}Discovered Locations{% endif %}
-                {% else %}
-                    The world awaits its first marker
-                {% endif %}
-            </p>
         </div>
     </div>
 
-    {#
-        --- THE MAP ITSELF ---
-        relative positioning so we can absolute-
-        position pins inside it.
-
-        The atmospheric overlay creates a subtle
-        frost-tinted vignette — darkens the
-        edges, lightens the center, gives the
-        map a sense of being viewed through
-        cold air.
-    #}
-    <div class="relative bg-frost-900">
-
-        {# The map image #}
-        <img src="/static/images/world-map.jpg"
-             alt="World map of the Frozen North"
-             class="w-full h-auto block select-none"
-             draggable="false">
-
-        {# Atmospheric vignette overlay #}
-        <div class="absolute inset-0 pointer-events-none"
-             style="background: radial-gradient(ellipse at center, transparent 40%, rgba(10, 14, 23, 0.5) 100%);"></div>
-
-        {#
-            --- PINS ---
-            Each pin is absolutely positioned
-            using its lore entry's lat/lng as
-            top/left percentages.
-
-            -translate-x-1/2 -translate-y-1/2
-            centers the pin on its coordinates.
-
-            HTMX attributes:
-              hx-get fetches the preview fragment
-              hx-trigger fires on hover (200ms delay)
-              hx-target points the response into
-                       the tooltip element
-              hx-swap controls how the fragment
-                     gets inserted
-
-            The pin itself is wrapped in an
-            anchor tag, so click navigates to
-            the lore detail page.
-        #}
-        {% for pin in pins %}
-        <a href="/lore/{{ pin.id }}"
-           class="map-pin absolute z-10 -translate-x-1/2 -translate-y-1/2 group"
-           style="top: {{ pin.lat }}%; left: {{ pin.lng }}%;"
-           hx-get="/map/pin/{{ pin.id }}/preview"
-           hx-trigger="mouseenter delay:200ms"
-           hx-target="#map-tooltip-content"
-           hx-swap="innerHTML"
-           onmouseenter="showMapTooltip()"
-           onmouseleave="hideMapTooltip()"
-           aria-label="{{ pin.title }}">
-
-            {#
-                The rune/sigil pin marker.
-                Built from layered SVG elements
-                for that "glowing magical
-                inscription" feel.
-
-                The outer ring pulses gently.
-                The inner shape is a stylized
-                geometric rune.
-                On hover everything brightens.
-            #}
-            <div class="relative w-10 h-10 md:w-12 md:h-12">
-
-                {# Outer pulsing aura #}
-                <div class="absolute inset-0 rounded-full bg-ice-300/20 animate-ping group-hover:bg-ice-300/40"></div>
-
-                {# Mid ring #}
-                <div class="absolute inset-1 rounded-full border border-ice-300/40 group-hover:border-ice-300 transition-colors"></div>
-
-                {# Inner rune #}
-                <div class="absolute inset-2 rounded-full bg-frost-900/80 backdrop-blur-sm border border-ice-300/60 group-hover:border-ice-300 group-hover:bg-frost-900 flex items-center justify-center transition-all">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 md:w-5 md:h-5 text-ice-300 group-hover:scale-125 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                        {# A stylized rune: snowflake-like geometric pattern #}
-                        <path d="M12 2 L12 22 M2 12 L22 12 M5 5 L19 19 M19 5 L5 19" stroke-linecap="round" />
-                        <circle cx="12" cy="12" r="2" fill="currentColor" />
-                    </svg>
-                </div>
-            </div>
+    {# --- DM ADD LOCATION BUTTON --- #}
+    {% if request.state.user %}
+    <div class="absolute top-4 right-4 z-[1000]">
+        <a href="/lore/new?category=Location"
+           class="inline-flex items-center gap-2 px-3 py-1.5 bg-frost-900/80 backdrop-blur-md border border-ice-500/40 text-ice-300 hover:bg-ice-500/10 hover:border-ice-300 font-display text-[10px] tracking-widest uppercase transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Add Location
         </a>
-        {% endfor %}
-
-    </div>
-
-    {#
-        --- LEGEND / EMPTY STATE ---
-        If no pins exist yet, show a small
-        helpful message at the bottom.
-    #}
-    {% if not pins and request.state.user %}
-    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 text-center pointer-events-auto">
-        <div class="px-6 py-4 bg-frost-900/80 backdrop-blur-md border border-frost-700/60 max-w-md">
-            <p class="text-silver-300 text-sm font-light leading-relaxed mb-3">
-                No locations have been pinned yet.
-                Add Location-category lore entries with
-                coordinates to populate the map.
-            </p>
-            <a href="/lore/new?category=Location"
-               class="inline-flex items-center gap-2 px-4 py-1.5 border border-ice-500/40 text-ice-300 hover:bg-ice-500/10 hover:border-ice-300 font-display text-xs tracking-widest uppercase transition-colors">
-                Add a Location
-            </a>
-        </div>
     </div>
     {% endif %}
+
+    {# --- THE MAP CONTAINER ---
+       Leaflet renders into this div.
+       Height is set via CSS to fill
+       the viewport minus the nav height. #}
+    <div id="godfall-map" class="w-full" style="height: calc(100vh - 80px);"></div>
+
 </div>
 
-{#
-    --- HOVER TOOLTIP ---
-    Floats at the bottom center of the
-    viewport. Same pattern as the timeline
-    tooltip. Starts hidden, populated by
-    HTMX on pin hover, shown by JS.
-#}
-<div id="map-tooltip"
-     class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 hidden pointer-events-none">
-    <div id="map-tooltip-content"></div>
-</div>
+{# Leaflet JS — loaded from CDN #}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""></script>
 
-{# Tiny JS for tooltip show/hide #}
 <script>
-    function showMapTooltip() {
-        setTimeout(() => {
-            const content = document.getElementById('map-tooltip-content');
-            const tooltip = document.getElementById('map-tooltip');
-            if (content.innerHTML.trim()) {
-                tooltip.classList.remove('hidden');
-            }
-        }, 250);
-    }
+    // ==========================================
+    // GODFALL MAP — LEAFLET CONFIGURATION
+    // ==========================================
+    // Setting up a Leaflet map with a custom
+    // image overlay instead of geographic tiles.
+    //
+    // The key concept: Leaflet normally renders
+    // map tiles from a tile server (like
+    // OpenStreetMap). For a fantasy map, we use
+    // L.imageOverlay to render a single image
+    // as the map "surface," with Leaflet
+    // handling all the pan/zoom/interaction.
+    //
+    // Coordinate system: Leaflet uses [y, x]
+    // ordering. Our image is {{ map_width }}px
+    // wide and {{ map_height }}px tall. The
+    // coordinate bounds run from [0, 0] (top-left)
+    // to [{{ map_height }}, {{ map_width }}]
+    // (bottom-right).
+    // ==========================================
 
-    function hideMapTooltip() {
-        const tooltip = document.getElementById('map-tooltip');
-        tooltip.classList.add('hidden');
+    const mapWidth = {{ map_width }};
+    const mapHeight = {{ map_height }};
+
+    // Define the coordinate bounds of the image.
+    // Leaflet uses [[south, west], [north, east]]
+    // but for an image map, think of it as
+    // [[bottom-y, left-x], [top-y, right-x]].
+    // We flip y so [0,0] is top-left (matching
+    // how CSS and image coordinates work).
+    const bounds = [[0, 0], [mapHeight, mapWidth]];
+
+    // Create the map instance.
+    // - crs: L.CRS.Simple tells Leaflet to use
+    //   a flat coordinate system instead of
+    //   geographic projection. Essential for
+    //   image maps.
+    // - minZoom / maxZoom control how far in
+    //   and out the user can zoom.
+    // - maxBounds prevents panning beyond the
+    //   image edges.
+    const map = L.map('godfall-map', {
+        crs: L.CRS.Simple,
+        minZoom: -2,
+        maxZoom: 3,
+        maxBounds: bounds,
+        maxBoundsViscosity: 0.8,
+        zoomSnap: 0.25,
+        attributionControl: false,
+    });
+
+    // Add the map image as an overlay.
+    L.imageOverlay('/static/images/world-map.jpg', bounds).addTo(map);
+
+    // Fit the map view to show the full image
+    // on initial load.
+    map.fitBounds(bounds);
+
+    // ==========================================
+    // CUSTOM MARKER ICON
+    // ==========================================
+    // A glowing rune-style marker that matches
+    // the Frostmaiden theme. Uses a custom
+    // Leaflet divIcon (HTML-based marker instead
+    // of an image file).
+    // ==========================================
+
+    const runeIcon = L.divIcon({
+        className: 'godfall-marker',
+        html: `
+            <div class="marker-glow"></div>
+            <div class="marker-ring"></div>
+            <div class="marker-core">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M12 2 L12 22 M2 12 L22 12 M5 5 L19 19 M19 5 L5 19" stroke-linecap="round" />
+                    <circle cx="12" cy="12" r="2" fill="currentColor" />
+                </svg>
+            </div>
+        `,
+        iconSize: [36, 36],
+        iconAnchor: [18, 18],
+        popupAnchor: [0, -20],
+        tooltipAnchor: [18, 0],
+    });
+
+    // ==========================================
+    // PIN DATA & MARKERS
+    // ==========================================
+    // Pin data is passed from the server as JSON.
+    // We iterate through and create a Leaflet
+    // marker for each pin.
+    // ==========================================
+
+    const pins = {{ pins_json | safe }};
+
+    pins.forEach(pin => {
+        // Leaflet uses [y, x] ordering.
+        // Our lat = y (vertical), lng = x (horizontal)
+        const marker = L.marker([mapHeight - pin.lat, pin.lng], {
+            icon: runeIcon,
+        }).addTo(map);
+
+        // --- TOOLTIP (hover) ---
+        // Shows the location name on hover.
+        // Light, fast, non-intrusive.
+        marker.bindTooltip(pin.title, {
+            className: 'godfall-tooltip',
+            direction: 'top',
+            offset: [0, -20],
+        });
+
+        // --- POPUP (click) ---
+        // Shows a richer preview with image,
+        // subtitle, body snippet, and a link
+        // to the full lore entry.
+        let popupContent = '<div class="godfall-popup">';
+
+        if (pin.image) {
+            popupContent += `
+                <div class="popup-image">
+                    <img src="${pin.image}" alt="${pin.title}" />
+                </div>
+            `;
+        }
+
+        popupContent += `
+            <div class="popup-body">
+                <p class="popup-category">${pin.category}</p>
+                <h3 class="popup-title">${pin.title}</h3>
+        `;
+
+        if (pin.subtitle) {
+            popupContent += `<p class="popup-subtitle">${pin.subtitle}</p>`;
+        }
+
+        if (pin.body_preview) {
+            popupContent += `<p class="popup-text">${pin.body_preview}...</p>`;
+        }
+
+        popupContent += `
+                <a href="${pin.url}" class="popup-link">Read the full entry →</a>
+            </div>
+        </div>`;
+
+        marker.bindPopup(popupContent, {
+            className: 'godfall-popup-wrapper',
+            maxWidth: 320,
+            minWidth: 240,
+        });
+    });
+
+    // ==========================================
+    // EMPTY STATE
+    // ==========================================
+    if (pins.length === 0) {
+        const emptyDiv = document.createElement('div');
+        emptyDiv.className = 'absolute bottom-8 left-1/2 -translate-x-1/2 z-[1000] text-center';
+        emptyDiv.innerHTML = `
+            <div class="px-6 py-4 bg-frost-900/80 backdrop-blur-md border border-frost-700/60 max-w-md">
+                <p class="text-silver-300 text-sm font-light leading-relaxed mb-3">
+                    No locations have been pinned yet.
+                </p>
+            </div>
+        `;
+        document.getElementById('godfall-map').parentElement.appendChild(emptyDiv);
     }
 </script>
 

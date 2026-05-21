@@ -563,6 +563,41 @@ async def lore_upload_images(
 
 
 # ============================================
+# ROUTE: SET FEATURED IMAGE
+# POST /lore/{id}/images/{image_id}/feature
+# ============================================
+# Like promoting a new wing commander —
+# the previous one steps down, the new
+# one steps up. Only one featured image
+# at a time.
+# ============================================
+@router.post("/{id}/images/{image_id}/feature")
+async def lore_image_set_featured(
+    id: int,
+    image_id: int,
+    db: Session = Depends(get_db),
+    _dm: User = Depends(require_dm),
+):
+    # Unfeature all images for this entry
+    db.query(LoreImage).filter(
+        LoreImage.lore_id == id, LoreImage.is_featured == 1
+    ).update({"is_featured": 0})
+
+    # Feature the selected one
+    image = (
+        db.query(LoreImage)
+        .filter(LoreImage.id == image_id, LoreImage.lore_id == id)
+        .first()
+    )
+
+    if image:
+        image.is_featured = 1
+        db.commit()
+
+    return RedirectResponse(url=f"/lore/{id}", status_code=303)
+
+
+# ============================================
 # ROUTE: DELETE A SINGLE IMAGE
 # POST /lore/{id}/images/{image_id}/delete
 # ============================================

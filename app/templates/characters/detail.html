@@ -282,6 +282,19 @@ is the classified narrative.
       </div>
     </div>
     {% endif %}
+    {% if character.resistances %}
+    <div class="flex-1">
+      <p class="text-[9px] tracking-[0.3em] uppercase text-ice-300/40 mb-2">Resistances</p>
+      <div class="flex flex-wrap gap-1.5">
+        {% for res in character.resistances | from_json %}
+        <span
+          class="px-2 py-1 text-[11px] tracking-wider text-silver-300 border border-frost-700/60 bg-frost-800/30 font-display">
+          {{ res }}
+        </span>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
   </div>
   {% endif %}
 
