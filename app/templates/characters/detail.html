@@ -176,12 +176,12 @@ is the classified narrative.
   {% if character.hit_points or character.armor_class or character.proficiency_bonus or character.initiative_bonus or
   character.spell_dc or character.speed or character.passive_perception or character.passive_investigation or
   character.passive_insight %}
-  <div class="stat-block mb-6 border border-frost-700/60 bg-frost-800/20">
+  <div class="mb-6 border border-frost-700/60 bg-frost-800/20">
 
     {# Combat stats row #}
     {% if character.hit_points or character.armor_class or character.proficiency_bonus or character.initiative_bonus or
     character.spell_dc or character.speed %}
-    <div class="flex flex-wrap border-b border-frost-700/40">
+    <div class="flex flex-wrap justify-center border-b border-frost-700/40">
       {% if character.hit_points %}
       <div class="stat-compact">
         <span class="stat-compact-label">HP</span>
@@ -224,7 +224,7 @@ is the classified narrative.
 
     {# Passives row #}
     {% if character.passive_perception or character.passive_investigation or character.passive_insight %}
-    <div class="flex flex-wrap">
+    <div class="flex flex-wrap justify-center">
       {% if character.passive_perception %}
       <div class="stat-compact">
         <span class="stat-compact-label">P.Perception</span>

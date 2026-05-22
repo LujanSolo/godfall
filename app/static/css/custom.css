@@ -1,60 +1,61 @@
 /*
     GODFALL - Custom Styles
     ========================
-    The finishing touches that Tailwind
-    can't handle alone — like hand-painting
-    details on a starship model.
+    Organized by feature area. Dead styles
+    from replaced features have been removed.
+
+    Sections:
+      1. Global utilities (frost-glow, gradients, prose)
+      2. Tribunal (Five Flames frieze)
+      3. Image handling
+      4. Adventure Log (sidebar, session cards)
+      5. Masonry gallery
+      6. Lore Codex (gem grid, frozen states)
+      7. Character stats (compact cells)
+      8. Leaflet map (markers, tooltips, popups)
+      9. Map picker (lore form)
+     10. Lore detail (image showcase float)
 */
 
-/* ----------------------------------------
-   FROST GLOW
-   ----------------------------------------
-   A subtle icy text shadow that makes
-   "GODFALL" look like it's radiating
-   cold light. Multiple shadow layers at
-   different sizes create a soft, ambient
-   glow — like bioluminescence beneath ice.
-   ---------------------------------------- */
+
+/* ============================================
+   1. GLOBAL UTILITIES
+   ============================================ */
+
+/* Frost glow — icy text shadow for headings */
 .frost-glow {
   text-shadow:
     0 0 40px rgba(125, 211, 252, 0.15),
     0 0 80px rgba(125, 211, 252, 0.05);
 }
 
-/* ----------------------------------------
-   RADIAL GRADIENT BACKGROUND
-   ----------------------------------------
-   Tailwind doesn't include radial gradients
-   by default, so we define it here. Creates
-   a subtle icy glow emanating from the
-   center of the hero section — like cold
-   light seeping through cracks in a glacier.
-   ---------------------------------------- */
+/* Radial gradient background for hero sections */
 .bg-gradient-radial {
   background: radial-gradient(ellipse at center,
       rgba(14, 165, 233, 0.06) 0%,
       transparent 70%);
 }
 
-/* ----------------------------------------
-   PROSE-FROST
-   ----------------------------------------
-   Styling for markdown-rendered content.
-   When the | markdown filter outputs HTML,
-   we need rules for headings, paragraphs,
-   lists, etc. — Tailwind's reset strips
-   browser defaults, so without these rules
-   <h2> and <p> would all look identical.
+/* Line clamp utility (truncate to 3 lines) */
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
 
-   This class wraps any container that
-   holds markdown-rendered HTML. Used on
-   session detail pages and anywhere else
-   long-form formatted text appears.
-   ---------------------------------------- */
+/* Float clear */
+.clear-both {
+  clear: both;
+}
+
+/* --- PROSE-FROST ---
+   Styling for markdown-rendered content.
+   Wraps any container holding HTML output
+   from the | markdown filter. */
 
 .prose-frost {
   color: rgb(203 213 225 / 0.95);
-  /* silver-300-ish */
   font-weight: 300;
   line-height: 1.75;
   font-size: 1.0625rem;
@@ -66,7 +67,6 @@
 .prose-frost h4 {
   font-family: 'Cinzel', serif;
   color: rgb(125 211 252);
-  /* ice-300 */
   letter-spacing: 0.05em;
   margin-top: 2.5em;
   margin-bottom: 0.75em;
@@ -76,7 +76,6 @@
 .prose-frost h2 {
   font-size: 1.875rem;
   border-bottom: 1px solid rgb(26 35 50);
-  /* frost-700 */
   padding-bottom: 0.5rem;
 }
 
@@ -87,7 +86,6 @@
 .prose-frost h4 {
   font-size: 1.25rem;
   color: rgb(226 232 240);
-  /* silver-200 */
 }
 
 .prose-frost p {
@@ -97,19 +95,16 @@
 
 .prose-frost strong {
   color: rgb(226 232 240);
-  /* silver-200 */
   font-weight: 600;
 }
 
 .prose-frost em {
   color: rgb(125 211 252 / 0.85);
-  /* ice-300 with alpha */
   font-style: italic;
 }
 
 .prose-frost a {
   color: rgb(125 211 252);
-  /* ice-300 */
   text-decoration: underline;
   text-decoration-color: rgb(125 211 252 / 0.4);
   text-underline-offset: 3px;
@@ -118,7 +113,6 @@
 
 .prose-frost a:hover {
   color: rgb(56 189 248);
-  /* ice-400 */
   text-decoration-color: rgb(56 189 248);
 }
 
@@ -144,26 +138,21 @@
 
 .prose-frost li::marker {
   color: rgb(125 211 252 / 0.5);
-  /* ice-300 muted */
 }
 
 .prose-frost blockquote {
   border-left: 2px solid rgb(125 211 252 / 0.4);
-  /* ice-300 alpha */
   padding-left: 1.25rem;
   margin-left: 0;
   margin-top: 1.5em;
   margin-bottom: 1.5em;
   color: rgb(148 163 184);
-  /* silver-400 */
   font-style: italic;
 }
 
 .prose-frost code {
   background-color: rgb(17 24 39 / 0.6);
-  /* frost-800 alpha */
   color: rgb(125 211 252);
-  /* ice-300 */
   padding: 0.125rem 0.375rem;
   border-radius: 2px;
   font-size: 0.875em;
@@ -186,7 +175,6 @@
 .prose-frost hr {
   border: none;
   border-top: 1px solid rgb(26 35 50);
-  /* frost-700 */
   margin-top: 2.5em;
   margin-bottom: 2.5em;
 }
@@ -198,162 +186,24 @@
   border: 1px solid rgb(26 35 50);
 }
 
-/* ----------------------------------------
-   TIMELINE SCROLLBAR
-   ----------------------------------------
-   Custom-styled horizontal scrollbar for
-   the timeline track. Default browser
-   scrollbars are functional but ugly —
-   this matches our icy palette.
-
-   Webkit browsers (Chrome, Safari) and
-   Firefox use different syntax, so we
-   define both.
-   ---------------------------------------- */
-
-.timeline-scroll::-webkit-scrollbar {
-  height: 6px;
-}
-
-.timeline-scroll::-webkit-scrollbar-track {
-  background: rgb(17 24 39 / 0.4);
-  /* frost-800 alpha */
-}
-
-.timeline-scroll::-webkit-scrollbar-thumb {
-  background: rgb(125 211 252 / 0.3);
-  /* ice-300 alpha */
-  border-radius: 3px;
-}
-
-.timeline-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgb(125 211 252 / 0.5);
-}
-
-/* Firefox */
-.timeline-scroll {
-  scrollbar-width: thin;
-  scrollbar-color: rgb(125 211 252 / 0.3) rgb(17 24 39 / 0.4);
-}
-
-
-/* ----------------------------------------
-   LORE CRYSTAL CARD
-   ----------------------------------------
-   The clip-path creates angular corners
-   that give each card the look of a
-   faceted gem or shard of ice.
-
-   The values are percentages defining
-   eight points around the card perimeter,
-   creating the 8-sided clipped shape.
-
-   Browsers that don't support clip-path
-   (extremely rare in 2026) will fall back
-   to a regular rectangle. Graceful
-   degradation in action.
-
-   The hover state slightly nudges the
-   facets, like a crystal shifting in
-   the light.
-   ---------------------------------------- */
-
-.lore-crystal {
-  clip-path: polygon(8% 0,
-      /* top-left clip */
-      92% 0,
-      /* top-right clip */
-      100% 8%,
-      /* right-top corner */
-      100% 92%,
-      /* right-bottom corner */
-      92% 100%,
-      /* bottom-right clip */
-      8% 100%,
-      /* bottom-left clip */
-      0 92%,
-      /* left-bottom corner */
-      0 8%
-      /* left-top corner */
-    );
-  transition: clip-path 0.4s ease, transform 0.4s ease;
-}
-
-.lore-crystal:hover {
-  /*
-       Slightly tighter facets on hover —
-       like the crystal sharpening into focus.
-    */
-  clip-path: polygon(6% 0,
-      94% 0,
-      100% 6%,
-      100% 94%,
-      94% 100%,
-      6% 100%,
-      0 94%,
-      0 6%);
-  transform: translateY(-2px);
-}
-
-/*
-   When a card is filtered out, fade it
-   instead of removing it from the DOM.
-   The "filtered-out" class is added by
-   our HTMX/JS filter logic.
-*/
-.lore-crystal.filtered-out {
-  opacity: 0.15;
-  pointer-events: none;
-  filter: grayscale(0.8) blur(1px);
-}
 
 /* ============================================
-   THE TRIBUNAL — FIVE FLAMES FRIEZE
-   ============================================
-   The visual storytelling layer. Five panels
-   that overlap and bleed into each other,
-   suggesting they are fragments of the same
-   being. On hover, the focused panel pulls
-   forward to a clean, individually-readable
-   state.
-
-   Desktop: panels overlap horizontally with
-            transparent edges that blend.
-   Mobile: horizontal scroll-snap carousel,
-           each panel ~80% viewport width.
+   2. TRIBUNAL — FIVE FLAMES FRIEZE
    ============================================ */
 
-/* --- THE FRIEZE CONTAINER --- */
-
 .tribunal-frieze {
-  /* Mobile (default): horizontal scrolling
-       carousel with snap behavior. The panels
-       stay in a row but the user swipes
-       through them rather than seeing all at
-       once. */
   display: flex;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   scroll-padding-left: 1.5rem;
   gap: 0.75rem;
   padding: 0 1.5rem 1rem;
-
-  /* Hide scrollbar visually while keeping
-       scroll functionality. The pattern works
-       across browsers. */
   scrollbar-width: none;
-  /* Firefox */
 }
 
 .tribunal-frieze::-webkit-scrollbar {
   display: none;
-  /* Chrome, Safari */
 }
-
-/* --- DESKTOP LAYOUT (md and up) ---
-   Switch off scroll, switch on overlap.
-   Each panel takes equal width and tucks
-   under its neighbors. */
 
 @media (min-width: 768px) {
   .tribunal-frieze {
@@ -366,38 +216,18 @@
   }
 }
 
-/* --- INDIVIDUAL FLAME PANELS --- */
-
 .flame-panel {
-  /* Mobile: each panel is most of the
-       viewport, with the next panel peeking
-       in to suggest swipeability. */
   width: 78vw;
   max-width: 22rem;
   flex-shrink: 0;
   scroll-snap-align: start;
-
-  /* The transparent-edge mask. Pixels at
-       the very left and right edges fade to
-       transparent, so when panels overlap,
-       both images become semi-visible at
-       the seam. */
   mask-image: linear-gradient(to right,
-      transparent 0%,
-      black 12%,
-      black 88%,
-      transparent 100%);
+      transparent 0%, black 12%,
+      black 88%, transparent 100%);
   -webkit-mask-image: linear-gradient(to right,
-      transparent 0%,
-      black 12%,
-      black 88%,
-      transparent 100%);
+      transparent 0%, black 12%,
+      black 88%, transparent 100%);
 }
-
-/* --- DESKTOP PANEL LAYOUT ---
-   Each panel takes a fifth of the row's
-   width minus the overlap, then negative
-   margin pulls it toward its neighbors. */
 
 @media (min-width: 768px) {
   .flame-panel {
@@ -408,10 +238,6 @@
     scroll-snap-align: none;
   }
 
-  /* The first panel doesn't overlap on
-       its left edge (no neighbor there);
-       same for the last panel's right edge.
-       This keeps the frieze edges clean. */
   .flame-panel:first-child {
     margin-left: 0;
   }
@@ -421,40 +247,17 @@
   }
 }
 
-/* --- HOVER FOCUS BEHAVIOR ---
-   When a panel is hovered, it pulls forward:
-   the mask softens (more of the panel becomes
-   fully opaque), z-index jumps to the top,
-   and the panel scales slightly. The result
-   is that the hovered character becomes
-   individually clean and prominent while
-   the others stay blended. */
-
 .flame-panel:hover {
   z-index: 50 !important;
   transform: translateY(-8px) scale(1.03);
-  /* Soften the edge mask so the hovered
-       panel becomes mostly fully opaque,
-       individually readable. */
   mask-image: linear-gradient(to right,
-      rgba(0, 0, 0, 0.7) 0%,
-      black 5%,
-      black 95%,
-      rgba(0, 0, 0, 0.7) 100%);
+      rgba(0, 0, 0, 0.7) 0%, black 5%,
+      black 95%, rgba(0, 0, 0, 0.7) 100%);
   -webkit-mask-image: linear-gradient(to right,
-      rgba(0, 0, 0, 0.7) 0%,
-      black 5%,
-      black 95%,
-      rgba(0, 0, 0, 0.7) 100%);
-  /* Add a subtle frost glow when
-       individually focused. */
+      rgba(0, 0, 0, 0.7) 0%, black 5%,
+      black 95%, rgba(0, 0, 0, 0.7) 100%);
   filter: drop-shadow(0 0 30px rgba(125, 211, 252, 0.25));
 }
-
-/* --- KEYBOARD FOCUS PARITY ---
-   The same lift effect should apply when
-   the panel receives keyboard focus, not
-   just mouse hover. Accessibility wins. */
 
 .flame-panel:focus-visible {
   z-index: 50 !important;
@@ -463,26 +266,12 @@
   filter: drop-shadow(0 0 30px rgba(125, 211, 252, 0.4));
 }
 
+
 /* ============================================
-   IMAGE CROPPING — TOP-BIASED
-   ============================================
-   Most character portraits and event images
-   have their subject in the upper portion of
-   the frame (heads at the top, action above
-   center). The default object-position of
-   "center" crops equally from top and bottom,
-   which often slices off heads and faces.
-
-   Biasing toward "center top" preserves the
-   subject for the common case. Images with
-   centered or bottom-anchored subjects will
-   look slightly worse, but those are rarer.
-
-   This is a quick blanket improvement until
-   we build the proper focal-point + Pillow
-   processing system.
+   3. IMAGE HANDLING
    ============================================ */
 
+/* Top-biased cropping for portraits */
 img.object-cover,
 .flame-panel img,
 .tribunal-frieze img {
@@ -491,10 +280,9 @@ img.object-cover,
 
 
 /* ============================================
-   ADVENTURE LOG — SIDEBAR & CARDS
+   4. ADVENTURE LOG — SIDEBAR & CARDS
    ============================================ */
 
-/* --- ACTIVE SESSION HIGHLIGHT IN SIDEBAR --- */
 .session-index-link.active-session {
   background-color: rgba(125, 211, 252, 0.08);
   border-left: 2px solid rgba(125, 211, 252, 0.6);
@@ -509,7 +297,6 @@ img.object-cover,
   color: rgba(125, 211, 252, 0.7);
 }
 
-/* --- SIDEBAR SCROLLBAR STYLING --- */
 .session-index-scroll::-webkit-scrollbar {
   width: 4px;
 }
@@ -527,35 +314,14 @@ img.object-cover,
   background: rgba(125, 211, 252, 0.4);
 }
 
-/* Firefox */
 .session-index-scroll {
   scrollbar-width: thin;
   scrollbar-color: rgba(125, 211, 252, 0.2) transparent;
 }
 
-/* --- LINE CLAMP UTILITY ---
-   Tailwind v3+ has a built-in line-clamp,
-   but if your version doesn't, this provides it.
-   Truncates to 3 lines with an ellipsis. */
-.line-clamp-3 {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
 
 /* ============================================
-   MASONRY GALLERY
-   ============================================
-   Native CSS columns layout. Each image
-   keeps its natural aspect ratio and flows
-   into the appropriate column based on
-   available space. No JavaScript library
-   needed.
-
-   Mobile: 1 column
-   Small tablet: 2 columns
-   Desktop: 3 columns
+   5. MASONRY GALLERY
    ============================================ */
 
 .gallery-masonry {
@@ -576,51 +342,20 @@ img.object-cover,
 }
 
 .gallery-tile {
-  /* break-inside prevents a tile from being
-       split across two columns, which would
-       look broken. Mandatory for masonry
-       layouts. */
   break-inside: avoid;
-
-  /* Margin instead of gap because gap doesn't
-       quite work the same way with CSS columns
-       in all browsers. Bottom margin spaces
-       tiles vertically. */
   margin-bottom: 1rem;
-  /* Prevent flicker on browsers that
-       implement column layout transitions
-       imperfectly. */
   page-break-inside: avoid;
   -webkit-column-break-inside: avoid;
 }
 
+
 /* ============================================
-   LORE CODEX — GEM GRID
-   ============================================
-   Faceted gem shapes using clip-path.
-   No rotation tricks — the clip-path cuts
-   the visible area into a gem silhouette
-   directly.
-   ============================================ */
-
-/* --- THE GEM SHAPE ---
-   A kite/shield silhouette:
-   flat top, angled sides, pointed bottom.
-   Reads as "cut gemstone" immediately.
-
-   The polygon points (as percentages):
-     Top-left:     20%, 0%
-     Top-right:    80%, 0%
-     Right point:  100%, 40%
-     Bottom point: 50%, 100%
-     Left point:   0%, 40%
+   6. LORE CODEX — GEM GRID
    ============================================ */
 
 :root {
   --gem-shape: polygon(20% 0%, 80% 0%, 100% 40%, 50% 100%, 0% 40%);
 }
-
-/* --- THE GRID --- */
 
 .gem-grid {
   display: flex;
@@ -629,8 +364,6 @@ img.object-cover,
   gap: 2rem 1.25rem;
   padding: 1rem 0;
 }
-
-/* --- INDIVIDUAL GEM SLOT --- */
 
 .gem-slot {
   display: flex;
@@ -651,8 +384,6 @@ img.object-cover,
     width: 130px;
   }
 }
-
-/* --- THE GEM CONTAINER --- */
 
 .gem-stone {
   position: relative;
@@ -679,11 +410,6 @@ a.gem-slot:hover .gem-stone {
   transform: translateY(-4px) scale(1.05);
 }
 
-/* --- THE GEM BODY ---
-   Clip-path cuts this div into the gem
-   shape. Image or icon lives inside,
-   no rotation needed. */
-
 .gem-body {
   position: absolute;
   inset: 0;
@@ -691,10 +417,6 @@ a.gem-slot:hover .gem-stone {
   overflow: hidden;
   background: rgba(10, 14, 23, 0.9);
 }
-
-/* --- IMAGE INSIDE THE GEM ---
-   Normal orientation, object-fit handles
-   the cropping. No rotation hacks. */
 
 .gem-image {
   width: 100%;
@@ -707,8 +429,6 @@ a.gem-slot:hover .gem-stone {
 a.gem-slot:hover .gem-image {
   transform: scale(1.1);
 }
-
-/* --- FALLBACK ICON --- */
 
 .gem-icon {
   position: absolute;
@@ -723,12 +443,6 @@ a.gem-slot:hover .gem-image {
 a.gem-slot:hover .gem-icon {
   color: rgba(125, 211, 252, 0.45);
 }
-
-/* --- FACET HIGHLIGHT ---
-   A subtle gradient overlay that simulates
-   light catching the gem's upper facets.
-   Gives the gem visual depth beyond a
-   flat clipped shape. */
 
 .gem-highlight {
   position: absolute;
@@ -748,14 +462,6 @@ a.gem-slot:hover .gem-highlight {
   opacity: 0.7;
 }
 
-/* --- GEM BORDER ---
-   A separate element using the same clip-path
-   but slightly outset, creating a visible
-   border around the gem shape. We can't use
-   a normal CSS border because clip-path clips
-   borders too. Instead, a slightly larger
-   background element behind the body. */
-
 .gem-border {
   position: absolute;
   inset: -2px;
@@ -768,8 +474,6 @@ a.gem-slot:hover .gem-highlight {
 a.gem-slot:hover .gem-border {
   background: rgba(125, 211, 252, 0.5);
 }
-
-/* --- GLOW --- */
 
 .gem-glow {
   position: absolute;
@@ -787,8 +491,6 @@ a.gem-slot:hover .gem-glow {
   opacity: 1;
 }
 
-/* --- THE NAME LABEL --- */
-
 .gem-label {
   margin-top: 0.75rem;
   font-family: 'Cinzel', serif;
@@ -805,8 +507,7 @@ a.gem-slot:hover .gem-glow {
   -webkit-box-orient: vertical;
 }
 
-/* --- FROZEN STATE --- */
-
+/* Frozen gem state */
 .gem-frozen .gem-body {
   background: rgba(10, 14, 23, 0.5);
 }
@@ -839,8 +540,7 @@ a.gem-slot:hover .gem-glow {
   letter-spacing: 0.3em;
 }
 
-/* --- DM VIEWING UNREVEALED --- */
-
+/* DM viewing unrevealed gems */
 .gem-dm-unrevealed .gem-border {
   background: rgba(251, 191, 36, 0.15);
 }
@@ -849,66 +549,9 @@ a.gem-slot:hover .gem-dm-unrevealed .gem-border {
   background: rgba(251, 191, 36, 0.4);
 }
 
-/* ============================================
-   CHARACTER STAT BLOCKS
-   ============================================
-   Compact iconic stat displays for the
-   character detail page. Each stat is a
-   small centered column: big number on top,
-   icon + label below.
-   ============================================ */
-
-.stat-block {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 4.5rem;
-  padding: 0.75rem 1rem;
-  border: 1px solid rgba(125, 211, 252, 0.15);
-  background: rgba(10, 14, 23, 0.4);
-  transition: border-color 0.3s ease, background 0.3s ease;
-}
-
-.stat-block:hover {
-  border-color: rgba(125, 211, 252, 0.35);
-  background: rgba(125, 211, 252, 0.05);
-}
-
-.stat-value {
-  font-family: 'Cinzel', serif;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: rgba(214, 221, 232, 0.9);
-  line-height: 1;
-  letter-spacing: 0.05em;
-}
-
-.stat-label {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  margin-top: 0.5rem;
-  font-family: 'Cinzel', serif;
-  font-size: 0.6rem;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: rgba(125, 211, 252, 0.5);
-}
-
-.stat-icon {
-  width: 0.875rem;
-  height: 0.875rem;
-}
-
 
 /* ============================================
-   COMPACT STAT CELLS
-   ============================================
-   Dense inline stat display for the character
-   detail sheet zone. Like readouts on the
-   Falcon's dashboard — label on the left,
-   value on the right, everything in a tight
-   horizontal strip.
+   7. CHARACTER STATS — COMPACT CELLS
    ============================================ */
 
 .stat-compact {
@@ -942,8 +585,6 @@ a.gem-slot:hover .gem-dm-unrevealed .gem-border {
   letter-spacing: 0.05em;
 }
 
-/* Mobile: stack the stat cells in a grid
-   rather than a single flex row */
 @media (max-width: 640px) {
   .stat-compact {
     border-right: none;
@@ -957,27 +598,15 @@ a.gem-slot:hover .gem-dm-unrevealed .gem-border {
   }
 }
 
+
 /* ============================================
-   LEAFLET MAP — CUSTOM STYLING
-   ============================================
-   Overrides Leaflet's default styles to match
-   the Frostmaiden theme. The map container,
-   markers, tooltips, and popups all get the
-   frost treatment.
-
-   Like repainting a standard Imperial shuttle
-   in Rebel Alliance colors — same vehicle,
-   different identity.
+   8. LEAFLET MAP — CUSTOM STYLING
    ============================================ */
-
-/* --- MAP CONTAINER --- */
 
 #godfall-map {
   background: rgb(10, 14, 23);
 }
 
-/* Hide Leaflet's default zoom control styling
-   and replace with our own */
 .leaflet-control-zoom a {
   background: rgba(10, 14, 23, 0.8) !important;
   border-color: rgba(125, 211, 252, 0.2) !important;
@@ -995,8 +624,7 @@ a.gem-slot:hover .gem-dm-unrevealed .gem-border {
   color: rgba(186, 230, 253, 1) !important;
 }
 
-/* --- CUSTOM MARKER --- */
-
+/* Custom marker */
 .godfall-marker {
   background: none !important;
   border: none !important;
@@ -1070,8 +698,7 @@ a.gem-slot:hover .gem-dm-unrevealed .gem-border {
   }
 }
 
-/* --- TOOLTIP (hover) --- */
-
+/* Tooltip (hover) */
 .godfall-tooltip {
   background: rgba(10, 14, 23, 0.95) !important;
   backdrop-filter: blur(8px);
@@ -1090,8 +717,7 @@ a.gem-slot:hover .gem-dm-unrevealed .gem-border {
   border-top-color: rgba(125, 211, 252, 0.3) !important;
 }
 
-/* --- POPUP (click) --- */
-
+/* Popup (click) */
 .godfall-popup-wrapper .leaflet-popup-content-wrapper {
   background: rgba(10, 14, 23, 0.97) !important;
   backdrop-filter: blur(12px);
@@ -1125,8 +751,7 @@ a.gem-slot:hover .gem-dm-unrevealed .gem-border {
   line-height: 1.4 !important;
 }
 
-/* --- POPUP INNER CONTENT --- */
-
+/* Popup inner content */
 .godfall-popup {
   min-width: 220px;
 }
@@ -1196,11 +821,9 @@ a.gem-slot:hover .gem-dm-unrevealed .gem-border {
   color: rgba(186, 230, 253, 1);
 }
 
+
 /* ============================================
-   MAP PICKER — FORM MARKER
-   ============================================
-   A simple glowing dot for the lore form's
-   coordinate picker. Draggable for precision.
+   9. MAP PICKER — FORM MARKER
    ============================================ */
 
 .picker-marker {
@@ -1229,8 +852,6 @@ a.gem-slot:hover .gem-dm-unrevealed .gem-border {
   background: rgb(10, 14, 23);
 }
 
-/* Override Leaflet's default zoom control
-   styling for the picker to match our theme */
 #map-picker-container .leaflet-control-zoom a {
   background: rgba(10, 14, 23, 0.8) !important;
   border-color: rgba(125, 211, 252, 0.2) !important;
@@ -1246,13 +867,9 @@ a.gem-slot:hover .gem-dm-unrevealed .gem-border {
   border-color: rgba(125, 211, 252, 0.5) !important;
 }
 
+
 /* ============================================
-   LORE DETAIL — IMAGE SHOWCASE FLOAT
-   ============================================
-   The image showcase floats left so body
-   text wraps around it. Like an illustrated
-   manuscript plate with text flowing beside
-   and beneath the illustration.
+   10. LORE DETAIL — IMAGE SHOWCASE
    ============================================ */
 
 .lore-image-showcase {
@@ -1263,7 +880,6 @@ a.gem-slot:hover .gem-dm-unrevealed .gem-border {
   margin-bottom: 1rem;
 }
 
-/* Mobile: no float, full width stacked */
 @media (max-width: 768px) {
   .lore-image-showcase {
     float: none;
@@ -1274,6 +890,40 @@ a.gem-slot:hover .gem-dm-unrevealed .gem-border {
   }
 }
 
-.clear-both {
-  clear: both;
+/* ----------------------------------------
+   TIMELINE SCROLLBAR
+   ----------------------------------------
+   Custom-styled horizontal scrollbar for
+   the timeline track. Default browser
+   scrollbars are functional but ugly —
+   this matches our icy palette.
+
+   Webkit browsers (Chrome, Safari) and
+   Firefox use different syntax, so we
+   define both.
+   ---------------------------------------- */
+
+.timeline-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.timeline-scroll::-webkit-scrollbar-track {
+  background: rgb(17 24 39 / 0.4);
+  /* frost-800 alpha */
+}
+
+.timeline-scroll::-webkit-scrollbar-thumb {
+  background: rgb(125 211 252 / 0.3);
+  /* ice-300 alpha */
+  border-radius: 3px;
+}
+
+.timeline-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgb(125 211 252 / 0.5);
+}
+
+/* Firefox */
+.timeline-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(125 211 252 / 0.3) rgb(17 24 39 / 0.4);
 }
