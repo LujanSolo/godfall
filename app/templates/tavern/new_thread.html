@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="max-w-2xl mx-auto px-6 py-12">
+
+  <div class="mb-8">
+    <a href="/tavern"
+      class="text-ice-300/50 hover:text-ice-300 text-xs tracking-[0.3em] uppercase transition-colors inline-flex items-center gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg>
+      Back to Tavern
+    </a>
+  </div>
+
+  <h1 class="font-display text-2xl font-black tracking-wider text-silver-200 frost-glow mb-8">
+    Start a New Thread
+  </h1>
+
+  <form action="/tavern/new" method="POST" class="space-y-6">
+
+    {# Thread title #}
+    <div>
+      <label for="title" class="block text-[10px] tracking-widest uppercase text-silver-400/70 mb-1">
+        Thread Title <span class="text-red-400">*</span>
+      </label>
+      <input type="text" id="title" name="title" required placeholder="What's on your mind?"
+        class="w-full px-3 py-2 bg-frost-800/60 border border-frost-700 text-silver-200 text-sm placeholder:text-silver-400/30 focus:border-ice-500/60 focus:outline-none transition-colors">
+    </div>
+
+    {# First message #}
+    <div>
+      <label for="body" class="block text-[10px] tracking-widest uppercase text-silver-400/70 mb-1">
+        Your Message <span class="text-red-400">*</span>
+      </label>
+      <textarea id="body" name="body" rows="5" required placeholder="Speak your mind..."
+        class="w-full px-3 py-2 bg-frost-800/60 border border-frost-700 text-silver-200 text-sm placeholder:text-silver-400/30 focus:border-ice-500/60 focus:outline-none transition-colors resize-y"></textarea>
+    </div>
+
+    {# IC / OOC toggle #}
+    <div>
+      <p class="text-[10px] tracking-widest uppercase text-silver-400/70 mb-2">Voice</p>
+      <div class="flex gap-3">
+        <label
+          class="flex items-center gap-2 px-4 py-2 border border-frost-700 cursor-pointer hover:border-ice-500/40 transition-colors tavern-voice-option"
+          id="voice-ooc-label">
+          <input type="radio" name="is_ic" value="0" checked class="accent-ice-500" onchange="updateVoiceUI()">
+          <span class="text-xs tracking-widest uppercase text-silver-400">OOC</span>
+        </label>
+        <label
+          class="flex items-center gap-2 px-4 py-2 border border-frost-700 cursor-pointer hover:border-ice-500/40 transition-colors tavern-voice-option"
+          id="voice-ic-label">
+          <input type="radio" name="is_ic" value="1" class="accent-ice-500" onchange="updateVoiceUI()">
+          <span class="text-xs tracking-widest uppercase text-silver-400">In Character</span>
+        </label>
+      </div>
+    </div>
+
+    {# NPC name (DM only, IC only) #}
+    {% if request.state.user %}
+    <div id="npc-name-field" class="hidden">
+      <label for="npc_name" class="block text-[10px] tracking-widest uppercase text-silver-400/70 mb-1">
+        Speaking as NPC
+      </label>
+      <input type="text" id="npc_name" name="npc_name" placeholder="NPC name"
+        class="w-full px-3 py-2 bg-frost-800/60 border border-frost-700 text-silver-200 text-sm placeholder:text-silver-400/30 focus:border-ice-500/60 focus:outline-none transition-colors">
+    </div>
+    {% endif %}
+
+    {# Link to content (optional) #}
+    <div>
+      <p class="text-[10px] tracking-widest uppercase text-silver-400/70 mb-2">Link to Content (optional)</p>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div>
+          <label for="linked_session_id"
+            class="block text-[9px] tracking-widest uppercase text-silver-400/50 mb-1">Session</label>
+          <select id="linked_session_id" name="linked_session_id"
+            class="w-full px-2 py-1.5 bg-frost-800/60 border border-frost-700 text-silver-200 text-xs focus:border-ice-500/60 focus:outline-none transition-colors">
+            <option value="">—</option>
+            {% for s in sessions %}
+            <option value="{{ s.id }}">Session {{ s.session_number }}: {{ s.title }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label for="linked_lore_id" class="block text-[9px] tracking-widest uppercase text-silver-400/50 mb-1">Lore
+            Entry</label>
+          <select id="linked_lore_id" name="linked_lore_id"
+            class="w-full px-2 py-1.5 bg-frost-800/60 border border-frost-700 text-silver-200 text-xs focus:border-ice-500/60 focus:outline-none transition-colors">
+            <option value="">—</option>
+            {% for l in lore_entries %}
+            <option value="{{ l.id }}">{{ l.title }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label for="linked_character_id"
+            class="block text-[9px] tracking-widest uppercase text-silver-400/50 mb-1">Character</label>
+          <select id="linked_character_id" name="linked_character_id"
+            class="w-full px-2 py-1.5 bg-frost-800/60 border border-frost-700 text-silver-200 text-xs focus:border-ice-500/60 focus:outline-none transition-colors">
+            <option value="">—</option>
+            {% for c in characters %}
+            <option value="{{ c.id }}">{{ c.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-4 pt-4 border-t border-frost-700">
+      <button type="submit"
+        class="px-6 py-2 border border-ice-500/60 bg-ice-500/10 text-ice-300 hover:bg-ice-500/20 hover:border-ice-300 font-display text-sm tracking-widest uppercase transition-colors">
+        Post Thread
+      </button>
+      <a href="/tavern"
+        class="px-6 py-2 border border-frost-700 text-silver-400 hover:text-ice-300 hover:border-ice-500/40 font-display text-sm tracking-widest uppercase transition-colors">
+        Cancel
+      </a>
+    </div>
+  </form>
+
+</section>
+
+<script>
+  function updateVoiceUI() {
+    const isIc = document.querySelector('input[name="is_ic"]:checked').value === '1';
+    const npcField = document.getElementById('npc-name-field');
+
+    // Show NPC name field for DM when IC is selected
+    if (npcField) {
+      if (isIc) {
+        npcField.classList.remove('hidden');
+      } else {
+        npcField.classList.add('hidden');
+      }
+    }
+
+    // Visual feedback on toggle buttons
+    document.querySelectorAll('.tavern-voice-option').forEach(label => {
+      const radio = label.querySelector('input[type="radio"]');
+      if (radio.checked) {
+        label.classList.add('border-ice-500/60', 'bg-ice-500/10');
+        label.classList.remove('border-frost-700');
+      } else {
+        label.classList.remove('border-ice-500/60', 'bg-ice-500/10');
+        label.classList.add('border-frost-700');
+      }
+    });
+  }
+
+  // Initialize on load
+  updateVoiceUI();
+</script>
+{% endblock %}

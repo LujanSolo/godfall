@@ -915,6 +915,93 @@ class Player(Base):
 
 
 # ============================================
+# TAVERN THREAD MODEL
+# ============================================
+# A conversation thread in the Tavern.
+# Can optionally link to a session, lore
+# entry, or character for contextual
+# discussion.
+#
+# Like a notice pinned to the tavern's
+# message board — anyone can read it,
+# authorized patrons can respond.
+# ============================================
+class TavernThread(Base):
+    __tablename__ = "tavern_threads"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    title = Column(String(200), nullable=False)
+
+    # Who started this thread
+    created_by_id = Column(Integer, ForeignKey("players.id"), nullable=True)
+    created_by_dm = Column(Integer, default=0)
+
+    # Thread state
+    is_locked = Column(Integer, default=0)
+    is_pinned = Column(Integer, default=0)
+
+    # Optional content links
+    linked_session_id = Column(Integer, ForeignKey("session_recaps.id"), nullable=True)
+    linked_lore_id = Column(Integer, ForeignKey("lore_entries.id"), nullable=True)
+    linked_character_id = Column(Integer, ForeignKey("characters.id"), nullable=True)
+
+    created_at = Column(DateTime, default=utc_now)
+    updated_at = Column(DateTime, default=utc_now, onupdate=utc_now)
+
+    # --- RELATIONSHIPS ---
+    created_by = relationship("Player", foreign_keys=[created_by_id])
+    messages = relationship(
+        "TavernMessage",
+        back_populates="thread",
+        cascade="all, delete-orphan",
+        order_by="TavernMessage.created_at",
+    )
+    linked_session = relationship("SessionRecap", foreign_keys=[linked_session_id])
+    linked_lore = relationship("LoreEntry", foreign_keys=[linked_lore_id])
+    linked_character = relationship("Character", foreign_keys=[linked_character_id])
+
+    def __repr__(self):
+        return f"<TavernThread: {self.title}>"
+
+
+# ============================================
+# TAVERN MESSAGE MODEL
+# ============================================
+# A single message in a tavern thread.
+# Can be in-character (IC) or out-of-
+# character (OOC). The DM can post as
+# NPCs using the npc_name field.
+# ============================================
+class TavernMessage(Base):
+    __tablename__ = "tavern_messages"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    thread_id = Column(Integer, ForeignKey("tavern_threads.id"), nullable=False)
+
+    # Who posted — null if DM
+    posted_by_id = Column(Integer, ForeignKey("players.id"), nullable=True)
+    posted_by_dm = Column(Integer, default=0)
+
+    # IC/OOC and NPC identity
+    is_ic = Column(Integer, default=0)
+    npc_name = Column(String(100), nullable=True)
+
+    body = Column(Text, nullable=False)
+
+    created_at = Column(DateTime, default=utc_now)
+    edited_at = Column(DateTime, nullable=True)
+
+    # --- RELATIONSHIPS ---
+    thread = relationship("TavernThread", back_populates="messages")
+    posted_by = relationship("Player", foreign_keys=[posted_by_id])
+
+    def __repr__(self):
+        return f"<TavernMessage #{self.id} in Thread #{self.thread_id}>"
+
+
+# ============================================
 # USER MODEL
 # ============================================
 # A single row will ever exist in this table:

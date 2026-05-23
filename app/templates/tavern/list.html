@@ -3,38 +3,128 @@
 {% block content %}
 <section class="max-w-4xl mx-auto px-6 py-12">
 
-    <div class="text-center mb-12">
-        <h1 class="font-display text-3xl md:text-4xl font-black tracking-[0.2em] uppercase text-silver-200 frost-glow">
-            The Tavern
-        </h1>
-        <p class="mt-3 text-ice-300/50 font-light tracking-wider italic">
-            Where adventurers gather to speak of what was and what may be.
-        </p>
-    </div>
+  {# --- HEADER --- #}
+  <div class="text-center mb-10">
+    <h1 class="font-display text-3xl md:text-4xl font-black tracking-[0.2em] uppercase text-silver-200 frost-glow">
+      The Tavern
+    </h1>
+    <p class="mt-3 text-ice-300/50 font-light tracking-wider italic">
+      Where adventurers gather to speak of what was and what may be.
+    </p>
+  </div>
 
-    {% if request.state.player %}
-    <p class="text-center text-silver-300 mb-8">
-        Welcome, {{ request.state.player.username }}. Threads coming soon.
-    </p>
-    {% elif request.state.user %}
-    <p class="text-center text-silver-300 mb-8">
-        The tavern awaits, Dungeon Master. Threads coming soon.
-    </p>
-    <div class="text-center">
-        <a href="/tavern/players"
-           class="px-4 py-2 border border-ice-500/40 text-ice-300 hover:bg-ice-500/10 hover:border-ice-300 font-display text-[10px] tracking-widest uppercase transition-colors">
-            Manage Player Accounts
-        </a>
-    </div>
+  {# --- NEW THREAD + DM TOOLS --- #}
+  <div class="flex items-center justify-between mb-8">
+    {% if request.state.player or request.state.user %}
+    <a href="/tavern/new"
+      class="px-4 py-2 border border-ice-500/40 text-ice-300 hover:bg-ice-500/10 hover:border-ice-300 font-display text-[10px] tracking-widest uppercase transition-colors">
+      New Thread
+    </a>
     {% else %}
-    <div class="text-center">
-        <p class="text-silver-400/60 mb-6">Log in to join the conversation.</p>
-        <a href="/tavern/login"
-           class="px-6 py-2.5 border border-ice-500/60 bg-ice-500/10 text-ice-300 hover:bg-ice-500/20 hover:border-ice-300 font-display text-sm tracking-widest uppercase transition-colors">
-            Player Login
-        </a>
-    </div>
+    <a href="/tavern/login"
+      class="px-4 py-2 border border-frost-700 text-silver-400 hover:text-ice-300 hover:border-ice-500/40 font-display text-[10px] tracking-widest uppercase transition-colors">
+      Log in to join
+    </a>
     {% endif %}
+
+    {% if request.state.user %}
+    <a href="/tavern/players"
+      class="px-3 py-1.5 border border-frost-700 text-silver-400 hover:text-ice-300 hover:border-ice-500/40 text-[10px] tracking-widest uppercase transition-colors">
+      Manage Players
+    </a>
+    {% endif %}
+  </div>
+
+  {# --- THREAD LIST --- #}
+  {% if thread_data %}
+  <div class="space-y-3">
+    {% for item in thread_data %}
+    {% set thread = item.thread %}
+    {% set last_msg = item.last_message %}
+    {% set count = item.message_count %}
+
+    <a href="/tavern/{{ thread.id }}"
+      class="group block px-5 py-4 border border-frost-700 hover:border-ice-500/40 hover:bg-frost-800/40 transition-colors">
+
+      <div class="flex items-start justify-between gap-4">
+        <div class="flex-1 min-w-0">
+
+          {# Title row with badges #}
+          <div class="flex items-center gap-2 mb-1">
+            {% if thread.is_pinned == 1 %}
+            <span
+              class="text-[9px] tracking-widest uppercase text-amber-300/70 bg-amber-900/20 border border-amber-400/30 px-1.5 py-0.5">Pinned</span>
+            {% endif %}
+            {% if thread.is_locked == 1 %}
+            <span
+              class="text-[9px] tracking-widest uppercase text-red-300/70 bg-red-900/20 border border-red-400/30 px-1.5 py-0.5">Locked</span>
+            {% endif %}
+            <h2
+              class="font-display text-base tracking-wider text-silver-200 group-hover:text-ice-300 transition-colors truncate">
+              {{ thread.title }}
+            </h2>
+          </div>
+
+          {# Linked content badge #}
+          {% if thread.linked_session %}
+          <span class="text-[9px] tracking-widest uppercase text-ice-300/40">
+            📖 Session {{ thread.linked_session.session_number }}: {{ thread.linked_session.title }}
+          </span>
+          {% elif thread.linked_lore %}
+          <span class="text-[9px] tracking-widest uppercase text-ice-300/40">
+            📜 {{ thread.linked_lore.title }}
+          </span>
+          {% elif thread.linked_character %}
+          <span class="text-[9px] tracking-widest uppercase text-ice-300/40">
+            ⚔ {{ thread.linked_character.name }}
+          </span>
+          {% endif %}
+
+          {# Last message preview #}
+          {% if last_msg %}
+          <p class="mt-2 text-xs text-silver-400/70 truncate">
+            {% if last_msg.posted_by_dm == 1 %}
+            {% if last_msg.is_ic == 1 and last_msg.npc_name %}
+            {{ last_msg.npc_name }}:
+            {% else %}
+            <span class="italic">DM (OOC)</span>:
+            {% endif %}
+            {% elif last_msg.posted_by %}
+            {% if last_msg.is_ic == 1 and last_msg.posted_by.character %}
+            {{ last_msg.posted_by.character.name }}:
+            {% else %}
+            <span class="italic">{{ last_msg.posted_by.username }} (OOC)</span>:
+            {% endif %}
+            {% endif %}
+            {{ last_msg.body[:80] }}{% if last_msg.body | length > 80 %}...{% endif %}
+          </p>
+          {% endif %}
+
+        </div>
+
+        {# Right side — count + timestamp #}
+        <div class="flex-shrink-0 text-right">
+          <p class="text-xs text-silver-400/50">
+            {{ count }} message{% if count != 1 %}s{% endif %}
+          </p>
+          {% if thread.updated_at %}
+          <p class="text-[10px] text-ice-300/30 mt-1">
+            {{ thread.updated_at.strftime("%b %-d") }}
+          </p>
+          {% endif %}
+        </div>
+      </div>
+
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center py-16">
+    <p class="text-silver-400/50 text-sm">
+      The tavern is quiet. No threads yet.
+    </p>
+  </div>
+  {% endif %}
 
 </section>
 {% endblock %}

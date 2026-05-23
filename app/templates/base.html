@@ -140,10 +140,12 @@ overlay menu on mobile.
           </form>
         </div>
         {% else %}
-        <a href="/tavern/login"
-          class="text-silver-400/50 hover:text-ice-300 transition-colors text-xs tracking-widest uppercase pl-4 ml-2 border-l border-frost-700">
-          Login
-        </a>
+        <div class="flex items-center gap-4 pl-4 ml-2 border-l border-frost-700">
+          <a href="/tavern/login"
+            class="text-silver-400/50 hover:text-ice-300 transition-colors text-xs tracking-widest uppercase">Player</a>
+          <a href="/login"
+            class="text-silver-400/50 hover:text-ice-300 transition-colors text-xs tracking-widest uppercase">DM</a>
+        </div>
         {% endif %}
       </div>
 
@@ -257,10 +259,16 @@ overlay menu on mobile.
           </form>
         </div>
         {% else %}
-        <a href="/tavern/login" onclick="toggleMobileMenu()"
-          class="mt-4 pt-4 border-t border-frost-700/40 font-display text-base tracking-widest uppercase text-silver-400/60 hover:text-ice-300 transition-colors py-2">
-          Login
-        </a>
+        <div class="mt-4 pt-4 border-t border-frost-700/40 flex items-center gap-6">
+          <a href="/tavern/login" onclick="toggleMobileMenu()"
+            class="font-display text-base tracking-widest uppercase text-silver-400/60 hover:text-ice-300 transition-colors py-2">
+            Player Login
+          </a>
+          <a href="/login" onclick="toggleMobileMenu()"
+            class="font-display text-base tracking-widest uppercase text-silver-400/60 hover:text-ice-300 transition-colors py-2">
+            DM Login
+          </a>
+        </div>
         {% endif %}
 
         {# Tagline at the bottom — a frosty whisper #}

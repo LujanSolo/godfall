@@ -1,14 +1,14 @@
 {#
-    GODFALL - lore/detail.html
-    ============================
-    The codex entry page — compact header,
-    image showcase with lightbox, wrapped
-    body text, cross-references, and DM
-    tools at the bottom.
+GODFALL - lore/detail.html
+============================
+The codex entry page — compact header,
+image showcase with lightbox, wrapped
+body text, cross-references, and DM
+tools at the bottom.
 
-    Two zones like the character page:
-    compact metadata at top, spacious
-    prose below.
+Two zones like the character page:
+compact metadata at top, spacious
+prose below.
 #}
 {% extends "base.html" %}
 
@@ -16,287 +16,286 @@
 
 <article class="max-w-4xl mx-auto px-6 py-10">
 
-    {# --- BREADCRUMB --- #}
-    <nav class="mb-6 text-xs tracking-[0.2em] uppercase text-ice-300/40">
-        <a href="/lore" class="hover:text-ice-300 transition-colors">Codex</a>
-        {% if entry.folio_chapter %}
-            {% set chapter_slug = entry.folio_chapter | lower | replace(" & ", "-and-") | replace(",", "") | replace(" ", "-") | replace("'", "") %}
-            <span class="mx-2 text-ice-300/20">›</span>
-            <a href="/lore/chapter/{{ chapter_slug }}" class="hover:text-ice-300 transition-colors">{{ entry.folio_chapter }}</a>
-        {% endif %}
-        <span class="mx-2 text-ice-300/20">›</span>
-        <span class="text-ice-300/70">{{ entry.title }}</span>
-    </nav>
-
-    {# --- STATUS BADGES + DM ACTIONS --- #}
-    <div class="flex items-center justify-between mb-4">
-        <div class="flex items-center gap-2">
-            <span class="px-2 py-0.5 text-[10px] tracking-[0.2em] uppercase text-ice-300/60 bg-ice-500/10 border border-ice-500/30">
-                {{ entry.category }}
-            </span>
-            {% if entry.is_secret == 1 %}
-            <span class="px-2 py-0.5 text-[10px] tracking-widest uppercase bg-amber-900/20 text-amber-300 border border-amber-400/40">
-                Hidden
-            </span>
-            {% endif %}
-            {% if entry.is_revealed != 1 and request.state.user %}
-            <span class="px-2 py-0.5 text-[10px] tracking-widest uppercase bg-amber-900/10 text-amber-300/70 border border-amber-400/30">
-                Unrevealed
-            </span>
-            {% endif %}
-        </div>
-
-        {% if request.state.user %}
-        <div class="flex gap-2">
-            <a href="/lore/{{ entry.id }}/edit"
-               class="px-3 py-1 border border-frost-700 text-silver-400 hover:text-ice-300 hover:border-ice-500/40 text-[10px] tracking-widest uppercase transition-colors">
-                Edit
-            </a>
-            <form action="/lore/{{ entry.id }}/delete" method="POST"
-                  onsubmit="return confirm('Delete: {{ entry.title }}?');"
-                  class="inline">
-                <button type="submit"
-                        class="px-3 py-1 border border-frost-700 text-silver-400 hover:text-red-400 hover:border-red-700/40 text-[10px] tracking-widest uppercase transition-colors">
-                    Delete
-                </button>
-            </form>
-        </div>
-        {% endif %}
-    </div>
-
-    {# --- TITLE + SUBTITLE --- #}
-    <h1 class="font-display text-3xl md:text-4xl font-black tracking-wider text-silver-200 frost-glow leading-tight">
-        {{ entry.title }}
-    </h1>
-    {% if entry.subtitle %}
-    <p class="mt-2 text-sm text-ice-300/60 font-light italic tracking-wide">
-        {{ entry.subtitle }}
-    </p>
-    {% endif %}
-
-    {# --- FLOURISH --- #}
-    <div class="flex items-center justify-center gap-3 py-6" aria-hidden="true">
-        <span class="text-ice-300/30 text-lg">✦</span>
-        <span class="h-px w-16 bg-ice-300/20"></span>
-        <span class="text-ice-300/50">·</span>
-        <span class="h-px w-16 bg-ice-300/20"></span>
-        <span class="text-ice-300/30 text-lg">✦</span>
-    </div>
-
-    {# ==========================================
-       IMAGE SHOWCASE + BODY TEXT
-       Images float left, text wraps around.
-       ========================================== #}
-
-    {# Gather all images and find the featured one #}
-    {% set ns = namespace(featured=None, others=[]) %}
-    {% for image in entry.images %}
-        {% if image.is_featured == 1 and ns.featured is none %}
-            {% set ns.featured = image %}
-        {% else %}
-            {% set ns.others = ns.others + [image] %}
-        {% endif %}
-    {% endfor %}
-    {% if ns.featured is none and entry.images %}
-        {% set ns.featured = entry.images[0] %}
-        {% set ns.others = entry.images[1:] %}
-    {% endif %}
-
-    <div class="lore-content-flow">
-
-        {# --- IMAGE SHOWCASE (floats left) --- #}
-        {% if entry.images %}
-        <div class="lore-image-showcase">
-
-            {# Featured image — larger #}
-            {% if ns.featured %}
-            <a href="{{ ns.featured.file_path }}"
-               class="gallery-trigger block border border-frost-700 bg-frost-900 overflow-hidden hover:border-ice-500/40 transition-colors mb-2"
-               data-gallery-index="0"
-               data-caption="{{ ns.featured.caption | default('') }}">
-                <img src="{{ ns.featured.file_path }}"
-                     alt="{{ ns.featured.caption | default(entry.title) }}"
-                     class="w-full h-auto block"
-                     loading="lazy">
-            </a>
-            {% if ns.featured.caption %}
-            <p class="text-[10px] text-ice-300/50 italic mb-3 px-1">{{ ns.featured.caption }}</p>
-            {% endif %}
-            {% endif %}
-
-            {# Thumbnail strip — smaller images #}
-            {% if ns.others %}
-            <div class="grid grid-cols-3 gap-1.5">
-                {% for image in ns.others[:6] %}
-                <a href="{{ image.file_path }}"
-                   class="gallery-trigger block aspect-square border border-frost-700/60 bg-frost-900 overflow-hidden hover:border-ice-500/40 transition-colors"
-                   data-gallery-index="{{ loop.index }}"
-                   data-caption="{{ image.caption | default('') }}">
-                    <img src="{{ image.file_path }}"
-                         alt="{{ image.caption | default(entry.title) }}"
-                         class="w-full h-full object-cover"
-                         loading="lazy">
-                </a>
-                {% endfor %}
-            </div>
-            {% if ns.others | length > 6 %}
-            <p class="text-[10px] text-ice-300/40 mt-2 text-center">
-                +{{ ns.others | length - 6 }} more in gallery below
-            </p>
-            {% endif %}
-            {% endif %}
-        </div>
-        {% endif %}
-
-        {# --- BODY TEXT (wraps around images) --- #}
-        {% if entry.body %}
-        <div class="prose-frost max-w-none">
-            {{ entry.body | markdown | safe }}
-        </div>
-        {% endif %}
-
-    </div>
-
-    {# Clear the float #}
-    <div class="clear-both"></div>
-
-    {# --- CROSS-REFERENCES --- #}
-    {% if entry.character_links or entry.event_links %}
-    <div class="mt-8 pt-6 border-t border-frost-700/60">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-            {# Connected Characters #}
-            {% if entry.character_links %}
-            <div>
-                <p class="text-[9px] tracking-[0.3em] uppercase text-ice-300/40 mb-3">Those Connected</p>
-                <div class="space-y-2">
-                    {% for link in entry.character_links %}
-                        {% set character = link.character %}
-                        {% set cns = namespace(primary=None) %}
-                        {% for img in character.images %}
-                            {% if img.is_primary == 1 and cns.primary is none %}
-                                {% set cns.primary = img %}
-                            {% endif %}
-                        {% endfor %}
-                        {% if cns.primary is none and character.images %}
-                            {% set cns.primary = character.images[0] %}
-                        {% endif %}
-
-                        <a href="/characters/{{ character.id }}"
-                           class="group flex items-center gap-2 hover:bg-ice-500/5 transition-colors py-1.5 px-2 -mx-2">
-                            <div class="w-8 h-8 flex-shrink-0 bg-frost-900 border border-frost-700 overflow-hidden">
-                                {% if cns.primary %}
-                                <img src="{{ cns.primary.file_path }}" alt="{{ character.name }}" class="w-full h-full object-cover">
-                                {% endif %}
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <p class="text-xs text-silver-300 group-hover:text-ice-300 transition-colors leading-tight truncate">
-                                    {{ character.name }}
-                                </p>
-                            </div>
-                        </a>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %}
-
-            {# Connected Events #}
-            {% if entry.event_links %}
-            <div>
-                <p class="text-[9px] tracking-[0.3em] uppercase text-ice-300/40 mb-3">Events Touched</p>
-                <div class="space-y-2">
-                    {% for link in entry.event_links %}
-                        {% set event = link.event %}
-                        <a href="/timeline/{{ event.id }}"
-                           class="group block py-1.5 px-2 -mx-2 hover:bg-ice-500/5 transition-colors">
-                            <p class="text-xs text-silver-300 group-hover:text-ice-300 transition-colors leading-tight">
-                                {% if event.is_milestone == 1 %}<span class="text-ice-300 mr-1">★</span>{% endif %}
-                                {{ event.title }}
-                            </p>
-                            {% if event.event_date %}
-                            <p class="text-[10px] text-ice-300/30 mt-0.5">{{ event.event_date }}</p>
-                            {% endif %}
-                        </a>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %}
-
-        </div>
-    </div>
-    {% endif %}
-
-    {# --- BACK TO CHAPTER --- #}
+  {# --- BREADCRUMB --- #}
+  <nav class="mb-6 text-xs tracking-[0.2em] uppercase text-ice-300/40">
+    <a href="/lore" class="hover:text-ice-300 transition-colors">Codex</a>
     {% if entry.folio_chapter %}
-    {% set chapter_slug = entry.folio_chapter | lower | replace(" & ", "-and-") | replace(",", "") | replace(" ", "-") | replace("'", "") %}
-    <div class="mt-8 text-center">
-        <a href="/lore/chapter/{{ chapter_slug }}"
-           class="group inline-flex items-center gap-2 text-ice-300/50 hover:text-ice-300 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 19l-7-7 7-7" />
-            </svg>
-            <span class="text-xs tracking-[0.3em] uppercase">Return to {{ entry.folio_chapter }}</span>
+    {% set chapter_slug = entry.folio_chapter | lower | replace(" & ", "-and-") | replace(",", "") | replace(" ", "-") |
+    replace("'", "") %}
+    <span class="mx-2 text-ice-300/20">›</span>
+    <a href="/lore/chapter/{{ chapter_slug }}" class="hover:text-ice-300 transition-colors">{{ entry.folio_chapter
+      }}</a>
+    {% endif %}
+    <span class="mx-2 text-ice-300/20">›</span>
+    <span class="text-ice-300/70">{{ entry.title }}</span>
+  </nav>
+
+  {# --- STATUS BADGES + DM ACTIONS --- #}
+  <div class="flex items-center justify-between mb-4">
+    <div class="flex items-center gap-2">
+      <span
+        class="px-2 py-0.5 text-[10px] tracking-[0.2em] uppercase text-ice-300/60 bg-ice-500/10 border border-ice-500/30">
+        {{ entry.category }}
+      </span>
+      {% if entry.is_secret == 1 %}
+      <span
+        class="px-2 py-0.5 text-[10px] tracking-widest uppercase bg-amber-900/20 text-amber-300 border border-amber-400/40">
+        Hidden
+      </span>
+      {% endif %}
+      {% if entry.is_revealed != 1 and request.state.user %}
+      <span
+        class="px-2 py-0.5 text-[10px] tracking-widest uppercase bg-amber-900/10 text-amber-300/70 border border-amber-400/30">
+        Unrevealed
+      </span>
+      {% endif %}
+    </div>
+
+    {% if request.state.user %}
+    <div class="flex gap-2">
+      <a href="/lore/{{ entry.id }}/edit"
+        class="px-3 py-1 border border-frost-700 text-silver-400 hover:text-ice-300 hover:border-ice-500/40 text-[10px] tracking-widest uppercase transition-colors">
+        Edit
+      </a>
+      <form action="/lore/{{ entry.id }}/delete" method="POST" onsubmit="return confirm('Delete: {{ entry.title }}?');"
+        class="inline">
+        <button type="submit"
+          class="px-3 py-1 border border-frost-700 text-silver-400 hover:text-red-400 hover:border-red-700/40 text-[10px] tracking-widest uppercase transition-colors">
+          Delete
+        </button>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+
+  {# --- TITLE + SUBTITLE --- #}
+  <h1 class="font-display text-3xl md:text-4xl font-black tracking-wider text-silver-200 frost-glow leading-tight">
+    {{ entry.title }}
+  </h1>
+  {% if entry.subtitle %}
+  <p class="mt-2 text-sm text-ice-300/60 font-light italic tracking-wide">
+    {{ entry.subtitle }}
+  </p>
+  {% endif %}
+
+  {# --- FLOURISH --- #}
+  <div class="flex items-center justify-center gap-3 py-6" aria-hidden="true">
+    <span class="text-ice-300/30 text-lg">✦</span>
+    <span class="h-px w-16 bg-ice-300/20"></span>
+    <span class="text-ice-300/50">·</span>
+    <span class="h-px w-16 bg-ice-300/20"></span>
+    <span class="text-ice-300/30 text-lg">✦</span>
+  </div>
+
+  {# ==========================================
+  IMAGE SHOWCASE + BODY TEXT
+  Images float left, text wraps around.
+  ========================================== #}
+
+  {# Gather all images and find the featured one #}
+  {% set ns = namespace(featured=None, others=[]) %}
+  {% for image in entry.images %}
+  {% if image.is_featured == 1 and ns.featured is none %}
+  {% set ns.featured = image %}
+  {% else %}
+  {% set ns.others = ns.others + [image] %}
+  {% endif %}
+  {% endfor %}
+  {% if ns.featured is none and entry.images %}
+  {% set ns.featured = entry.images[0] %}
+  {% set ns.others = entry.images[1:] %}
+  {% endif %}
+
+  {% if entry.body %}
+  <div class="prose-frost prose-phb">
+
+    {# Image cluster inside columns #}
+    {% if entry.images %}
+    <div class="phb-float-cluster">
+      {% if ns.featured %}
+      <a href="{{ ns.featured.file_path }}"
+        class="gallery-trigger block border border-ice-500/20 bg-frost-900 overflow-hidden hover:border-ice-500/40 transition-colors"
+        data-gallery-index="0" data-caption="{{ ns.featured.caption | default('') }}">
+        <img src="{{ ns.featured.file_path }}" alt="{{ ns.featured.caption | default(entry.title) }}"
+          class="w-full h-auto block" loading="lazy">
+      </a>
+      {% if ns.featured.caption %}
+      <p class="text-[10px] text-ice-300/50 italic mt-1.5 px-1 text-center" style="margin: 0.5rem 0 0 0;">{{
+        ns.featured.caption }}</p>
+      {% endif %}
+      {% endif %}
+
+      {% if ns.others %}
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.375rem; margin-top: 0.5rem;">
+        {% for image in ns.others[:6] %}
+        <a href="{{ image.file_path }}"
+          class="gallery-trigger block aspect-square border border-frost-700/60 bg-frost-900 overflow-hidden hover:border-ice-500/40 transition-colors"
+          data-gallery-index="{{ loop.index }}" data-caption="{{ image.caption | default('') }}">
+          <img src="{{ image.file_path }}" alt="{{ image.caption | default(entry.title) }}"
+            class="w-full h-full object-cover" loading="lazy">
         </a>
+        {% endfor %}
+      </div>
+      {% if ns.others | length > 6 %}
+      <p class="text-[10px] text-ice-300/40 mt-2 text-center">
+        +{{ ns.others | length - 6 }} more below
+      </p>
+      {% endif %}
+      {% endif %}
     </div>
     {% endif %}
 
-    {# ==========================================
-       DM TOOLS — compact management footer
-       ========================================== #}
-    {% if request.state.user %}
-    <footer class="mt-12 pt-6 border-t border-frost-700/40">
-        <p class="text-[9px] tracking-[0.3em] uppercase text-ice-300/30 mb-4 text-center">Librarian's Tools</p>
+    {{ entry.body | markdown | safe }}
+  </div>
+  {% elif entry.images %}
+  {# No body but has images — show them centered #}
+  <div class="flex justify-center mb-8">
+    <div class="w-full sm:w-1/2 md:w-2/5">
+      {% if ns.featured %}
+      <a href="{{ ns.featured.file_path }}"
+        class="gallery-trigger block border border-ice-500/20 bg-frost-900 overflow-hidden hover:border-ice-500/40 transition-colors mb-2"
+        data-gallery-index="0" data-caption="{{ ns.featured.caption | default('') }}">
+        <img src="{{ ns.featured.file_path }}" alt="{{ ns.featured.caption | default(entry.title) }}"
+          class="w-full h-auto block" loading="lazy">
+      </a>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
 
-        {# Image management grid #}
-        {% if entry.images %}
-        <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2 mb-6">
-            {% for image in entry.images %}
-            <div class="relative group">
-                <div class="aspect-square border border-frost-700/60 bg-frost-900 overflow-hidden">
-                    <img src="{{ image.file_path }}"
-                         alt="{{ image.caption | default('') }}"
-                         class="w-full h-full object-cover">
-                </div>
+  {# --- CROSS-REFERENCES --- #}
+  {% if entry.character_links or entry.event_links %}
+  <div class="mt-8 pt-6 border-t border-frost-700/60">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                {# Featured indicator #}
-                {% if image.is_featured == 1 %}
-                <div class="absolute top-0.5 left-0.5">
-                    <span class="px-1 py-0.5 text-[8px] tracking-widest uppercase bg-ice-500/30 text-ice-300 border border-ice-500/40">★</span>
-                </div>
-                {% endif %}
+      {# Connected Characters #}
+      {% if entry.character_links %}
+      <div>
+        <p class="text-[9px] tracking-[0.3em] uppercase text-ice-300/40 mb-3">Those Connected</p>
+        <div class="space-y-2">
+          {% for link in entry.character_links %}
+          {% set character = link.character %}
+          {% set cns = namespace(primary=None) %}
+          {% for img in character.images %}
+          {% if img.is_primary == 1 and cns.primary is none %}
+          {% set cns.primary = img %}
+          {% endif %}
+          {% endfor %}
+          {% if cns.primary is none and character.images %}
+          {% set cns.primary = character.images[0] %}
+          {% endif %}
 
-                {# Action buttons on hover #}
-                <div class="absolute inset-0 bg-frost-900/80 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5">
-                    {% if image.is_featured != 1 %}
-                    <form action="/lore/{{ entry.id }}/images/{{ image.id }}/feature" method="POST" class="inline">
-                        <button type="submit"
-                                class="text-[9px] tracking-widest uppercase text-ice-300 hover:text-ice-200">
-                            ★ Feature
-                        </button>
-                    </form>
-                    {% endif %}
-                    <form action="/lore/{{ entry.id }}/images/{{ image.id }}/delete" method="POST"
-                          onsubmit="return confirm('Delete this image?');" class="inline">
-                        <button type="submit"
-                                class="text-[9px] tracking-widest uppercase text-red-400 hover:text-red-300">
-                            Delete
-                        </button>
-                    </form>
-                </div>
+          <a href="/characters/{{ character.id }}"
+            class="group flex items-center gap-2 hover:bg-ice-500/5 transition-colors py-1.5 px-2 -mx-2">
+            <div class="w-8 h-8 flex-shrink-0 bg-frost-900 border border-frost-700 overflow-hidden">
+              {% if cns.primary %}
+              <img src="{{ cns.primary.file_path }}" alt="{{ character.name }}" class="w-full h-full object-cover">
+              {% endif %}
             </div>
-            {% endfor %}
+            <div class="flex-1 min-w-0">
+              <p class="text-xs text-silver-300 group-hover:text-ice-300 transition-colors leading-tight truncate">
+                {{ character.name }}
+              </p>
+            </div>
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      {# Connected Events #}
+      {% if entry.event_links %}
+      <div>
+        <p class="text-[9px] tracking-[0.3em] uppercase text-ice-300/40 mb-3">Events Touched</p>
+        <div class="space-y-2">
+          {% for link in entry.event_links %}
+          {% set event = link.event %}
+          <a href="/timeline/{{ event.id }}" class="group block py-1.5 px-2 -mx-2 hover:bg-ice-500/5 transition-colors">
+            <p class="text-xs text-silver-300 group-hover:text-ice-300 transition-colors leading-tight">
+              {% if event.is_milestone == 1 %}<span class="text-ice-300 mr-1">★</span>{% endif %}
+              {{ event.title }}
+            </p>
+            {% if event.event_date %}
+            <p class="text-[10px] text-ice-300/30 mt-0.5">{{ event.event_date }}</p>
+            {% endif %}
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+  {% endif %}
+
+  {# --- BACK TO CHAPTER --- #}
+  {% if entry.folio_chapter %}
+  {% set chapter_slug = entry.folio_chapter | lower | replace(" & ", "-and-") | replace(",", "") | replace(" ", "-") |
+  replace("'", "") %}
+  <div class="mt-8 text-center">
+    <a href="/lore/chapter/{{ chapter_slug }}"
+      class="group inline-flex items-center gap-2 text-ice-300/50 hover:text-ice-300 transition-colors">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 group-hover:-translate-x-1 transition-transform"
+        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 19l-7-7 7-7" />
+      </svg>
+      <span class="text-xs tracking-[0.3em] uppercase">Return to {{ entry.folio_chapter }}</span>
+    </a>
+  </div>
+  {% endif %}
+
+  {# ==========================================
+  DM TOOLS — compact management footer
+  ========================================== #}
+  {% if request.state.user %}
+  <footer class="mt-12 pt-6 border-t border-frost-700/40">
+    <p class="text-[9px] tracking-[0.3em] uppercase text-ice-300/30 mb-4 text-center">Librarian's Tools</p>
+
+    {# Image management grid #}
+    {% if entry.images %}
+    <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2 mb-6">
+      {% for image in entry.images %}
+      <div class="relative group">
+        <div class="aspect-square border border-frost-700/60 bg-frost-900 overflow-hidden">
+          <img src="{{ image.file_path }}" alt="{{ image.caption | default('') }}" class="w-full h-full object-cover">
+        </div>
+
+        {# Featured indicator #}
+        {% if image.is_featured == 1 %}
+        <div class="absolute top-0.5 left-0.5">
+          <span
+            class="px-1 py-0.5 text-[8px] tracking-widest uppercase bg-ice-500/30 text-ice-300 border border-ice-500/40">★</span>
         </div>
         {% endif %}
 
-        {# Upload form — compact inline #}
-        <div class="border border-frost-700 border-dashed p-4">
-            <form action="/lore/{{ entry.id }}/upload"
-                  method="POST"
-                  enctype="multipart/form-data"
-                  class="flex flex-wrap items-end gap-3">
+        {# Action buttons on hover #}
+        <div
+          class="absolute inset-0 bg-frost-900/80 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5">
+          {% if image.is_featured != 1 %}
+          <form action="/lore/{{ entry.id }}/images/{{ image.id }}/feature" method="POST" class="inline">
+            <button type="submit" class="text-[9px] tracking-widest uppercase text-ice-300 hover:text-ice-200">
+              ★ Feature
+            </button>
+          </form>
+          {% endif %}
+          <form action="/lore/{{ entry.id }}/images/{{ image.id }}/delete" method="POST"
+            onsubmit="return confirm('Delete this image?');" class="inline">
+            <button type="submit" class="text-[9px] tracking-widest uppercase text-red-400 hover:text-red-300">
+              Delete
+            </button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
 
-                <input type="file" name="files" multiple accept="image/*" required
-                       class="block text-sm text-silver-400
+    {# Upload form — compact inline #}
+    <div class="border border-frost-700 border-dashed p-4">
+      <form action="/lore/{{ entry.id }}/upload" method="POST" enctype="multipart/form-data"
+        class="flex flex-wrap items-end gap-3">
+
+        <input type="file" name="files" multiple accept="image/*" required class="block text-sm text-silver-400
                               file:mr-3 file:py-1.5 file:px-3
                               file:border file:border-ice-500/40
                               file:bg-frost-800 file:text-ice-300
@@ -304,122 +303,120 @@
                               hover:file:bg-ice-500/10 hover:file:border-ice-300
                               file:cursor-pointer">
 
-                <input type="text" name="caption" placeholder="Caption"
-                       class="flex-1 min-w-[150px] px-3 py-1.5 bg-frost-800/60 border border-frost-700 text-silver-200 text-sm placeholder:text-silver-400/30 focus:border-ice-500/60 focus:outline-none transition-colors">
+        <input type="text" name="caption" placeholder="Caption"
+          class="flex-1 min-w-[150px] px-3 py-1.5 bg-frost-800/60 border border-frost-700 text-silver-200 text-sm placeholder:text-silver-400/30 focus:border-ice-500/60 focus:outline-none transition-colors">
 
-                <label class="flex items-center gap-1.5 text-xs text-silver-400 cursor-pointer">
-                    <input type="checkbox" name="is_featured" value="1" class="accent-ice-500 scale-90">
-                    <span class="text-[10px]">Featured</span>
-                </label>
+        <label class="flex items-center gap-1.5 text-xs text-silver-400 cursor-pointer">
+          <input type="checkbox" name="is_featured" value="1" class="accent-ice-500 scale-90">
+          <span class="text-[10px]">Featured</span>
+        </label>
 
-                <button type="submit"
-                        class="px-3 py-1.5 border border-ice-500/40 text-ice-300 hover:bg-ice-500/10 hover:border-ice-300 font-display text-[10px] tracking-widest uppercase transition-colors">
-                    Upload
-                </button>
-            </form>
-        </div>
-    </footer>
-    {% endif %}
+        <button type="submit"
+          class="px-3 py-1.5 border border-ice-500/40 text-ice-300 hover:bg-ice-500/10 hover:border-ice-300 font-display text-[10px] tracking-widest uppercase transition-colors">
+          Upload
+        </button>
+      </form>
+    </div>
+  </footer>
+  {% endif %}
 
 </article>
 
 {# --- LIGHTBOX (for public image viewing) --- #}
 {% if entry.images %}
-<div id="gallery-lightbox"
-     class="fixed inset-0 z-[100] hidden bg-frost-900/95 backdrop-blur-md"
-     role="dialog" aria-modal="true" aria-label="Image viewer">
+<div id="gallery-lightbox" class="fixed inset-0 z-[100] hidden bg-frost-900/95 backdrop-blur-md" role="dialog"
+  aria-modal="true" aria-label="Image viewer">
 
-    <div class="absolute inset-0" onclick="closeLightbox()"></div>
+  <div class="absolute inset-0" onclick="closeLightbox()"></div>
 
-    <button onclick="closeLightbox()"
-            class="absolute top-6 right-6 z-10 p-2 text-ice-300/70 hover:text-ice-300 transition-colors"
-            aria-label="Close">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-    </button>
+  <button onclick="closeLightbox()"
+    class="absolute top-6 right-6 z-10 p-2 text-ice-300/70 hover:text-ice-300 transition-colors" aria-label="Close">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" />
+    </svg>
+  </button>
 
-    <button id="lightbox-prev" onclick="navigateLightbox(-1)"
-            class="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-10 p-3 text-ice-300/50 hover:text-ice-300 transition-colors"
-            aria-label="Previous">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 19l-7-7 7-7" />
-        </svg>
-    </button>
+  <button id="lightbox-prev" onclick="navigateLightbox(-1)"
+    class="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-10 p-3 text-ice-300/50 hover:text-ice-300 transition-colors"
+    aria-label="Previous">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 19l-7-7 7-7" />
+    </svg>
+  </button>
 
-    <button id="lightbox-next" onclick="navigateLightbox(1)"
-            class="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-10 p-3 text-ice-300/50 hover:text-ice-300 transition-colors"
-            aria-label="Next">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5l7 7-7 7" />
-        </svg>
-    </button>
+  <button id="lightbox-next" onclick="navigateLightbox(1)"
+    class="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-10 p-3 text-ice-300/50 hover:text-ice-300 transition-colors"
+    aria-label="Next">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5l7 7-7 7" />
+    </svg>
+  </button>
 
-    <div class="absolute inset-0 flex flex-col items-center justify-center p-12 md:p-20 pointer-events-none">
-        <img id="lightbox-image" src="" alt="" class="max-w-full max-h-full object-contain pointer-events-auto">
-        <p id="lightbox-caption" class="mt-4 text-sm text-ice-300/80 italic max-w-2xl text-center pointer-events-none"></p>
-        <p id="lightbox-counter" class="mt-2 text-xs tracking-widest uppercase text-silver-400/60 pointer-events-none"></p>
-    </div>
+  <div class="absolute inset-0 flex flex-col items-center justify-center p-12 md:p-20 pointer-events-none">
+    <img id="lightbox-image" src="" alt="" class="max-w-full max-h-full object-contain pointer-events-auto">
+    <p id="lightbox-caption" class="mt-4 text-sm text-ice-300/80 italic max-w-2xl text-center pointer-events-none"></p>
+    <p id="lightbox-counter" class="mt-2 text-xs tracking-widest uppercase text-silver-400/60 pointer-events-none"></p>
+  </div>
 </div>
 
 <script>
-    const galleryTriggers = document.querySelectorAll('.gallery-trigger');
-    let currentIndex = 0;
-    const images = Array.from(galleryTriggers).map(trigger => ({
-        src: trigger.getAttribute('href'),
-        caption: trigger.dataset.caption || ''
-    }));
+  const galleryTriggers = document.querySelectorAll('.gallery-trigger');
+  let currentIndex = 0;
+  const images = Array.from(galleryTriggers).map(trigger => ({
+    src: trigger.getAttribute('href'),
+    caption: trigger.dataset.caption || ''
+  }));
 
-    function openLightbox(index) {
-        if (images.length === 0) return;
-        currentIndex = index;
-        showImage();
-        document.getElementById('gallery-lightbox').classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
+  function openLightbox(index) {
+    if (images.length === 0) return;
+    currentIndex = index;
+    showImage();
+    document.getElementById('gallery-lightbox').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    document.getElementById('gallery-lightbox').classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+
+  function navigateLightbox(direction) {
+    currentIndex = (currentIndex + direction + images.length) % images.length;
+    showImage();
+  }
+
+  function showImage() {
+    const image = images[currentIndex];
+    document.getElementById('lightbox-image').src = image.src;
+    document.getElementById('lightbox-image').alt = image.caption || 'Gallery image';
+    document.getElementById('lightbox-caption').textContent = image.caption;
+    document.getElementById('lightbox-counter').textContent = (currentIndex + 1) + ' / ' + images.length;
+
+    const prev = document.getElementById('lightbox-prev');
+    const next = document.getElementById('lightbox-next');
+    if (images.length <= 1) {
+      prev.classList.add('hidden');
+      next.classList.add('hidden');
+    } else {
+      prev.classList.remove('hidden');
+      next.classList.remove('hidden');
     }
+  }
 
-    function closeLightbox() {
-        document.getElementById('gallery-lightbox').classList.add('hidden');
-        document.body.style.overflow = '';
-    }
-
-    function navigateLightbox(direction) {
-        currentIndex = (currentIndex + direction + images.length) % images.length;
-        showImage();
-    }
-
-    function showImage() {
-        const image = images[currentIndex];
-        document.getElementById('lightbox-image').src = image.src;
-        document.getElementById('lightbox-image').alt = image.caption || 'Gallery image';
-        document.getElementById('lightbox-caption').textContent = image.caption;
-        document.getElementById('lightbox-counter').textContent = (currentIndex + 1) + ' / ' + images.length;
-
-        const prev = document.getElementById('lightbox-prev');
-        const next = document.getElementById('lightbox-next');
-        if (images.length <= 1) {
-            prev.classList.add('hidden');
-            next.classList.add('hidden');
-        } else {
-            prev.classList.remove('hidden');
-            next.classList.remove('hidden');
-        }
-    }
-
-    galleryTriggers.forEach((trigger, index) => {
-        trigger.addEventListener('click', (event) => {
-            event.preventDefault();
-            openLightbox(index);
-        });
+  galleryTriggers.forEach((trigger, index) => {
+    trigger.addEventListener('click', (event) => {
+      event.preventDefault();
+      openLightbox(index);
     });
+  });
 
-    document.addEventListener('keydown', (event) => {
-        const lightbox = document.getElementById('gallery-lightbox');
-        if (lightbox.classList.contains('hidden')) return;
-        if (event.key === 'Escape') closeLightbox();
-        else if (event.key === 'ArrowLeft') navigateLightbox(-1);
-        else if (event.key === 'ArrowRight') navigateLightbox(1);
-    });
+  document.addEventListener('keydown', (event) => {
+    const lightbox = document.getElementById('gallery-lightbox');
+    if (lightbox.classList.contains('hidden')) return;
+    if (event.key === 'Escape') closeLightbox();
+    else if (event.key === 'ArrowLeft') navigateLightbox(-1);
+    else if (event.key === 'ArrowRight') navigateLightbox(1);
+  });
 </script>
 {% endif %}
 

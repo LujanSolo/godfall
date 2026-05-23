@@ -867,29 +867,6 @@ a.gem-slot:hover .gem-dm-unrevealed .gem-border {
   border-color: rgba(125, 211, 252, 0.5) !important;
 }
 
-
-/* ============================================
-   10. LORE DETAIL — IMAGE SHOWCASE
-   ============================================ */
-
-.lore-image-showcase {
-  float: left;
-  width: 45%;
-  max-width: 360px;
-  margin-right: 1.5rem;
-  margin-bottom: 1rem;
-}
-
-@media (max-width: 768px) {
-  .lore-image-showcase {
-    float: none;
-    width: 100%;
-    max-width: none;
-    margin-right: 0;
-    margin-bottom: 1.5rem;
-  }
-}
-
 /* ----------------------------------------
    TIMELINE SCROLLBAR
    ----------------------------------------
@@ -1080,4 +1057,46 @@ a.gem-slot:hover .gem-dm-unrevealed .gem-border {
   border-top: 1.5px solid rgba(125, 211, 252, 0.15);
   margin: 2em 0;
   column-span: all;
+}
+
+/* ============================================
+   12. TAVERN — MESSAGE STYLING
+   ============================================ */
+
+.tavern-message {
+  padding: 1rem 1.25rem;
+  border: 1px solid rgba(26, 35, 50, 0.8);
+  transition: border-color 0.2s ease;
+}
+
+.tavern-message:hover {
+  border-color: rgba(125, 211, 252, 0.15);
+}
+
+/* ============================================
+   12. TAVERN — MESSAGE STYLING
+   ============================================ */
+
+/* IC messages — prominent, full presence.
+   These are the main conversation. */
+.tavern-message-ic {
+    padding: 1rem 1.25rem;
+    border: 1px solid rgba(125, 211, 252, 0.15);
+    border-left: 3px solid rgba(125, 211, 252, 0.4);
+    background: rgba(125, 211, 252, 0.03);
+    transition: border-color 0.2s ease;
+}
+
+.tavern-message-ic:hover {
+    border-color: rgba(125, 211, 252, 0.3);
+}
+
+/* OOC messages — compact single line,
+   visually recessed. Side chatter, not
+   the main event. */
+.tavern-message-ooc {
+    padding: 0.35rem 1.25rem 0.35rem 2rem;
+    border: none;
+    border-left: 1px solid rgba(148, 163, 184, 0.1);
+    background: transparent;
 }
