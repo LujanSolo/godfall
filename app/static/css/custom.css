@@ -927,3 +927,154 @@ a.gem-slot:hover .gem-dm-unrevealed .gem-border {
   scrollbar-width: thin;
   scrollbar-color: rgb(125 211 252 / 0.3) rgb(17 24 39 / 0.4);
 }
+
+
+/* ============================================
+   11. ADVENTURE LOG — PHB STYLE
+   ============================================
+   Player's Handbook-inspired layout in the
+   Frostmaiden palette. Two-column body text,
+   drop caps, small-caps headers, callout
+   blockquotes.
+
+   Like a campaign journal written by a
+   frost-bitten scholar — classical structure,
+   cold content.
+   ============================================ */
+
+/* --- SESSION NUMBER BADGE ---
+   Bright bordered badge that pops against
+   the dark background. Solves the "dark
+   text on dark background" readability
+   issue. */
+
+.session-number-badge {
+  font-family: 'Cinzel', serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(214, 221, 232, 0.95);
+  border: 1.5px solid rgba(125, 211, 252, 0.5);
+  background: rgba(125, 211, 252, 0.08);
+  padding: 0.35rem 0.75rem;
+  white-space: nowrap;
+}
+
+/* --- PHB-STYLE PROSE OVERRIDES ---
+   Extends .prose-frost with two-column
+   layout, drop caps, and small-caps
+   headers. Applied via the additional
+   .prose-phb class. */
+
+.prose-phb {
+  column-count: 2;
+  column-gap: 2rem;
+  column-rule: 1px solid rgba(125, 211, 252, 0.08);
+}
+
+@media (max-width: 768px) {
+  .prose-phb {
+    column-count: 1;
+  }
+}
+
+/* Drop cap on the first paragraph.
+   The ::first-letter pseudo-element
+   targets just the opening character
+   and renders it large and decorative —
+   like an illuminated manuscript initial. */
+
+.prose-phb>p:first-of-type::first-letter {
+  font-family: 'Cinzel', serif;
+  font-size: 3.5rem;
+  font-weight: 900;
+  float: left;
+  line-height: 0.8;
+  padding-right: 0.5rem;
+  padding-top: 0.25rem;
+  color: rgba(125, 211, 252, 0.7);
+  text-shadow: 0 0 20px rgba(125, 211, 252, 0.2);
+}
+
+/* Small-caps section headers within the
+   body text. These are the H2s generated
+   by markdown ## syntax. The PHB uses
+   small-caps with a subtle bottom border
+   and a warm red — we use ice-blue. */
+
+.prose-phb h2 {
+  font-variant: small-caps;
+  font-size: 1.5rem;
+  letter-spacing: 0.08em;
+  border-bottom: 2px solid rgba(125, 211, 252, 0.2);
+  padding-bottom: 0.3rem;
+  margin-top: 1.5em;
+  margin-bottom: 0.75em;
+  /* Prevent headers from splitting across columns */
+  break-after: avoid;
+  column-span: none;
+}
+
+.prose-phb h3 {
+  font-variant: small-caps;
+  font-size: 1.2rem;
+  letter-spacing: 0.06em;
+  margin-top: 1.25em;
+  margin-bottom: 0.5em;
+  break-after: avoid;
+}
+
+/* Callout boxes — blockquotes rendered as
+   bordered inset panels instead of just
+   a left-border quote. Matches the PHB's
+   "read aloud" and NPC description boxes. */
+
+.prose-phb blockquote {
+  border-left: none;
+  border: 1.5px solid rgba(125, 211, 252, 0.2);
+  background: rgba(125, 211, 252, 0.03);
+  padding: 1rem 1.25rem;
+  margin: 1.5em 0;
+  font-style: normal;
+  color: rgba(203, 213, 225, 0.9);
+  /* Prevent callout boxes from splitting
+       across columns */
+  break-inside: avoid;
+}
+
+.prose-phb blockquote p:first-child {
+  margin-top: 0;
+}
+
+.prose-phb blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+/* Bold text gets a slightly brighter
+   treatment for game mechanics (DC checks,
+   GP values, creature names) */
+
+.prose-phb strong {
+  color: rgba(226, 232, 240, 1);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+/* Lists within columns should avoid
+   breaking across column boundaries */
+
+.prose-phb ul,
+.prose-phb ol {
+  break-inside: avoid;
+}
+
+/* Horizontal rules as section dividers
+   with a bit more presence */
+
+.prose-phb hr {
+  border: none;
+  border-top: 1.5px solid rgba(125, 211, 252, 0.15);
+  margin: 2em 0;
+  column-span: all;
+}

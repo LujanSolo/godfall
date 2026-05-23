@@ -583,7 +583,7 @@ class EventImage(Base):
     file_path = Column(String(255), nullable=False)
     caption = Column(String(255))
     is_featured = Column(Integer, default=0)
-    uploaded_at = Column(DateTime, default=datetime.utcnow)
+    uploaded_at = Column(DateTime, default=utc_now)
 
     event = relationship("TimelineEvent", back_populates="images")
 
@@ -642,7 +642,7 @@ class EventCharacter(Base):
     # --- TIMESTAMP ---
     # When this connection was created.
     # Useful for an audit trail.
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utc_now)
 
     # --- BACK-LINKS ---
     # Each row in this join table can navigate
