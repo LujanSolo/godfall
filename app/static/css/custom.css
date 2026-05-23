@@ -961,11 +961,24 @@ a.gem-slot:hover .gem-dm-unrevealed .gem-border {
   white-space: nowrap;
 }
 
-/* --- PHB-STYLE PROSE OVERRIDES ---
-   Extends .prose-frost with two-column
-   layout, drop caps, and small-caps
-   headers. Applied via the additional
-   .prose-phb class. */
+/* ============================================
+   11. ADVENTURE LOG — PHB STYLE
+   ============================================ */
+
+.session-number-badge {
+  font-family: 'Cinzel', serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(214, 221, 232, 0.95);
+  border: 1.5px solid rgba(125, 211, 252, 0.5);
+  background: rgba(125, 211, 252, 0.08);
+  padding: 0.35rem 0.75rem;
+  white-space: nowrap;
+}
+
+/* --- PHB TWO-COLUMN PROSE --- */
 
 .prose-phb {
   column-count: 2;
@@ -979,12 +992,26 @@ a.gem-slot:hover .gem-dm-unrevealed .gem-border {
   }
 }
 
-/* Drop cap on the first paragraph.
-   The ::first-letter pseudo-element
-   targets just the opening character
-   and renders it large and decorative —
-   like an illuminated manuscript initial. */
+/* Image cluster inside columns — floated
+   to stay in the right column area */
+.phb-float-cluster {
+  break-inside: avoid;
+  width: 100%;
+  margin-bottom: 1rem;
+  border: 1px solid rgba(125, 211, 252, 0.1);
+  padding: 0.5rem;
+  background: rgba(10, 14, 23, 0.4);
+}
 
+/* On two-column layout, push images into
+   the second column */
+@media (min-width: 769px) {
+  .phb-float-cluster {
+    break-before: column;
+  }
+}
+
+/* Drop cap */
 .prose-phb>p:first-of-type::first-letter {
   font-family: 'Cinzel', serif;
   font-size: 3.5rem;
@@ -997,12 +1024,7 @@ a.gem-slot:hover .gem-dm-unrevealed .gem-border {
   text-shadow: 0 0 20px rgba(125, 211, 252, 0.2);
 }
 
-/* Small-caps section headers within the
-   body text. These are the H2s generated
-   by markdown ## syntax. The PHB uses
-   small-caps with a subtle bottom border
-   and a warm red — we use ice-blue. */
-
+/* Small-caps section headers */
 .prose-phb h2 {
   font-variant: small-caps;
   font-size: 1.5rem;
@@ -1011,9 +1033,7 @@ a.gem-slot:hover .gem-dm-unrevealed .gem-border {
   padding-bottom: 0.3rem;
   margin-top: 1.5em;
   margin-bottom: 0.75em;
-  /* Prevent headers from splitting across columns */
   break-after: avoid;
-  column-span: none;
 }
 
 .prose-phb h3 {
@@ -1025,11 +1045,7 @@ a.gem-slot:hover .gem-dm-unrevealed .gem-border {
   break-after: avoid;
 }
 
-/* Callout boxes — blockquotes rendered as
-   bordered inset panels instead of just
-   a left-border quote. Matches the PHB's
-   "read aloud" and NPC description boxes. */
-
+/* Callout blockquotes */
 .prose-phb blockquote {
   border-left: none;
   border: 1.5px solid rgba(125, 211, 252, 0.2);
@@ -1038,8 +1054,6 @@ a.gem-slot:hover .gem-dm-unrevealed .gem-border {
   margin: 1.5em 0;
   font-style: normal;
   color: rgba(203, 213, 225, 0.9);
-  /* Prevent callout boxes from splitting
-       across columns */
   break-inside: avoid;
 }
 
@@ -1051,26 +1065,15 @@ a.gem-slot:hover .gem-dm-unrevealed .gem-border {
   margin-bottom: 0;
 }
 
-/* Bold text gets a slightly brighter
-   treatment for game mechanics (DC checks,
-   GP values, creature names) */
-
 .prose-phb strong {
   color: rgba(226, 232, 240, 1);
   font-weight: 600;
-  letter-spacing: 0.01em;
 }
-
-/* Lists within columns should avoid
-   breaking across column boundaries */
 
 .prose-phb ul,
 .prose-phb ol {
   break-inside: avoid;
 }
-
-/* Horizontal rules as section dividers
-   with a bit more presence */
 
 .prose-phb hr {
   border: none;

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="max-w-3xl mx-auto px-6 py-12">
+
+    <div class="flex items-center justify-between mb-8">
+        <h1 class="font-display text-2xl font-black tracking-wider text-silver-200 frost-glow">
+            Player Accounts
+        </h1>
+        <a href="/tavern/players/new"
+           class="px-4 py-2 border border-ice-500/40 text-ice-300 hover:bg-ice-500/10 hover:border-ice-300 font-display text-[10px] tracking-widest uppercase transition-colors">
+            New Player
+        </a>
+    </div>
+
+    {% if players %}
+    <div class="space-y-3">
+        {% for player in players %}
+        <div class="flex items-center gap-4 px-4 py-3 border border-frost-700 {% if not player.is_active %}opacity-40{% endif %}">
+
+            <div class="flex-1 min-w-0">
+                <p class="text-sm text-silver-200 font-display tracking-wider">
+                    {{ player.username }}
+                </p>
+                {% if player.character %}
+                <p class="text-xs text-ice-300/50 mt-0.5">
+                    Playing as {{ player.character.name }}
+                </p>
+                {% else %}
+                <p class="text-xs text-silver-400/40 mt-0.5 italic">
+                    No character linked
+                </p>
+                {% endif %}
+            </div>
+
+            <div class="flex items-center gap-2 flex-shrink-0">
+                {# Toggle active/inactive #}
+                <form action="/tavern/players/{{ player.id }}/toggle-active" method="POST" class="inline">
+                    <button type="submit"
+                            class="px-3 py-1 border border-frost-700 text-[10px] tracking-widest uppercase transition-colors
+                                   {% if player.is_active %}text-silver-400 hover:text-amber-300 hover:border-amber-700/40{% else %}text-amber-300 hover:text-ice-300 hover:border-ice-500/40{% endif %}">
+                        {% if player.is_active %}Disable{% else %}Enable{% endif %}
+                    </button>
+                </form>
+
+                {# Reset password — inline form #}
+                <form action="/tavern/players/{{ player.id }}/reset-password" method="POST"
+                      class="inline flex items-center gap-1">
+                    <input type="password" name="new_password" placeholder="New pw"
+                           class="w-24 px-2 py-1 bg-frost-800/60 border border-frost-700 text-silver-200 text-xs focus:border-ice-500/60 focus:outline-none">
+                    <button type="submit"
+                            class="px-2 py-1 border border-frost-700 text-silver-400 hover:text-ice-300 hover:border-ice-500/40 text-[10px] tracking-widest uppercase transition-colors">
+                        Reset
+                    </button>
+                </form>
+            </div>
+
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-center text-silver-400/60 py-12">
+        No player accounts yet. Create one to get started.
+    </p>
+    {% endif %}
+
+</section>
+{% endblock %}

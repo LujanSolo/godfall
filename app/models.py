@@ -875,6 +875,46 @@ class LoreEvent(Base):
 
 
 # ============================================
+# PLAYER MODEL
+# ============================================
+# Campaign players who can post in the Tavern
+# and (eventually) write character journals.
+#
+# Separate from the User model (DM auth).
+# Two doors into the same cantina — the DM
+# enters through the command bridge, players
+# through the main airlock.
+# ============================================
+class Player(Base):
+    __tablename__ = "players"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    # Display name — also the login identifier.
+    username = Column(String(50), unique=True, nullable=False, index=True)
+
+    # Bcrypt hash, same as DM auth.
+    password_hash = Column(String(60), nullable=False)
+
+    # Link to the player's character for IC posting.
+    # Nullable because the DM might create the account
+    # before assigning a character.
+    character_id = Column(Integer, ForeignKey("characters.id"), nullable=True)
+
+    # DM can disable accounts without deleting them.
+    is_active = Column(Integer, default=1)
+
+    created_at = Column(DateTime, default=utc_now)
+    last_login_at = Column(DateTime)
+
+    # --- RELATIONSHIPS ---
+    character = relationship("Character")
+
+    def __repr__(self):
+        return f"<Player: {self.username}>"
+
+
+# ============================================
 # USER MODEL
 # ============================================
 # A single row will ever exist in this table:

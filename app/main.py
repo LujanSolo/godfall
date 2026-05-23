@@ -15,7 +15,7 @@ from pathlib import Path
 
 from app.database import engine, Base
 from app import models  # noqa: F401  (registers models with Base)
-from app.routes import characters, sessions, timeline, lore, map as map_routes, auth_routes
+from app.routes import characters, sessions, timeline, lore, map as map_routes, auth_routes, tavern
 
 # Centralized templates instance — single
 # source of truth, filters already attached.
@@ -45,28 +45,28 @@ app = FastAPI(title="Godfall")
 # can just glance at the badge to know what
 # the visitor's allowed to do.
 # ============================================
-from app.auth import get_current_user
+from app.auth import get_current_user, get_current_player
 from app.database import SessionLocal
 from starlette.middleware.base import BaseHTTPMiddleware
 
 
 class AuthContextMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
-        # Open a database session for this request
         db = SessionLocal()
         try:
-            # Use our auth dependency to find the user
-            # (returns None if not logged in)
+            # --- DM AUTH ---
             user = get_current_user(request, db)
-            # Stash on request.state where templates
-            # can access it via request.state.user
             request.state.user = user
+
+            # --- PLAYER AUTH ---
+            player = get_current_player(request, db)
+            request.state.player = player
         except Exception:
             request.state.user = None
+            request.state.player = None
         finally:
             db.close()
 
-        # Continue to the actual route handler
         response = await call_next(request)
         return response
 
@@ -90,6 +90,7 @@ app.include_router(timeline.router)
 app.include_router(lore.router)
 app.include_router(map_routes.router)
 app.include_router(auth_routes.router)
+app.include_router(tavern.router)
 
 
 # --- HOMEPAGE ROUTE ---

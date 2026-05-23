@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="max-w-md mx-auto px-6 py-12">
+
+    <div class="mb-8">
+        <a href="/tavern/players"
+           class="text-ice-300/50 hover:text-ice-300 text-xs tracking-[0.3em] uppercase transition-colors inline-flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Players
+        </a>
+    </div>
+
+    <h1 class="font-display text-2xl font-black tracking-wider text-silver-200 frost-glow mb-8">
+        New Player Account
+    </h1>
+
+    {% if error %}
+    <div class="mb-6 px-4 py-3 border border-red-700/40 bg-red-900/20 text-red-300 text-sm">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <form action="/tavern/players/new" method="POST" class="space-y-6">
+        <div>
+            <label for="username" class="block text-[10px] tracking-widest uppercase text-silver-400/70 mb-1">
+                Username
+            </label>
+            <input type="text" id="username" name="username" required
+                   placeholder="How they'll appear in the tavern"
+                   class="w-full px-3 py-2 bg-frost-800/60 border border-frost-700 text-silver-200 text-sm placeholder:text-silver-400/30 focus:border-ice-500/60 focus:outline-none transition-colors">
+        </div>
+
+        <div>
+            <label for="password" class="block text-[10px] tracking-widest uppercase text-silver-400/70 mb-1">
+                Password
+            </label>
+            <input type="password" id="password" name="password" required
+                   placeholder="Keep it simple — this is a campaign site, not a bank"
+                   class="w-full px-3 py-2 bg-frost-800/60 border border-frost-700 text-silver-200 text-sm placeholder:text-silver-400/30 focus:border-ice-500/60 focus:outline-none transition-colors">
+        </div>
+
+        <div>
+            <label for="character_id" class="block text-[10px] tracking-widest uppercase text-silver-400/70 mb-1">
+                Linked Character
+            </label>
+            <select id="character_id" name="character_id"
+                    class="w-full px-3 py-2 bg-frost-800/60 border border-frost-700 text-silver-200 text-sm focus:border-ice-500/60 focus:outline-none transition-colors">
+                <option value="">— None —</option>
+                {% for character in characters %}
+                <option value="{{ character.id }}">{{ character.name }}</option>
+                {% endfor %}
+            </select>
+            <p class="mt-1.5 text-xs text-silver-400/50 italic">
+                Links this player to their PC for in-character posting.
+            </p>
+        </div>
+
+        <div class="flex items-center gap-4 pt-4 border-t border-frost-700">
+            <button type="submit"
+                    class="px-6 py-2 border border-ice-500/60 bg-ice-500/10 text-ice-300 hover:bg-ice-500/20 hover:border-ice-300 font-display text-sm tracking-widest uppercase transition-colors">
+                Create Account
+            </button>
+            <a href="/tavern/players"
+               class="px-6 py-2 border border-frost-700 text-silver-400 hover:text-ice-300 hover:border-ice-500/40 font-display text-sm tracking-widest uppercase transition-colors">
+                Cancel
+            </a>
+        </div>
+    </form>
+
+</section>
+{% endblock %}

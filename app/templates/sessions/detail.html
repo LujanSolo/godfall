@@ -94,9 +94,10 @@ is cold.
   </div>
 
   {# ==========================================
-  IMAGE SHOWCASE + BODY TEXT
-  Images float right, two-column body
-  text flows around and below.
+  BODY CONTENT — GRID LAYOUT
+  Two columns on desktop. Image cluster
+  sits top-right, text fills both columns
+  and flows below the images.
   ========================================== #}
 
   {# Gather images #}
@@ -113,53 +114,56 @@ is cold.
   {% set ns.others = session.images[1:] %}
   {% endif %}
 
-  <div class="session-content-flow">
+  {% if session.body %}
+  <div class="prose-frost prose-phb">
 
-    {# --- IMAGE SHOWCASE (above body, right-aligned) --- #}
+    {# Image cluster floats inside the column flow #}
     {% if session.images %}
-    <div class="flex justify-start mb-6">
-      <div class="w-full sm:w-1/2 md:w-2/5">
-        {% if ns.featured %}
-        <a href="{{ ns.featured.file_path }}"
-          class="gallery-trigger block border border-ice-500/20 bg-frost-900 overflow-hidden hover:border-ice-500/40 transition-colors mb-2"
-          data-gallery-index="0" data-caption="{{ ns.featured.caption | default('') }}">
-          <img src="{{ ns.featured.file_path }}" alt="{{ ns.featured.caption | default(session.title) }}"
-            class="w-full h-auto block" loading="lazy">
+    <div class="phb-float-cluster">
+      {% if ns.featured %}
+      <a href="{{ ns.featured.file_path }}"
+        class="gallery-trigger block border border-ice-500/20 bg-frost-900 overflow-hidden hover:border-ice-500/40 transition-colors"
+        data-gallery-index="0" data-caption="{{ ns.featured.caption | default('') }}">
+        <img src="{{ ns.featured.file_path }}" alt="{{ ns.featured.caption | default(session.title) }}"
+          class="w-full h-auto block" loading="lazy">
+      </a>
+      {% if ns.featured.caption %}
+      <p class="text-[10px] text-ice-300/50 italic mt-1.5 px-1 text-center" style="margin: 0.5rem 0 0 0;">{{
+        ns.featured.caption }}</p>
+      {% endif %}
+      {% endif %}
+
+      {% if ns.others %}
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.375rem; margin-top: 0.5rem;">
+        {% for image in ns.others[:6] %}
+        <a href="{{ image.file_path }}"
+          class="gallery-trigger block aspect-square border border-frost-700/60 bg-frost-900 overflow-hidden hover:border-ice-500/40 transition-colors"
+          data-gallery-index="{{ loop.index }}" data-caption="{{ image.caption | default('') }}">
+          <img src="{{ image.file_path }}" alt="{{ image.caption | default(session.title) }}"
+            class="w-full h-full object-cover" loading="lazy">
         </a>
-        {% if ns.featured.caption %}
-        <p class="text-[10px] text-ice-300/50 italic mb-3 px-1 text-center">{{ ns.featured.caption }}</p>
-        {% endif %}
-        {% endif %}
-
-        {% if ns.others %}
-        <div class="grid grid-cols-3 gap-1.5">
-          {% for image in ns.others[:6] %}
-          <a href="{{ image.file_path }}"
-            class="gallery-trigger block aspect-square border border-frost-700/60 bg-frost-900 overflow-hidden hover:border-ice-500/40 transition-colors"
-            data-gallery-index="{{ loop.index }}" data-caption="{{ image.caption | default('') }}">
-            <img src="{{ image.file_path }}" alt="{{ image.caption | default(session.title) }}"
-              class="w-full h-full object-cover" loading="lazy">
-          </a>
-          {% endfor %}
-        </div>
-        {% if ns.others | length > 6 %}
-        <p class="text-[10px] text-ice-300/40 mt-2 text-center">
-          +{{ ns.others | length - 6 }} more below
-        </p>
-        {% endif %}
-        {% endif %}
+        {% endfor %}
       </div>
+      {% endif %}
     </div>
     {% endif %}
 
-    {# --- BODY TEXT (two-column PHB style) --- #}
-    {% if session.body %}
-    <div class="prose-frost prose-phb">
-      {{ session.body | markdown | safe }}
-    </div>
-    {% endif %}
-
+    {{ session.body | markdown | safe }}
   </div>
+  {% elif session.images %}
+  <div class="flex justify-center mb-8">
+    <div class="w-full sm:w-1/2 md:w-2/5">
+      {% if ns.featured %}
+      <a href="{{ ns.featured.file_path }}"
+        class="gallery-trigger block border border-ice-500/20 bg-frost-900 overflow-hidden hover:border-ice-500/40 transition-colors mb-2"
+        data-gallery-index="0" data-caption="{{ ns.featured.caption | default('') }}">
+        <img src="{{ ns.featured.file_path }}" alt="{{ ns.featured.caption | default(session.title) }}"
+          class="w-full h-auto block" loading="lazy">
+      </a>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
 
   {# --- FLOURISH --- #}
   <div class="flex items-center justify-center gap-3 py-8" aria-hidden="true">
@@ -170,21 +174,51 @@ is cold.
     <span class="text-ice-300/30 text-lg">✦</span>
   </div>
 
-  {# --- GALLERY (full masonry, below the body) --- #}
-  {% if session.images | length > 1 %}
-  <div class="mb-10">
-    <p class="text-[9px] tracking-[0.3em] uppercase text-ice-300/30 mb-4 text-center">Gallery</p>
-    {% set images = session.images %}
-    {% set delete_url = "/sessions/" ~ session.id ~ "/images" %}
-    {% include "_shared/gallery.html" %}
-  </div>
-  {% endif %}
-
   {# --- DM TOOLS --- #}
   {% if request.state.user %}
   <footer class="mt-8 pt-6 border-t border-frost-700/40">
     <p class="text-[9px] tracking-[0.3em] uppercase text-ice-300/30 mb-4 text-center">Librarian's Tools</p>
 
+    {# Image management grid #}
+    {% if session.images %}
+    <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2 mb-6">
+      {% for image in session.images %}
+      <div class="relative group">
+        <div class="aspect-square border border-frost-700/60 bg-frost-900 overflow-hidden">
+          <img src="{{ image.file_path }}" alt="{{ image.caption | default('') }}" class="w-full h-full object-cover">
+        </div>
+
+        {# Featured indicator #}
+        {% if image.is_featured == 1 %}
+        <div class="absolute top-0.5 left-0.5">
+          <span
+            class="px-1 py-0.5 text-[8px] tracking-widest uppercase bg-ice-500/30 text-ice-300 border border-ice-500/40">★</span>
+        </div>
+        {% endif %}
+
+        {# Action buttons on hover #}
+        <div
+          class="absolute inset-0 bg-frost-900/80 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5">
+          {% if image.is_featured != 1 %}
+          <form action="/sessions/{{ session.id }}/images/{{ image.id }}/feature" method="POST" class="inline">
+            <button type="submit" class="text-[9px] tracking-widest uppercase text-ice-300 hover:text-ice-200">
+              ★ Feature
+            </button>
+          </form>
+          {% endif %}
+          <form action="/sessions/{{ session.id }}/images/{{ image.id }}/delete" method="POST"
+            onsubmit="return confirm('Delete this image?');" class="inline">
+            <button type="submit" class="text-[9px] tracking-widest uppercase text-red-400 hover:text-red-300">
+              Delete
+            </button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {# Upload form #}
     <div class="border border-frost-700 border-dashed p-4">
       <form action="/sessions/{{ session.id }}/upload" method="POST" enctype="multipart/form-data"
         class="flex flex-wrap items-end gap-3">

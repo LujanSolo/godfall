@@ -34,6 +34,7 @@ import uuid
 from app.database import get_db
 from app.models import SessionRecap, SessionImage, User
 from app.templating import templates
+from app.auth import require_dm
 
 # --- CONFIGURATION ---
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -326,6 +327,32 @@ async def session_delete(
         url="/sessions",
         status_code=303
     )
+
+@router.post("/{id}/images/{image_id}/feature")
+async def session_image_set_featured(
+    id: int,
+    image_id: int,
+    db: Session = Depends(get_db),
+    _dm: User = Depends(require_dm),
+):
+    # Unfeature all images for this session
+    db.query(SessionImage).filter(
+        SessionImage.session_id == id,
+        SessionImage.is_featured == 1
+    ).update({"is_featured": 0})
+
+    # Feature the selected one
+    image = (
+        db.query(SessionImage)
+        .filter(SessionImage.id == image_id, SessionImage.session_id == id)
+        .first()
+    )
+
+    if image:
+        image.is_featured = 1
+        db.commit()
+
+    return RedirectResponse(url=f"/sessions/{id}", status_code=303)
 
 
 # ============================================

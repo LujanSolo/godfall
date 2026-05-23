@@ -223,3 +223,51 @@ def require_dm(
             headers={"WWW-Authenticate": "Bearer"},
         )
     return user
+
+
+# ============================================
+# PLAYER AUTH
+# ============================================
+# Parallel auth system for campaign players.
+# Same cookie-based approach as DM auth,
+# different cookie name and different table.
+# ============================================
+
+PLAYER_COOKIE_NAME = "player_session"
+
+
+def create_player_session(player_id: int) -> str:
+    """Create a signed cookie value for a player session."""
+    return serializer.dumps({"player_id": player_id})
+
+
+def get_player_id_from_session(cookie_value: str) -> Optional[int]:
+    """Extract and verify the player ID from a signed cookie."""
+    try:
+        data = serializer.loads(cookie_value)
+        return data.get("player_id")
+    except Exception:
+        return None
+
+
+def get_current_player(
+    request: Request,
+    db: Session = Depends(get_db),
+) -> Optional["Player"]:
+    """Dependency that returns the current Player or None."""
+    from app.models import Player
+
+    cookie = request.cookies.get(PLAYER_COOKIE_NAME)
+    if not cookie:
+        return None
+
+    player_id = get_player_id_from_session(cookie)
+    if player_id is None:
+        return None
+
+    player = db.query(Player).filter(
+        Player.id == player_id,
+        Player.is_active == 1
+    ).first()
+
+    return player

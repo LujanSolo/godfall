@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="max-w-4xl mx-auto px-6 py-12">
+
+    <div class="text-center mb-12">
+        <h1 class="font-display text-3xl md:text-4xl font-black tracking-[0.2em] uppercase text-silver-200 frost-glow">
+            The Tavern
+        </h1>
+        <p class="mt-3 text-ice-300/50 font-light tracking-wider italic">
+            Where adventurers gather to speak of what was and what may be.
+        </p>
+    </div>
+
+    {% if request.state.player %}
+    <p class="text-center text-silver-300 mb-8">
+        Welcome, {{ request.state.player.username }}. Threads coming soon.
+    </p>
+    {% elif request.state.user %}
+    <p class="text-center text-silver-300 mb-8">
+        The tavern awaits, Dungeon Master. Threads coming soon.
+    </p>
+    <div class="text-center">
+        <a href="/tavern/players"
+           class="px-4 py-2 border border-ice-500/40 text-ice-300 hover:bg-ice-500/10 hover:border-ice-300 font-display text-[10px] tracking-widest uppercase transition-colors">
+            Manage Player Accounts
+        </a>
+    </div>
+    {% else %}
+    <div class="text-center">
+        <p class="text-silver-400/60 mb-6">Log in to join the conversation.</p>
+        <a href="/tavern/login"
+           class="px-6 py-2.5 border border-ice-500/60 bg-ice-500/10 text-ice-300 hover:bg-ice-500/20 hover:border-ice-300 font-display text-sm tracking-widest uppercase transition-colors">
+            Player Login
+        </a>
+    </div>
+    {% endif %}
+
+</section>
+{% endblock %}
