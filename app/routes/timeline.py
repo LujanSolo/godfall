@@ -38,13 +38,7 @@ import shutil
 import uuid
 
 from app.database import get_db
-from app.models import (
-    TimelineEvent,
-    EventImage,
-    EventCharacter,
-    Character,
-    User
-)
+from app.models import TimelineEvent, EventImage, EventCharacter, Character, User, LoreEntry, LoreEvent
 
 # --- USE THE CENTRAL TEMPLATES INSTANCE ---
 # Same pattern as sessions.py and characters.py.
@@ -79,15 +73,8 @@ router = APIRouter(
 # can't easily do it efficiently.
 # ============================================
 @router.get("/")
-async def timeline_view(
-    request: Request,
-    db: Session = Depends(get_db)
-):
-    events = (
-        db.query(TimelineEvent)
-        .order_by(TimelineEvent.sort_order.asc())
-        .all()
-    )
+async def timeline_view(request: Request, db: Session = Depends(get_db)):
+    events = db.query(TimelineEvent).order_by(TimelineEvent.sort_order.asc()).all()
 
     return templates.TemplateResponse(
         "timeline/list.html",
@@ -95,7 +82,7 @@ async def timeline_view(
             "request": request,
             "title": "Timeline — Godfall",
             "events": events,
-        }
+        },
     )
 
 
@@ -115,31 +102,16 @@ async def timeline_view(
 # ============================================
 @router.get("/new")
 async def event_new_form(
-    request: Request,
-    db: Session = Depends(get_db),
-    _dm: User = Depends(require_dm)
+    request: Request, db: Session = Depends(get_db), _dm: User = Depends(require_dm)
 ):
     last_event = (
-        db.query(TimelineEvent)
-        .order_by(TimelineEvent.sort_order.desc())
-        .first()
+        db.query(TimelineEvent).order_by(TimelineEvent.sort_order.desc()).first()
     )
     suggested_sort_order = (last_event.sort_order + 100) if last_event else 100
 
-    # Split characters by type for the picker.
-    # The character_type field we added back
-    # in Phase 2 (looking out for future-us)
-    # makes this trivial.
-    pcs = (
-        db.query(Character)
-        .filter(Character.character_type == "player")
-        .order_by(Character.name)
-        .all()
-    )
-    npcs = (
-        db.query(Character)
-        .filter(Character.character_type == "npc")
-        .order_by(Character.name)
+    lore_entries = (
+        db.query(LoreEntry)
+        .order_by(LoreEntry.title)
         .all()
     )
 
@@ -151,10 +123,9 @@ async def event_new_form(
             "event": None,
             "editing": False,
             "suggested_sort_order": suggested_sort_order,
-            "pcs": pcs,
-            "npcs": npcs,
-            "selected_character_ids": set(),  # empty for new
-        }
+            "lore_entries": lore_entries,
+            "selected_lore_ids": set(),
+        },
     )
 
 
@@ -185,7 +156,7 @@ async def event_create(
     summary: Optional[str] = Form(None),
     body: Optional[str] = Form(None),
     is_milestone: int = Form(0),
-    character_ids: List[int] = Form(default=[]),
+    lore_ids: List[int] = Form(default=[]),
 ):
     # Step 1: create the event itself
     new_event = TimelineEvent(
@@ -201,26 +172,25 @@ async def event_create(
     db.commit()
     db.refresh(new_event)
 
-    # Step 2: create the character links
-    # We loop through each selected character
-    # id and create an EventCharacter row
+    # Step 2: create the lore links
+    # We loop through each selected lore
+    # id and create an LoreEvent row
     # connecting it to the new event.
     #
     # Like creating mission assignments —
     # one record per pilot/squadron pairing.
-    for character_id in character_ids:
-        link = EventCharacter(
+    
+
+    for lore_id in lore_ids:
+        link = LoreEvent(
+            lore_id=lore_id,
             event_id=new_event.id,
-            character_id=character_id,
         )
         db.add(link)
 
     db.commit()
 
-    return RedirectResponse(
-        url=f"/timeline/{new_event.id}",
-        status_code=303
-    )
+    return RedirectResponse(url=f"/timeline/{new_event.id}", status_code=303)
 
 
 # ============================================
@@ -233,23 +203,15 @@ async def event_create(
 # event object directly in the template.
 # ============================================
 @router.get("/{id}")
-async def event_detail(
-    request: Request,
-    id: int,
-    db: Session = Depends(get_db)
-):
-    event = (
-        db.query(TimelineEvent)
-        .filter(TimelineEvent.id == id)
-        .first()
-    )
+async def event_detail(request: Request, id: int, db: Session = Depends(get_db)):
+    event = db.query(TimelineEvent).filter(TimelineEvent.id == id).first()
 
     if not event:
         return HTMLResponse(
             content="<h1>Event not found</h1>"
-                    "<p>This moment in history doesn't exist. "
-                    "Or perhaps it never happened — yet.</p>",
-            status_code=404
+            "<p>This moment in history doesn't exist. "
+            "Or perhaps it never happened — yet.</p>",
+            status_code=404,
         )
 
     return templates.TemplateResponse(
@@ -258,7 +220,7 @@ async def event_detail(
             "request": request,
             "title": f"{event.title} — Godfall",
             "event": event,
-        }
+        },
     )
 
 
@@ -291,16 +253,8 @@ async def event_detail(
 # to keep a copy in your head.
 # ============================================
 @router.get("/{id}/preview")
-async def event_preview(
-    request: Request,
-    id: int,
-    db: Session = Depends(get_db)
-):
-    event = (
-        db.query(TimelineEvent)
-        .filter(TimelineEvent.id == id)
-        .first()
-    )
+async def event_preview(request: Request, id: int, db: Session = Depends(get_db)):
+    event = db.query(TimelineEvent).filter(TimelineEvent.id == id).first()
 
     if not event:
         return HTMLResponse(content="", status_code=404)
@@ -310,7 +264,7 @@ async def event_preview(
         {
             "request": request,
             "event": event,
-        }
+        },
     )
 
 
@@ -337,38 +291,22 @@ async def event_edit_form(
     request: Request,
     id: int,
     db: Session = Depends(get_db),
-    _dm: User = Depends(require_dm)
+    _dm: User = Depends(require_dm),
 ):
-    event = (
-        db.query(TimelineEvent)
-        .filter(TimelineEvent.id == id)
-        .first()
-    )
+    event = db.query(TimelineEvent).filter(TimelineEvent.id == id).first()
 
     if not event:
-        return HTMLResponse(
-            content="<h1>Event not found</h1>",
-            status_code=404
-        )
+        return HTMLResponse(content="<h1>Event not found</h1>", status_code=404)
 
-    pcs = (
-        db.query(Character)
-        .filter(Character.character_type == "player")
-        .order_by(Character.name)
-        .all()
-    )
-    npcs = (
-        db.query(Character)
-        .filter(Character.character_type == "npc")
-        .order_by(Character.name)
+    lore_entries = (
+        db.query(LoreEntry)
+        .order_by(LoreEntry.title)
         .all()
     )
 
     # Build a set of character IDs already
     # connected to this event.
-    selected_character_ids = {
-        link.character_id for link in event.character_links
-    }
+    selected_character_ids = {link.character_id for link in event.character_links}
 
     return templates.TemplateResponse(
         "timeline/form.html",
@@ -378,10 +316,9 @@ async def event_edit_form(
             "event": event,
             "editing": True,
             "suggested_sort_order": event.sort_order,
-            "pcs": pcs,
-            "npcs": npcs,
-            "selected_character_ids": selected_character_ids,
-        }
+            "lore_entries": lore_entries,
+            "selected_lore_ids": {link.lore_id for link in event.lore_links},
+        },
     )
 
 
@@ -420,19 +357,12 @@ async def event_update(
     summary: Optional[str] = Form(None),
     body: Optional[str] = Form(None),
     is_milestone: int = Form(0),
-    character_ids: List[int] = Form(default=[]),
+    lore_ids: List[int] = Form(default=[]),
 ):
-    event = (
-        db.query(TimelineEvent)
-        .filter(TimelineEvent.id == id)
-        .first()
-    )
+    event = db.query(TimelineEvent).filter(TimelineEvent.id == id).first()
 
     if not event:
-        return HTMLResponse(
-            content="<h1>Event not found</h1>",
-            status_code=404
-        )
+        return HTMLResponse(content="<h1>Event not found</h1>", status_code=404)
 
     # Update event fields
     event.title = title
@@ -443,30 +373,18 @@ async def event_update(
     event.body = body
     event.is_milestone = is_milestone
 
-    # Wipe existing character links.
-    # The cascade we set up in the model
-    # would handle this if we deleted the
-    # event entirely, but here we're just
-    # rebuilding the links — so we do it
-    # manually.
-    db.query(EventCharacter).filter(
-        EventCharacter.event_id == event.id
-    ).delete()
-
-    # Recreate from form data
-    for character_id in character_ids:
-        link = EventCharacter(
+    
+    db.query(LoreEvent).filter(LoreEvent.event_id == event.id).delete()
+    for lore_id in lore_ids:
+        link = LoreEvent(
+            lore_id=lore_id,
             event_id=event.id,
-            character_id=character_id,
         )
         db.add(link)
 
     db.commit()
 
-    return RedirectResponse(
-        url=f"/timeline/{event.id}",
-        status_code=303
-    )
+    return RedirectResponse(url=f"/timeline/{event.id}", status_code=303)
 
 
 # ============================================
@@ -481,21 +399,12 @@ async def event_update(
 # ============================================
 @router.post("/{id}/delete")
 async def event_delete(
-    id: int,
-    db: Session = Depends(get_db),
-    _dm: User = Depends(require_dm)
+    id: int, db: Session = Depends(get_db), _dm: User = Depends(require_dm)
 ):
-    event = (
-        db.query(TimelineEvent)
-        .filter(TimelineEvent.id == id)
-        .first()
-    )
+    event = db.query(TimelineEvent).filter(TimelineEvent.id == id).first()
 
     if not event:
-        return HTMLResponse(
-            content="<h1>Event not found</h1>",
-            status_code=404
-        )
+        return HTMLResponse(content="<h1>Event not found</h1>", status_code=404)
 
     # Delete image files from disk
     for image in event.images:
@@ -506,10 +415,8 @@ async def event_delete(
     db.delete(event)
     db.commit()
 
-    return RedirectResponse(
-        url="/timeline",
-        status_code=303
-    )
+    return RedirectResponse(url="/timeline", status_code=303)
+
 
 # ============================================
 # ROUTE: UPLOAD IMAGES
@@ -524,17 +431,10 @@ async def event_upload_images(
     caption: Optional[str] = Form(None),
     is_featured: int = Form(0),
 ):
-    event = (
-        db.query(TimelineEvent)
-        .filter(TimelineEvent.id == id)
-        .first()
-    )
+    event = db.query(TimelineEvent).filter(TimelineEvent.id == id).first()
 
     if not event:
-        return HTMLResponse(
-            content="<h1>Event not found</h1>",
-            status_code=404
-        )
+        return HTMLResponse(content="<h1>Event not found</h1>", status_code=404)
 
     for uploaded_file in files:
         unique_name = f"{uuid.uuid4().hex}_{uploaded_file.filename}"
@@ -545,8 +445,7 @@ async def event_upload_images(
 
         if is_featured:
             db.query(EventImage).filter(
-                EventImage.event_id == event.id,
-                EventImage.is_featured == 1
+                EventImage.event_id == event.id, EventImage.is_featured == 1
             ).update({"is_featured": 0})
 
         image_record = EventImage(
@@ -560,10 +459,31 @@ async def event_upload_images(
 
     db.commit()
 
-    return RedirectResponse(
-        url=f"/timeline/{event.id}",
-        status_code=303
+    return RedirectResponse(url=f"/timeline/{event.id}", status_code=303)
+
+
+@router.post("/{id}/images/{image_id}/feature")
+async def event_image_set_featured(
+    id: int,
+    image_id: int,
+    db: Session = Depends(get_db),
+    _dm: User = Depends(require_dm),
+):
+    db.query(EventImage).filter(
+        EventImage.event_id == id, EventImage.is_featured == 1
+    ).update({"is_featured": 0})
+
+    image = (
+        db.query(EventImage)
+        .filter(EventImage.id == image_id, EventImage.event_id == id)
+        .first()
     )
+
+    if image:
+        image.is_featured = 1
+        db.commit()
+
+    return RedirectResponse(url=f"/timeline/{id}", status_code=303)
 
 
 # ============================================
@@ -575,7 +495,7 @@ async def event_image_delete(
     id: int,
     image_id: int,
     db: Session = Depends(get_db),
-    _dm: User = Depends(require_dm)
+    _dm: User = Depends(require_dm),
 ):
     image = (
         db.query(EventImage)
@@ -587,10 +507,7 @@ async def event_image_delete(
     )
 
     if not image:
-        return HTMLResponse(
-            content="<h1>Image not found</h1>",
-            status_code=404
-        )
+        return HTMLResponse(content="<h1>Image not found</h1>", status_code=404)
 
     file_path = BASE_DIR / image.file_path.lstrip("/")
     if file_path.exists():
@@ -599,7 +516,4 @@ async def event_image_delete(
     db.delete(image)
     db.commit()
 
-    return RedirectResponse(
-        url=f"/timeline/{id}",
-        status_code=303
-    )
+    return RedirectResponse(url=f"/timeline/{id}", status_code=303)

@@ -1,261 +1,227 @@
 {#
 GODFALL - timeline/detail.html
-===============================
-Full event detail view. Shares the
-visual language of the session detail
-page, with one new section: The Cast.
+================================
+The museum plaque. A compact, single-
+viewport exhibit card for a timeline
+event. Background watermark image,
+summary text, and connected references
+in an aside.
 
-The Cast section navigates the
-character_links relationship we set up
-on the TimelineEvent model. For each
-link, we can access the linked character
-via link.character — that's the
-relationship() doing its job.
-
-We split the cast into PCs and NPCs
-in the template using filtering, the
-same way we did in the form route.
-A bit of inline data shaping, but for
-a small list it's perfectly clean.
+No scrolling needed. Take it in at
+a glance, follow a link to go deeper.
 #}
 {% extends "base.html" %}
 
 {% block content %}
 
-<article class="max-w-4xl mx-auto px-6 py-12">
+{# Find featured image for watermark #}
+{% set ns = namespace(featured=None) %}
+{% for image in event.images %}
+{% if image.is_featured == 1 and ns.featured is none %}
+{% set ns.featured = image %}
+{% endif %}
+{% endfor %}
+{% if ns.featured is none and event.images %}
+{% set ns.featured = event.images[0] %}
+{% endif %}
+
+<section class="max-w-4xl mx-auto px-6 py-10">
 
   {# --- BACK LINK --- #}
-  <div class="mb-8">
+  <div class="mb-6">
     <a href="/timeline"
-      class="text-ice-300/60 hover:text-ice-300 text-sm tracking-widest uppercase transition-colors inline-flex items-center gap-2">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      class="text-ice-300/50 hover:text-ice-300 text-xs tracking-[0.3em] uppercase transition-colors inline-flex items-center gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
       </svg>
-      Back to Timeline
+      Timeline
     </a>
   </div>
 
-  {# --- FEATURED IMAGE --- #}
-  {% set ns = namespace(featured=None) %}
-  {% for image in event.images %}
-  {% if image.is_featured == 1 and ns.featured is none %}
-  {% set ns.featured = image %}
-  {% endif %}
-  {% endfor %}
-  {% if ns.featured is none and event.images %}
-  {% set ns.featured = event.images[0] %}
-  {% endif %}
+  {# --- THE PLAQUE --- #}
+  <div class="timeline-plaque relative overflow-hidden border border-frost-700">
 
-  {% if ns.featured %}
-  <div class="aspect-[21/9] bg-frost-900 border border-frost-700 mb-10 overflow-hidden">
-    <img src="{{ ns.featured.file_path }}" alt="{{ event.title }}" class="w-full h-full object-cover">
-  </div>
-  {% endif %}
-
-  {# --- HEADER ROW: METADATA + EDIT/DELETE --- #}
-  <div class="flex items-start justify-between gap-4 mb-6 flex-wrap">
-
-    <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs tracking-widest uppercase">
-      {% if event.is_milestone == 1 %}
-      <span class="px-2 py-1 bg-ice-500/20 text-ice-300 border border-ice-500/40">Milestone</span>
-      {% endif %}
-
-      {% if event.event_date %}
-      <span class="text-silver-400 italic normal-case">
-        {{ event.event_date }}{% if event.event_end_date %} – {{ event.event_end_date }}{% endif %}
-      </span>
-      {% endif %}
-    </div>
-
-    {# DM action buttons #}
-    {% if request.state.user %}
-    <div class="flex gap-2">
-      <a href="/timeline/{{ event.id }}/edit"
-        class="px-4 py-1.5 border border-frost-700 text-silver-400 hover:text-ice-300 hover:border-ice-500/40 text-xs tracking-widest uppercase transition-colors">
-        Edit
-      </a>
-
-      <form action="/timeline/{{ event.id }}/delete" method="POST"
-        onsubmit="return confirm('Delete event: {{ event.title }}? This cannot be undone.');" class="inline">
-        <button type="submit"
-          class="px-4 py-1.5 border border-frost-700 text-silver-400 hover:text-red-400 hover:border-red-700/40 text-xs tracking-widest uppercase transition-colors">
-          Delete
-        </button>
-      </form>
-    </div>
-    {% endif %}
-  </div>
-
-  {# --- TITLE --- #}
-  <h1 class="font-display text-4xl md:text-5xl font-black tracking-wider text-silver-200 frost-glow leading-tight mb-8">
-    {{ event.title }}
-  </h1>
-
-  {# --- SUMMARY CALLOUT --- #}
-  {% if event.summary %}
-  <div class="mb-10 pl-5 border-l-2 border-ice-500/40">
-    <p class="text-xs tracking-[0.3em] uppercase text-ice-300/60 mb-3">In Brief</p>
-    <div class="text-silver-300 leading-relaxed font-light">
-      {{ event.summary | replace('\n', '<br>') | safe }}
-    </div>
-  </div>
-  {% endif %}
-
-  {# --- THE FULL NARRATIVE --- #}
-  {% if event.body %}
-  <div class="prose-frost max-w-none mb-12">
-    {{ event.body | markdown | safe }}
-  </div>
-  {% endif %}
-
-  {#
-  --- THE CAST SECTION ---
-  New territory. We loop through the
-  event.character_links relationship
-  and access link.character to get
-  each connected character.
-
-  We split into two groups using inline
-  filtering — building two separate
-  lists from the single relationship.
-
-  For each character, we render a
-  small "cast card" showing portrait,
-  name, race/class, and linking to
-  the dossier. Cross-feature linking
-  in action — the timeline becomes a
-  navigable web instead of an island.
-  #}
-  {% if event.character_links %}
-
-  {# Build the two filtered lists #}
-  {% set player_links = [] %}
-  {% set npc_links = [] %}
-  {% for link in event.character_links %}
-  {% if link.character.character_type == "player" %}
-  {{ player_links.append(link) or "" }}
-  {% else %}
-  {{ npc_links.append(link) or "" }}
-  {% endif %}
-  {% endfor %}
-
-  <div class="pt-10 border-t border-frost-700">
-    <h2 class="font-display text-sm tracking-[0.3em] uppercase text-ice-300/60 mb-6">The Cast</h2>
-
-    {# --- PCs --- #}
-    {% if player_links %}
-    <div class="mb-8">
-      <p class="text-xs tracking-[0.2em] uppercase text-ice-300/40 mb-4">Players Present</p>
-      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-        {% for link in player_links %}
-        {% set character = link.character %}
-        {% include "timeline/_cast_card.html" %}
-        {% endfor %}
-      </div>
+    {# Background watermark image #}
+    {% if ns.featured %}
+    <div class="absolute inset-0 z-0">
+      <img src="{{ ns.featured.file_path }}" alt="" class="w-full h-full object-cover" aria-hidden="true">
+      <div class="absolute inset-0 bg-frost-900/60"></div>
+      <div class="absolute inset-0 bg-gradient-to-r from-frost-900/70 via-frost-900/50 to-frost-900/65"></div>
     </div>
     {% endif %}
 
-    {# --- NPCs --- #}
-    {% if npc_links %}
-    <div>
-      <p class="text-xs tracking-[0.2em] uppercase text-ice-300/40 mb-4">Non-Player Characters</p>
-      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-        {% for link in npc_links %}
-        {% set character = link.character %}
-        {% include "timeline/_cast_card.html" %}
-        {% endfor %}
-      </div>
-    </div>
-    {% endif %}
-  </div>
+    {# Content overlay #}
+    <div class="relative z-10 flex flex-col md:flex-row gap-8 p-8 md:p-10">
 
-  {% endif %}
+      {# --- LEFT: Title + Summary --- #}
+      <div class="flex-1 min-w-0">
 
-  {# --- IMAGE GALLERY --- #}
-  {% set images = event.images %}
-  {% set delete_url = "/timeline/" ~ event.id ~ "/images" %}
-  {% include "_shared/gallery.html" %}
-
-  {#
-  --- RELATED LORE ---
-  Pulls from event.lore_links — the back-
-  reference we added to TimelineEvent.
-
-  Functionally identical to the lore
-  section on character detail pages.
-  The same composable pattern emerging
-  naturally as we go.
-  #}
-  {% if event.lore_links %}
-  <div class="mt-12 pt-10 border-t border-frost-700">
-    <h2 class="font-display text-sm tracking-[0.3em] uppercase text-ice-300/60 mb-6">Related Lore</h2>
-
-    <div class="space-y-2">
-      {% for link in event.lore_links %}
-      {% set lore = link.lore_entry %}
-      <a href="/lore/{{ lore.id }}"
-        class="group flex items-center gap-4 px-4 py-3 border border-frost-700 hover:border-ice-500/40 hover:bg-frost-800/40 transition-colors">
-
-        <div class="flex-shrink-0">
-          <span
-            class="text-[10px] tracking-[0.2em] uppercase text-ice-300/60 bg-frost-800 px-2 py-0.5 border border-frost-700 font-display">
-            {{ lore.category }}
-          </span>
+        {# DM actions #}
+        {% if request.state.user %}
+        <div class="flex gap-2 mb-4">
+          <a href="/timeline/{{ event.id }}/edit"
+            class="px-3 py-1 border border-frost-700/60 text-silver-400/60 hover:text-ice-300 hover:border-ice-500/40 text-[10px] tracking-widest uppercase transition-colors">
+            Edit
+          </a>
+          <form action="/timeline/{{ event.id }}/delete" method="POST" onsubmit="return confirm('Delete this event?');"
+            class="inline">
+            <button type="submit"
+              class="px-3 py-1 border border-frost-700/60 text-silver-400/60 hover:text-red-400 hover:border-red-700/40 text-[10px] tracking-widest uppercase transition-colors">
+              Delete
+            </button>
+          </form>
         </div>
+        {% endif %}
 
-        <div class="flex-1 min-w-0">
-          <p
-            class="font-display text-base tracking-wider text-silver-200 group-hover:text-ice-300 transition-colors leading-tight truncate">
-            {{ lore.title }}
-          </p>
-          {% if lore.subtitle %}
-          <p class="text-xs text-ice-300/50 italic mt-0.5 truncate">
-            {{ lore.subtitle }}
-          </p>
+        {# Milestone badge #}
+        {% if event.is_milestone == 1 %}
+        <span
+          class="inline-block px-2 py-0.5 text-[9px] tracking-widest uppercase text-amber-300/80 bg-amber-900/20 border border-amber-400/30 mb-3">
+          ★ Milestone
+        </span>
+        {% endif %}
+
+        {# Title #}
+        <h1
+          class="font-display text-2xl md:text-3xl font-black tracking-wider text-silver-200 frost-glow leading-tight">
+          {{ event.title }}
+        </h1>
+
+        {# Date(s) #}
+        <div class="mt-2 flex items-center gap-2">
+          {% if event.event_date %}
+          <span class="text-xs tracking-widest uppercase text-ice-300/60">
+            {{ event.event_date }}
+            {% if event.event_end_date %}
+            — {{ event.event_end_date }}
+            {% endif %}
+          </span>
           {% endif %}
         </div>
 
-        <svg xmlns="http://www.w3.org/2000/svg"
-          class="h-4 w-4 text-silver-400 group-hover:text-ice-300 group-hover:translate-x-1 transition-all flex-shrink-0"
-          fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-        </svg>
-      </a>
-      {% endfor %}
+        {# Flourish #}
+        <div class="flex items-center gap-3 py-5" aria-hidden="true">
+          <span class="text-ice-300/20 text-sm">✦</span>
+          <span class="h-px w-12 bg-ice-300/15"></span>
+          <span class="text-ice-300/30 text-xs">·</span>
+          <span class="h-px w-12 bg-ice-300/15"></span>
+          <span class="text-ice-300/20 text-sm">✦</span>
+        </div>
+
+        {# Summary — the plaque text #}
+        {% if event.summary %}
+        <div class="text-silver-300/90 text-sm leading-relaxed font-light max-w-lg">
+          {{ event.summary }}
+        </div>
+        {% endif %}
+
+        {# Body — optional extended notes, compact #}
+        {% if event.body %}
+        <div class="mt-4 prose-frost text-sm max-w-lg" style="font-size: 0.8125rem; line-height: 1.6;">
+          {{ event.body | markdown | safe }}
+        </div>
+        {% endif %}
+
+      </div>
+
+      {# --- RIGHT ASIDE: Connections --- #}
+      {% if event.lore_links %}
+      <aside class="md:w-56 flex-shrink-0">
+        <p class="text-[9px] tracking-[0.3em] uppercase text-ice-300/40 mb-3">Connected</p>
+
+        <div class="flex flex-wrap md:flex-col gap-2">
+
+          {# Lore connections #}
+          {% for link in event.lore_links %}
+          {% set lore = link.lore_entry %}
+          <a href="/lore/{{ lore.id }}"
+            class="group flex items-center gap-2 px-2.5 py-1.5 border border-frost-700/60 hover:border-ice-500/40 bg-frost-900/40 hover:bg-frost-800/60 transition-colors">
+            <span class="text-[8px] tracking-widest uppercase text-ice-300/40 flex-shrink-0">{{ lore.category }}</span>
+            <span class="text-xs text-silver-300 group-hover:text-ice-300 transition-colors truncate">{{ lore.title
+              }}</span>
+          </a>
+          {% endfor %}
+        </div>
+
+        {# Link to related session if one exists #}
+        {# This would need a query — for now, placeholder #}
+
+      </aside>
+      {% endif %}
+
     </div>
   </div>
-  {% endif %}
 
-  {# --- IMAGE UPLOAD FORM --- #}
+  {# --- IMAGE GALLERY (DM only, for managing images) --- #}
   {% if request.state.user %}
-  <div class="mt-8 border border-frost-700 border-dashed p-6">
-    <h3 class="font-display text-sm tracking-[0.3em] uppercase text-ice-300/60 mb-4">Add Images</h3>
+  <footer class="mt-8 pt-6 border-t border-frost-700/40">
+    <p class="text-[9px] tracking-[0.3em] uppercase text-ice-300/30 mb-4 text-center">Librarian's Tools</p>
 
-    <form action="/timeline/{{ event.id }}/upload" method="POST" enctype="multipart/form-data" class="space-y-4">
+    {% if event.images %}
+    <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2 mb-6">
+      {% for image in event.images %}
+      <div class="relative group">
+        <div class="aspect-square border border-frost-700/60 bg-frost-900 overflow-hidden">
+          <img src="{{ image.file_path }}" alt="{{ image.caption | default('') }}" class="w-full h-full object-cover">
+        </div>
 
-      <input type="file" name="files" multiple accept="image/*" required class="block w-full text-sm text-silver-400
-                          file:mr-4 file:py-2 file:px-4
-                          file:border file:border-ice-500/40
-                          file:bg-frost-800 file:text-ice-300
-                          file:font-display file:tracking-widest file:uppercase file:text-xs
-                          hover:file:bg-ice-500/10 hover:file:border-ice-300
-                          file:cursor-pointer">
+        {% if image.is_featured == 1 %}
+        <div class="absolute top-0.5 left-0.5">
+          <span
+            class="px-1 py-0.5 text-[8px] tracking-widest uppercase bg-ice-500/30 text-ice-300 border border-ice-500/40">★</span>
+        </div>
+        {% endif %}
 
-      <input type="text" name="caption" placeholder="Optional caption"
-        class="w-full px-4 py-2 bg-frost-800/60 border border-frost-700 text-silver-200 placeholder:text-silver-400/40 focus:border-ice-500/60 focus:outline-none transition-colors">
+        <div
+          class="absolute inset-0 bg-frost-900/80 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5">
+          {% if image.is_featured != 1 %}
+          <form action="/timeline/{{ event.id }}/images/{{ image.id }}/feature" method="POST" class="inline">
+            <button type="submit" class="text-[9px] tracking-widest uppercase text-ice-300 hover:text-ice-200">
+              ★ Feature
+            </button>
+          </form>
+          {% endif %}
+          <form action="/timeline/{{ event.id }}/images/{{ image.id }}/delete" method="POST"
+            onsubmit="return confirm('Delete this image?');" class="inline">
+            <button type="submit" class="text-[9px] tracking-widest uppercase text-red-400 hover:text-red-300">
+              Delete
+            </button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
 
-      <label class="flex items-center gap-2 text-sm text-silver-400 cursor-pointer">
-        <input type="checkbox" name="is_featured" value="1" class="accent-ice-500">
-        <span>Set as featured image for this event</span>
-      </label>
+    <div class="border border-frost-700 border-dashed p-4">
+      <form action="/timeline/{{ event.id }}/upload" method="POST" enctype="multipart/form-data"
+        class="flex flex-wrap items-end gap-3">
 
-      <button type="submit"
-        class="px-5 py-2 border border-ice-500/40 text-ice-300 hover:bg-ice-500/10 hover:border-ice-300 font-display text-sm tracking-widest uppercase transition-colors">
-        Upload
-      </button>
-    </form>
-  </div>
+        <input type="file" name="files" multiple accept="image/*" required class="block text-sm text-silver-400
+                              file:mr-3 file:py-1.5 file:px-3
+                              file:border file:border-ice-500/40
+                              file:bg-frost-800 file:text-ice-300
+                              file:font-display file:tracking-widest file:uppercase file:text-[10px]
+                              hover:file:bg-ice-500/10 hover:file:border-ice-300
+                              file:cursor-pointer">
+
+        <input type="text" name="caption" placeholder="Caption"
+          class="flex-1 min-w-[150px] px-3 py-1.5 bg-frost-800/60 border border-frost-700 text-silver-200 text-sm placeholder:text-silver-400/30 focus:border-ice-500/60 focus:outline-none transition-colors">
+
+        <label class="flex items-center gap-1.5 text-xs text-silver-400 cursor-pointer">
+          <input type="checkbox" name="is_featured" value="1" class="accent-ice-500 scale-90">
+          <span class="text-[10px]">Featured</span>
+        </label>
+
+        <button type="submit"
+          class="px-3 py-1.5 border border-ice-500/40 text-ice-300 hover:bg-ice-500/10 hover:border-ice-300 font-display text-[10px] tracking-widest uppercase transition-colors">
+          Upload
+        </button>
+      </form>
+    </div>
+  </footer>
   {% endif %}
-</article>
+
+</section>
 
 {% endblock %}
