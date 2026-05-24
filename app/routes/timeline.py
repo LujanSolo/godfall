@@ -38,7 +38,7 @@ import shutil
 import uuid
 
 from app.database import get_db
-from app.models import TimelineEvent, EventImage, EventCharacter, Character, User, LoreEntry, LoreEvent
+from app.models import TimelineEvent, EventImage, User, LoreEntry, LoreEvent, SessionRecap
 
 # --- USE THE CENTRAL TEMPLATES INSTANCE ---
 # Same pattern as sessions.py and characters.py.
@@ -115,6 +115,12 @@ async def event_new_form(
         .all()
     )
 
+    sessions = (
+        db.query(SessionRecap)
+        .order_by(SessionRecap.session_number.desc())
+        .all()
+    )
+
     return templates.TemplateResponse(
         "timeline/form.html",
         {
@@ -125,6 +131,7 @@ async def event_new_form(
             "suggested_sort_order": suggested_sort_order,
             "lore_entries": lore_entries,
             "selected_lore_ids": set(),
+            "sessions": sessions,
         },
     )
 
@@ -157,6 +164,8 @@ async def event_create(
     body: Optional[str] = Form(None),
     is_milestone: int = Form(0),
     lore_ids: List[int] = Form(default=[]),
+    linked_session_id: Optional[int] = Form(None),
+    
 ):
     # Step 1: create the event itself
     new_event = TimelineEvent(
@@ -167,6 +176,7 @@ async def event_create(
         summary=summary,
         body=body,
         is_milestone=is_milestone,
+        linked_session_id=linked_session_id if linked_session_id else None,
     )
     db.add(new_event)
     db.commit()
@@ -303,6 +313,11 @@ async def event_edit_form(
         .order_by(LoreEntry.title)
         .all()
     )
+    sessions = (
+        db.query(SessionRecap)
+        .order_by(SessionRecap.session_number.desc())
+        .all()
+    )
 
     # Build a set of character IDs already
     # connected to this event.
@@ -318,6 +333,7 @@ async def event_edit_form(
             "suggested_sort_order": event.sort_order,
             "lore_entries": lore_entries,
             "selected_lore_ids": {link.lore_id for link in event.lore_links},
+            "sessions": sessions,
         },
     )
 
@@ -358,6 +374,7 @@ async def event_update(
     body: Optional[str] = Form(None),
     is_milestone: int = Form(0),
     lore_ids: List[int] = Form(default=[]),
+    linked_session_id: Optional[int] = Form(None),
 ):
     event = db.query(TimelineEvent).filter(TimelineEvent.id == id).first()
 
@@ -372,6 +389,7 @@ async def event_update(
     event.summary = summary
     event.body = body
     event.is_milestone = is_milestone
+    event.linked_session_id = linked_session_id if linked_session_id else None
 
     
     db.query(LoreEvent).filter(LoreEvent.event_id == event.id).delete()

@@ -106,12 +106,28 @@ prose below.
   {% set ns.others = entry.images[1:] %}
   {% endif %}
 
-  {% if entry.body %}
-  <div class="prose-frost prose-phb">
+  {# ==========================================
+  ILLUMINATED MANUSCRIPT LAYOUT
+  Row 1: Opening passage (left) + images (right)
+  Row 2: Body text in two columns (full width)
+  ========================================== #}
 
-    {# Image cluster inside columns #}
+  {% if entry.prologue or entry.body or entry.images %}
+
+  {# --- ROW 1: PROLOGUE + IMAGES --- #}
+  {% if entry.prologue or entry.images %}
+  <div class="lore-manuscript-top">
+
+    {# Opening passage — the monk's paragraph #}
+    {% if entry.prologue %}
+    <div class="lore-prologue">
+      <p class="lore-prologue-text">{{ entry.prologue }}</p>
+    </div>
+    {% endif %}
+
+    {# Image cluster #}
     {% if entry.images %}
-    <div class="phb-float-cluster">
+    <div class="lore-manuscript-images">
       {% if ns.featured %}
       <a href="{{ ns.featured.file_path }}"
         class="gallery-trigger block border border-ice-500/20 bg-frost-900 overflow-hidden hover:border-ice-500/40 transition-colors"
@@ -120,8 +136,7 @@ prose below.
           class="w-full h-auto block" loading="lazy">
       </a>
       {% if ns.featured.caption %}
-      <p class="text-[10px] text-ice-300/50 italic mt-1.5 px-1 text-center" style="margin: 0.5rem 0 0 0;">{{
-        ns.featured.caption }}</p>
+      <p class="text-[10px] text-ice-300/50 italic mt-1.5 px-1 text-center">{{ ns.featured.caption }}</p>
       {% endif %}
       {% endif %}
 
@@ -145,22 +160,16 @@ prose below.
     </div>
     {% endif %}
 
+  </div>
+  {% endif %}
+
+  {# --- ROW 2: BODY TEXT (two columns) --- #}
+  {% if entry.body %}
+  <div class="prose-frost prose-phb lore-manuscript-body">
     {{ entry.body | markdown | safe }}
   </div>
-  {% elif entry.images %}
-  {# No body but has images — show them centered #}
-  <div class="flex justify-center mb-8">
-    <div class="w-full sm:w-1/2 md:w-2/5">
-      {% if ns.featured %}
-      <a href="{{ ns.featured.file_path }}"
-        class="gallery-trigger block border border-ice-500/20 bg-frost-900 overflow-hidden hover:border-ice-500/40 transition-colors mb-2"
-        data-gallery-index="0" data-caption="{{ ns.featured.caption | default('') }}">
-        <img src="{{ ns.featured.file_path }}" alt="{{ ns.featured.caption | default(entry.title) }}"
-          class="w-full h-auto block" loading="lazy">
-      </a>
-      {% endif %}
-    </div>
-  </div>
+  {% endif %}
+
   {% endif %}
 
   {# --- CROSS-REFERENCES --- #}

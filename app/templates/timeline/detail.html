@@ -125,7 +125,7 @@ a glance, follow a link to go deeper.
       </div>
 
       {# --- RIGHT ASIDE: Connections --- #}
-      {% if event.lore_links %}
+      {% if event.lore_links or event.linked_session %}
       <aside class="md:w-56 flex-shrink-0">
         <p class="text-[9px] tracking-[0.3em] uppercase text-ice-300/40 mb-3">Connected</p>
 
@@ -143,8 +143,16 @@ a glance, follow a link to go deeper.
           {% endfor %}
         </div>
 
-        {# Link to related session if one exists #}
-        {# This would need a query — for now, placeholder #}
+        {# Linked session #}
+        {% if event.linked_session %}
+        <a href="/sessions/{{ event.linked_session.id }}"
+          class="group flex items-center gap-2 px-2.5 py-1.5 border border-ice-500/20 hover:border-ice-500/40 bg-ice-500/5 hover:bg-ice-500/10 transition-colors mt-2">
+          <span class="text-[8px] tracking-widest uppercase text-ice-300/50 flex-shrink-0">📖</span>
+          <span class="text-xs text-ice-300/70 group-hover:text-ice-300 transition-colors truncate">
+            Session {{ event.linked_session.session_number }}: {{ event.linked_session.title }}
+          </span>
+        </a>
+        {% endif %}
 
       </aside>
       {% endif %}

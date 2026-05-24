@@ -534,6 +534,9 @@ class TimelineEvent(Base):
     created_at = Column(DateTime, default=utc_now)
     updated_at = Column(DateTime, default=utc_now, onupdate=utc_now)
 
+    # Optional link to a session recap
+    linked_session_id = Column(Integer, ForeignKey("session_recaps.id"), nullable=True)
+
     # --- RELATIONSHIPS ---
     # An event has many images (one-to-many,
     # same as Character/Session).
@@ -548,6 +551,8 @@ class TimelineEvent(Base):
     character_links = relationship(
         "EventCharacter", back_populates="event", cascade="all, delete-orphan"
     )
+
+    linked_session = relationship("SessionRecap", foreign_keys=[linked_session_id])
 
     lore_links = relationship("LoreEvent", back_populates="event")
 
@@ -698,6 +703,13 @@ class LoreEntry(Base):
     # e.g. "Frost Giant Stronghold" or
     # "Ten-Towns' Largest Settlement"
     subtitle = Column(String(200))
+
+    # The illuminated opening passage —
+    # a curated first paragraph styled
+    # like a monk's hand-lettered text.
+    # Pairs with the image cluster at the
+    # top of the detail page. Optional.
+    prologue = Column(Text)
 
     # --- BODY ---
     # Long-form markdown narrative. Same

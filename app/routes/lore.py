@@ -249,6 +249,7 @@ async def lore_create(
     lng: Optional[float] = Form(None),
     character_ids: List[int] = Form(default=[]),
     event_ids: List[int] = Form(default=[]),
+    prologue: Optional[str] = Form(None),
 ):
     new_entry = LoreEntry(
         title=title,
@@ -262,6 +263,7 @@ async def lore_create(
         is_revealed=is_revealed,
         lat=lat,
         lng=lng,
+        prologue=prologue,
     )
     db.add(new_entry)
     db.commit()
@@ -455,6 +457,7 @@ async def lore_update(
     lng: Optional[float] = Form(None),
     character_ids: List[int] = Form(default=[]),
     event_ids: List[int] = Form(default=[]),
+    prologue: Optional[str] = Form(None),
 ):
     entry = db.query(LoreEntry).filter(LoreEntry.id == id).first()
 
@@ -472,6 +475,7 @@ async def lore_update(
     entry.is_revealed = is_revealed
     entry.lat = lat
     entry.lng = lng
+    entry.prologue = prologue
 
     db.query(LoreCharacter).filter(LoreCharacter.lore_id == entry.id).delete()
     for character_id in character_ids:

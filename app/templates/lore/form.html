@@ -192,7 +192,18 @@ template handles both new and edit.
     {# --- BODY SECTION --- #}
     <fieldset>
       <legend class="font-display text-sm tracking-[0.3em] uppercase text-ice-300/60 mb-4">The Lore</legend>
-
+      {# --- OPENING PASSAGE --- #}
+      <div>
+        <label for="prologue" class="block text-[10px] tracking-widest uppercase text-silver-400/70 mb-1">
+          Opening Passage
+        </label>
+        <textarea id="prologue" name="prologue" rows="3"
+          placeholder="The illuminated first paragraph — a curated introduction that pairs with the images. Leave blank to skip."
+          class="w-full px-3 py-2 bg-frost-800/60 border border-frost-700 text-silver-200 text-sm placeholder:text-silver-400/30 focus:border-ice-500/60 focus:outline-none transition-colors resize-y">{% if editing %}{{ entry.prologue | default('') }}{% endif %}</textarea>
+        <p class="mt-1 text-[9px] text-silver-400/40">
+          A single introductory paragraph. Rendered with a drop cap and special styling.
+        </p>
+      </div>
       <div>
         <label for="body" class="block text-xs tracking-widest uppercase text-silver-400 mb-2">
           Description

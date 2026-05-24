@@ -968,6 +968,9 @@ a.gem-slot:hover .gem-dm-unrevealed .gem-border {
     column-count: 1;
   }
 }
+.prose-phb > *:first-child {
+    margin-top: 0;
+}
 
 /* Image cluster inside columns — floated
    to stay in the right column area */
@@ -982,11 +985,11 @@ a.gem-slot:hover .gem-dm-unrevealed .gem-border {
 
 /* On two-column layout, push images into
    the second column */
-@media (min-width: 769px) {
+/* @media (min-width: 769px) {
   .phb-float-cluster {
     break-before: column;
   }
-}
+} */
 
 /* Drop cap */
 .prose-phb>p:first-of-type::first-letter {
@@ -1133,4 +1136,83 @@ a.gem-slot:hover .gem-dm-unrevealed .gem-border {
 
 .timeline-plaque:hover img {
   opacity: 0.5;
+}
+
+/* ============================================
+   10. LORE DETAIL — ILLUMINATED MANUSCRIPT
+   ============================================
+   Row 1: Opening passage (60%) beside
+   image cluster (40%). The prologue is
+   styled like a monk's hand-lettered text
+   with a drop cap.
+
+   Row 2: Body text in two even columns,
+   standard book layout.
+   ============================================ */
+
+/* --- TOP ROW: Prologue + Images --- */
+
+.lore-manuscript-top {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    gap: 2rem;
+    align-items: stretch;
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 768px) {
+    .lore-manuscript-top {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* When there's no prologue, images center */
+.lore-manuscript-top > :only-child {
+    grid-column: 1 / -1;
+    max-width: 400px;
+}
+
+/* --- THE PROLOGUE --- */
+
+.lore-prologue {
+    padding-right: 1rem;
+}
+
+.lore-prologue-text {
+    font-family: 'Cinzel', serif;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.8;
+    letter-spacing: 0.02em;
+    color: rgba(214, 221, 232, 0.9);
+}
+
+/* Drop cap on the opening passage */
+.lore-prologue-text::first-letter {
+    font-family: 'Cinzel', serif;
+    font-size: 4rem;
+    font-weight: 900;
+    float: left;
+    line-height: 0.75;
+    padding-right: 0.5rem;
+    padding-top: 0.3rem;
+    color: rgba(125, 211, 252, 0.7);
+    text-shadow: 0 0 20px rgba(125, 211, 252, 0.2);
+}
+
+/* --- IMAGE CLUSTER --- */
+
+.lore-manuscript-images {
+    border: 1px solid rgba(125, 211, 252, 0.1);
+    padding: 0.5rem;
+    background: rgba(10, 14, 23, 0.4);
+    max-height: 100%;
+    overflow: hidden;
+}
+
+/* --- BODY TEXT (two columns below) --- */
+
+.lore-manuscript-body {
+    border-top: 1px solid rgba(125, 211, 252, 0.08);
+    padding-top: 1.5rem;
 }
