@@ -968,8 +968,9 @@ a.gem-slot:hover .gem-dm-unrevealed .gem-border {
     column-count: 1;
   }
 }
-.prose-phb > *:first-child {
-    margin-top: 0;
+
+.prose-phb>*:first-child {
+  margin-top: 0;
 }
 
 /* Image cluster inside columns — floated
@@ -1117,6 +1118,109 @@ a.gem-slot:hover .gem-dm-unrevealed .gem-border {
 .timeline-plaque {
     min-height: 360px;
     background: rgba(10, 14, 23, 0.95);
+}
+
+.timeline-plaque img {
+    opacity: 0.4;
+    filter: saturate(0.6);
+    transition: opacity 0.5s ease;
+}
+
+.timeline-plaque:hover img {
+    opacity: 0.5;
+}
+
+/* ============================================
+   10. LORE DETAIL — ILLUMINATED TITLE
+   ============================================ */
+
+.lore-title-row {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 2rem;
+  align-items: center;
+  margin-bottom: 0;
+}
+
+@media (max-width: 768px) {
+  .lore-title-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.lore-title-cell {
+  min-width: 0;
+}
+
+.lore-title-row> :only-child {
+  grid-column: 1 / -1;
+}
+
+/* --- ILLUMINATED TITLE --- */
+
+.lore-illuminated-title {
+  font-family: 'Cinzel', serif;
+  font-size: 2.75rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  line-height: 1.1;
+  color: rgba(214, 221, 232, 0.95);
+  text-shadow:
+    0 0 40px rgba(125, 211, 252, 0.15),
+    0 0 80px rgba(125, 211, 252, 0.05);
+}
+
+@media (min-width: 768px) {
+  .lore-illuminated-title {
+    font-size: 3.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .lore-illuminated-title {
+    font-size: 4rem;
+  }
+}
+
+.lore-illuminated-title::first-letter {
+  font-family: 'Almendra', serif;
+  font-size: 7rem;
+  font-weight: 700;
+  float: left;
+  line-height: 0.65;
+  padding-right: 0.75rem;
+  padding-top: 0.5rem;
+  color: rgba(125, 211, 252, 0.55);
+  text-shadow:
+    0 0 30px rgba(125, 211, 252, 0.3),
+    0 0 60px rgba(125, 211, 252, 0.15),
+    0 0 100px rgba(125, 211, 252, 0.05);
+}
+
+/* --- IMAGE SHOWCASE --- */
+
+.lore-title-images {
+  padding: 0.5rem;
+  background: rgba(10, 14, 23, 0.4);
+}
+
+/* --- BODY TEXT --- */
+
+.lore-manuscript-body {
+  border-top: 1px solid rgba(125, 211, 252, 0.08);
+  padding-top: 1.5rem;
+}
+
+/* ============================================
+   14. IMAGE FRAME — GLOBAL
+   ============================================
+   Raised frame effect with inner glow
+   and dark border. Applied to all image
+   containers across the site for visual
+   consistency.
+   ============================================ */
+
+.image-frame {
     border: 2px solid rgba(0, 0, 0, 1);
     box-shadow:
         inset 0 0 15px rgba(125, 211, 252, 0.15),
@@ -1126,93 +1230,4 @@ a.gem-slot:hover .gem-dm-unrevealed .gem-border {
         inset 0 -1px 0 rgba(125, 211, 252, 0.1),
         0 0 0 1px rgba(0, 0, 0, 1),
         0 0 20px rgba(0, 0, 0, 0.8);
-}
-
-.timeline-plaque img {
-  opacity: 0.4;
-  filter: saturate(0.6);
-  transition: opacity 0.5s ease;
-}
-
-.timeline-plaque:hover img {
-  opacity: 0.5;
-}
-
-/* ============================================
-   10. LORE DETAIL — ILLUMINATED MANUSCRIPT
-   ============================================
-   Row 1: Opening passage (60%) beside
-   image cluster (40%). The prologue is
-   styled like a monk's hand-lettered text
-   with a drop cap.
-
-   Row 2: Body text in two even columns,
-   standard book layout.
-   ============================================ */
-
-/* --- TOP ROW: Prologue + Images --- */
-
-.lore-manuscript-top {
-    display: grid;
-    grid-template-columns: 3fr 2fr;
-    gap: 2rem;
-    align-items: stretch;
-    margin-bottom: 2rem;
-}
-
-@media (max-width: 768px) {
-    .lore-manuscript-top {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* When there's no prologue, images center */
-.lore-manuscript-top > :only-child {
-    grid-column: 1 / -1;
-    max-width: 400px;
-}
-
-/* --- THE PROLOGUE --- */
-
-.lore-prologue {
-    padding-right: 1rem;
-}
-
-.lore-prologue-text {
-    font-family: 'Cinzel', serif;
-    font-size: 1rem;
-    font-weight: 400;
-    line-height: 1.8;
-    letter-spacing: 0.02em;
-    color: rgba(214, 221, 232, 0.9);
-}
-
-/* Drop cap on the opening passage */
-.lore-prologue-text::first-letter {
-    font-family: 'Cinzel', serif;
-    font-size: 4rem;
-    font-weight: 900;
-    float: left;
-    line-height: 0.75;
-    padding-right: 0.5rem;
-    padding-top: 0.3rem;
-    color: rgba(125, 211, 252, 0.7);
-    text-shadow: 0 0 20px rgba(125, 211, 252, 0.2);
-}
-
-/* --- IMAGE CLUSTER --- */
-
-.lore-manuscript-images {
-    border: 1px solid rgba(125, 211, 252, 0.1);
-    padding: 0.5rem;
-    background: rgba(10, 14, 23, 0.4);
-    max-height: 100%;
-    overflow: hidden;
-}
-
-/* --- BODY TEXT (two columns below) --- */
-
-.lore-manuscript-body {
-    border-top: 1px solid rgba(125, 211, 252, 0.08);
-    padding-top: 1.5rem;
 }

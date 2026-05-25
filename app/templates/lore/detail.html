@@ -68,28 +68,11 @@ prose below.
     {% endif %}
   </div>
 
-  {# --- TITLE + SUBTITLE --- #}
-  <h1 class="font-display text-3xl md:text-4xl font-black tracking-wider text-silver-200 frost-glow leading-tight">
-    {{ entry.title }}
-  </h1>
-  {% if entry.subtitle %}
-  <p class="mt-2 text-sm text-ice-300/60 font-light italic tracking-wide">
-    {{ entry.subtitle }}
-  </p>
-  {% endif %}
-
-  {# --- FLOURISH --- #}
-  <div class="flex items-center justify-center gap-3 py-6" aria-hidden="true">
-    <span class="text-ice-300/30 text-lg">✦</span>
-    <span class="h-px w-16 bg-ice-300/20"></span>
-    <span class="text-ice-300/50">·</span>
-    <span class="h-px w-16 bg-ice-300/20"></span>
-    <span class="text-ice-300/30 text-lg">✦</span>
-  </div>
-
   {# ==========================================
-  IMAGE SHOWCASE + BODY TEXT
-  Images float left, text wraps around.
+  APPROACH 3: CHAPTER TITLE LAYOUT
+  Row 1: Title + metadata (left 60%) with
+  image cluster (right 40%)
+  Row 2: Body text in two even columns
   ========================================== #}
 
   {# Gather all images and find the featured one #}
@@ -106,32 +89,29 @@ prose below.
   {% set ns.others = entry.images[1:] %}
   {% endif %}
 
-  {# ==========================================
-  ILLUMINATED MANUSCRIPT LAYOUT
-  Row 1: Opening passage (left) + images (right)
-  Row 2: Body text in two columns (full width)
-  ========================================== #}
+  {# --- ROW 1: TITLE + IMAGES --- #}
+  <div class="lore-title-row">
 
-  {% if entry.prologue or entry.body or entry.images %}
+    {# Left: Illuminated title + subtitle #}
+    <div class="lore-title-cell">
 
-  {# --- ROW 1: PROLOGUE + IMAGES --- #}
-  {% if entry.prologue or entry.images %}
-  <div class="lore-manuscript-top">
+      <h1 class="lore-illuminated-title">{{ entry.title }}</h1>
 
-    {# Opening passage — the monk's paragraph #}
-    {% if entry.prologue %}
-    <div class="lore-prologue">
-      <p class="lore-prologue-text">{{ entry.prologue }}</p>
+      {% if entry.subtitle %}
+      <p class="mt-4 text-base text-ice-300/50 font-light italic tracking-wide">
+        {{ entry.subtitle }}
+      </p>
+      {% endif %}
+
     </div>
-    {% endif %}
 
-    {# Image cluster #}
+    {# Right: Image showcase #}
     {% if entry.images %}
-    <div class="lore-manuscript-images">
+    <div class="lore-title-images image-frame">
+
       {% if ns.featured %}
-      <a href="{{ ns.featured.file_path }}"
-        class="gallery-trigger block border border-ice-500/20 bg-frost-900 overflow-hidden hover:border-ice-500/40 transition-colors"
-        data-gallery-index="0" data-caption="{{ ns.featured.caption | default('') }}">
+      <a href="{{ ns.featured.file_path }}" class="gallery-trigger block overflow-hidden" data-gallery-index="0"
+        data-caption="{{ ns.featured.caption | default('') }}">
         <img src="{{ ns.featured.file_path }}" alt="{{ ns.featured.caption | default(entry.title) }}"
           class="w-full h-auto block" loading="lazy">
       </a>
@@ -141,25 +121,62 @@ prose below.
       {% endif %}
 
       {% if ns.others %}
-      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.375rem; margin-top: 0.5rem;">
-        {% for image in ns.others[:6] %}
+      <div class="flex gap-1 mt-1.5 justify-center">
+        {% for image in ns.others[:5] %}
         <a href="{{ image.file_path }}"
-          class="gallery-trigger block aspect-square border border-frost-700/60 bg-frost-900 overflow-hidden hover:border-ice-500/40 transition-colors"
+          class="gallery-trigger block w-10 h-10 border border-frost-700/40 bg-frost-900 overflow-hidden hover:border-ice-500/40 transition-colors flex-shrink-0"
           data-gallery-index="{{ loop.index }}" data-caption="{{ image.caption | default('') }}">
-          <img src="{{ image.file_path }}" alt="{{ image.caption | default(entry.title) }}"
-            class="w-full h-full object-cover" loading="lazy">
+          <img src="{{ image.file_path }}" alt="{{ image.caption | default('') }}" class="w-full h-full object-cover"
+            loading="lazy">
         </a>
         {% endfor %}
+        {% if ns.others | length > 5 %}
+        <span
+          class="flex items-center justify-center w-10 h-10 border border-frost-700/40 bg-frost-900/60 text-[9px] text-ice-300/40">
+          +{{ ns.others | length - 5 }}
+        </span>
+        {% endif %}
       </div>
-      {% if ns.others | length > 6 %}
-      <p class="text-[10px] text-ice-300/40 mt-2 text-center">
-        +{{ ns.others | length - 6 }} more below
-      </p>
       {% endif %}
-      {% endif %}
+
     </div>
     {% endif %}
 
+  </div>
+
+  {# --- FULL-WIDTH FLOURISH --- #}
+  <div class="flex items-center gap-3 py-4" aria-hidden="true">
+    <span class="text-ice-300/25 text-lg">✦</span>
+    <span class="h-px flex-1 bg-ice-300/12"></span>
+    <span class="text-ice-300/40">·</span>
+    <span class="h-px flex-1 bg-ice-300/12"></span>
+    <span class="text-ice-300/25 text-lg">✦</span>
+  </div>
+
+  {# --- CROSS-REFERENCE CHIPS (full width, labeled) --- #}
+  {% if entry.character_links or entry.event_links %}
+  <div class="mb-8">
+    <p class="text-[9px] tracking-[0.3em] uppercase text-ice-300/30 mb-2">Connected Lore</p>
+    <div class="flex flex-wrap gap-1.5">
+      {% for link in entry.character_links %}
+      <a href="/characters/{{ link.character.id }}"
+        class="group flex items-center gap-1.5 px-2.5 py-1 border border-frost-700/60 bg-frost-800/30 hover:border-ice-500/40 hover:bg-frost-800/60 transition-colors">
+        <span class="text-[8px] tracking-widest uppercase text-ice-300/40">PC</span>
+        <span
+          class="text-[11px] tracking-wider text-silver-300 font-display group-hover:text-ice-300 transition-colors">{{
+          link.character.name }}</span>
+      </a>
+      {% endfor %}
+      {% for link in entry.event_links %}
+      <a href="/timeline/{{ link.event.id }}"
+        class="group flex items-center gap-1.5 px-2.5 py-1 border border-frost-700/60 bg-frost-800/30 hover:border-ice-500/40 hover:bg-frost-800/60 transition-colors">
+        <span class="text-[8px] tracking-widest uppercase text-ice-300/40">Event</span>
+        <span
+          class="text-[11px] tracking-wider text-silver-300 font-display group-hover:text-ice-300 transition-colors">{{
+          link.event.title }}</span>
+      </a>
+      {% endfor %}
+    </div>
   </div>
   {% endif %}
 
@@ -167,73 +184,6 @@ prose below.
   {% if entry.body %}
   <div class="prose-frost prose-phb lore-manuscript-body">
     {{ entry.body | markdown | safe }}
-  </div>
-  {% endif %}
-
-  {% endif %}
-
-  {# --- CROSS-REFERENCES --- #}
-  {% if entry.character_links or entry.event_links %}
-  <div class="mt-8 pt-6 border-t border-frost-700/60">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-      {# Connected Characters #}
-      {% if entry.character_links %}
-      <div>
-        <p class="text-[9px] tracking-[0.3em] uppercase text-ice-300/40 mb-3">Those Connected</p>
-        <div class="space-y-2">
-          {% for link in entry.character_links %}
-          {% set character = link.character %}
-          {% set cns = namespace(primary=None) %}
-          {% for img in character.images %}
-          {% if img.is_primary == 1 and cns.primary is none %}
-          {% set cns.primary = img %}
-          {% endif %}
-          {% endfor %}
-          {% if cns.primary is none and character.images %}
-          {% set cns.primary = character.images[0] %}
-          {% endif %}
-
-          <a href="/characters/{{ character.id }}"
-            class="group flex items-center gap-2 hover:bg-ice-500/5 transition-colors py-1.5 px-2 -mx-2">
-            <div class="w-8 h-8 flex-shrink-0 bg-frost-900 border border-frost-700 overflow-hidden">
-              {% if cns.primary %}
-              <img src="{{ cns.primary.file_path }}" alt="{{ character.name }}" class="w-full h-full object-cover">
-              {% endif %}
-            </div>
-            <div class="flex-1 min-w-0">
-              <p class="text-xs text-silver-300 group-hover:text-ice-300 transition-colors leading-tight truncate">
-                {{ character.name }}
-              </p>
-            </div>
-          </a>
-          {% endfor %}
-        </div>
-      </div>
-      {% endif %}
-
-      {# Connected Events #}
-      {% if entry.event_links %}
-      <div>
-        <p class="text-[9px] tracking-[0.3em] uppercase text-ice-300/40 mb-3">Events Touched</p>
-        <div class="space-y-2">
-          {% for link in entry.event_links %}
-          {% set event = link.event %}
-          <a href="/timeline/{{ event.id }}" class="group block py-1.5 px-2 -mx-2 hover:bg-ice-500/5 transition-colors">
-            <p class="text-xs text-silver-300 group-hover:text-ice-300 transition-colors leading-tight">
-              {% if event.is_milestone == 1 %}<span class="text-ice-300 mr-1">★</span>{% endif %}
-              {{ event.title }}
-            </p>
-            {% if event.event_date %}
-            <p class="text-[10px] text-ice-300/30 mt-0.5">{{ event.event_date }}</p>
-            {% endif %}
-          </a>
-          {% endfor %}
-        </div>
-      </div>
-      {% endif %}
-
-    </div>
   </div>
   {% endif %}
 
