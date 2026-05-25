@@ -67,15 +67,15 @@
 
           {# Linked content badge #}
           {% if thread.linked_session %}
-          <span class="text-[9px] tracking-widest uppercase text-ice-300/40">
+          <span class="text-[9px] tracking-widest uppercase text-ice-300/60">
             📖 Session {{ thread.linked_session.session_number }}: {{ thread.linked_session.title }}
           </span>
           {% elif thread.linked_lore %}
-          <span class="text-[9px] tracking-widest uppercase text-ice-300/40">
+          <span class="text-[9px] tracking-widest uppercase text-ice-300/60">
             📜 {{ thread.linked_lore.title }}
           </span>
           {% elif thread.linked_character %}
-          <span class="text-[9px] tracking-widest uppercase text-ice-300/40">
+          <span class="text-[9px] tracking-widest uppercase text-ice-300/60">
             ⚔ {{ thread.linked_character.name }}
           </span>
           {% endif %}

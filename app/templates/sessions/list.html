@@ -84,7 +84,7 @@ drop-down trigger at the top.
 
         {# Sidebar header #}
         <div class="px-4 py-3 border-b border-frost-700 bg-frost-800/40">
-          <p class="font-display text-xs tracking-[0.3em] uppercase text-ice-300/70">
+          <p class="font-display text-sm tracking-[0.3em] uppercase text-ice-300/90">
             The Index
           </p>
         </div>
@@ -96,7 +96,7 @@ drop-down trigger at the top.
             class="session-index-link block px-4 py-3 border-b border-frost-700/40 last:border-b-0 hover:bg-ice-500/5 transition-colors group">
             <div class="flex items-baseline gap-3">
               <span
-                class="font-display text-xs text-ice-300/40 group-hover:text-ice-300/70 tracking-widest tabular-nums flex-shrink-0">
+                class="font-display text-xs text-ice-300/80 group-hover:text-ice-300/70 tracking-widest tabular-nums flex-shrink-0">
                 #{{ "%02d" | format(session.session_number or loop.index) }}
               </span>
               <div class="min-w-0 flex-1">
@@ -104,7 +104,7 @@ drop-down trigger at the top.
                   {{ session.title }}
                 </p>
                 {% if session.real_date %}
-                <p class="text-[10px] tracking-widest uppercase text-silver-400/40 mt-0.5">
+                <p class="text-[10px] tracking-widest uppercase text-silver-400/70 mt-0.5">
                   {{ session.real_date | strftime("%b %-d, %Y") }}
                 </p>
                 {% endif %}

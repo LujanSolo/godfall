@@ -95,7 +95,10 @@ prose below.
     {# Left: Illuminated title + subtitle #}
     <div class="lore-title-cell">
 
-      <h1 class="lore-illuminated-title">{{ entry.title }}</h1>
+      <div class="lore-illuminated-title">
+        <span class="lore-drop-cap">{{ entry.title[0] }}</span>
+        <span class="lore-title-text">{{ entry.title[1:] }}</span>
+      </div>
 
       {% if entry.subtitle %}
       <p class="mt-4 text-base text-ice-300/50 font-light italic tracking-wide">
@@ -156,7 +159,7 @@ prose below.
   {# --- CROSS-REFERENCE CHIPS (full width, labeled) --- #}
   {% if entry.character_links or entry.event_links %}
   <div class="mb-8">
-    <p class="text-[9px] tracking-[0.3em] uppercase text-ice-300/30 mb-2">Connected Lore</p>
+    <p class="text-[10px] tracking-[0.3em] uppercase text-ice-300/80 mb-2">Connected Lore</p>
     <div class="flex flex-wrap gap-1.5">
       {% for link in entry.character_links %}
       <a href="/characters/{{ link.character.id }}"
@@ -169,8 +172,8 @@ prose below.
       {% endfor %}
       {% for link in entry.event_links %}
       <a href="/timeline/{{ link.event.id }}"
-        class="group flex items-center gap-1.5 px-2.5 py-1 border border-frost-700/60 bg-frost-800/30 hover:border-ice-500/40 hover:bg-frost-800/60 transition-colors">
-        <span class="text-[8px] tracking-widest uppercase text-ice-300/40">Event</span>
+        class="group flex items-center gap-1.5 px-2.5 py-1 border border-frost-700 bg-frost-800/60 hover:border-ice-500/40 hover:bg-frost-800/60 transition-colors">
+        <span class="text-[8px] tracking-widest uppercase text-ice-300/90">Event</span>
         <span
           class="text-[11px] tracking-wider text-silver-300 font-display group-hover:text-ice-300 transition-colors">{{
           link.event.title }}</span>

@@ -569,10 +569,10 @@ a.gem-slot:hover .gem-dm-unrevealed .gem-border {
 
 .stat-compact-label {
   font-family: 'Cinzel', serif;
-  font-size: 0.55rem;
+  font-size: 0.65rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: rgba(125, 211, 252, 0.4);
+  color: rgb(125, 212, 252);
   white-space: nowrap;
 }
 
@@ -1159,15 +1159,64 @@ a.gem-slot:hover .gem-dm-unrevealed .gem-border {
 /* --- ILLUMINATED TITLE --- */
 
 .lore-illuminated-title {
-  font-family: 'Cinzel', serif;
-  font-size: 2.75rem;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  line-height: 1.1;
-  color: rgba(214, 221, 232, 0.95);
-  text-shadow:
-    0 0 40px rgba(125, 211, 252, 0.15),
-    0 0 80px rgba(125, 211, 252, 0.05);
+    display: flex;
+    align-items: start;
+    gap: 0;
+    min-height: 8rem;
+    min-width: 0;
+}
+
+.lore-drop-cap {
+    font-family: 'Almendra', serif;
+    font-weight: 700;
+    font-size: 10rem;
+    line-height: 0.75;
+    padding-right: 10px;
+    color: rgba(125, 211, 252, 0.5);
+    text-shadow:
+        0 0 30px rgba(125, 211, 252, 0.3),
+        0 0 60px rgba(125, 211, 252, 0.15),
+        0 0 100px rgba(125, 211, 252, 0.05);
+    flex-shrink: 0;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.lore-title-text {
+    font-family: 'Cinzel', serif;
+    font-size: 1.75rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    line-height: 1.1;
+    color: rgba(214, 221, 232, 0.95);
+    text-shadow:
+        0 0 20px rgba(125, 211, 252, 0.15),
+        0 0 20px rgba(125, 211, 252, 0.05);
+    padding-top: 0.5rem;
+}
+
+@media (min-width: 768px) {
+    .lore-title-text {
+        font-size: 2.25rem;
+    }
+
+    .lore-drop-cap {
+        font-size: 12rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .lore-title-text {
+        font-size: 3rem;
+    }
+
+    .lore-drop-cap {
+        font-size: 14rem;
+    }
+
+    .lore-illuminated-title {
+        min-height: 10rem;
+    }
 }
 
 @media (min-width: 768px) {
@@ -1180,21 +1229,6 @@ a.gem-slot:hover .gem-dm-unrevealed .gem-border {
   .lore-illuminated-title {
     font-size: 4rem;
   }
-}
-
-.lore-illuminated-title::first-letter {
-  font-family: 'Almendra', serif;
-  font-size: 7rem;
-  font-weight: 700;
-  float: left;
-  line-height: 0.65;
-  padding-right: 0.75rem;
-  padding-top: 0.5rem;
-  color: rgba(125, 211, 252, 0.55);
-  text-shadow:
-    0 0 30px rgba(125, 211, 252, 0.3),
-    0 0 60px rgba(125, 211, 252, 0.15),
-    0 0 100px rgba(125, 211, 252, 0.05);
 }
 
 /* --- IMAGE SHOWCASE --- */
@@ -1222,6 +1256,7 @@ a.gem-slot:hover .gem-dm-unrevealed .gem-border {
 
 .image-frame {
     border: 2px solid rgba(0, 0, 0, 1);
+    border-radius: 5px;
     box-shadow:
         inset 0 0 15px rgba(125, 211, 252, 0.15),
         inset 0 0 50px rgba(125, 211, 252, 0.08),
@@ -1229,5 +1264,5 @@ a.gem-slot:hover .gem-dm-unrevealed .gem-border {
         inset 0 1px 0 rgba(125, 211, 252, 0.2),
         inset 0 -1px 0 rgba(125, 211, 252, 0.1),
         0 0 0 1px rgba(0, 0, 0, 1),
-        0 0 20px rgba(0, 0, 0, 0.8);
+        0 0 20px rgba(139, 193, 226, 0.8);
 }

@@ -29,7 +29,7 @@
 
     {# --- CHAPTER HEADING --- #}
     <header class="text-center mb-12 pb-8 border-b border-frost-700/60">
-        <p class="font-display text-xs tracking-[0.4em] uppercase text-ice-300/40 mb-3">
+        <p class="font-display text-xs tracking-[0.4em] uppercase text-ice-300 mb-3">
             Chapter {{ "%02d" | format(chapter_number) }}
         </p>
         <h1 class="font-display text-3xl md:text-5xl font-black tracking-[0.15em] uppercase text-silver-200 frost-glow leading-tight">
@@ -40,7 +40,7 @@
         {% set revealed_count = revealed_entries | length %}
         {% set total_count = revealed_count + unrevealed_entries | length %}
         {% if total_count > 0 %}
-        <p class="mt-4 text-xs tracking-[0.2em] uppercase text-ice-300/40">
+        <p class="mt-4 text-xs tracking-[0.2em] uppercase text-ice-300/80">
             {% if request.state.user %}
                 {{ total_count }} {% if total_count == 1 %}entry{% else %}entries{% endif %}
             {% else %}
@@ -98,7 +98,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 19l-7-7 7-7" />
                     </svg>
                     <div>
-                        <p class="text-[10px] tracking-[0.3em] uppercase text-ice-300/40 group-hover:text-ice-300/70 transition-colors">Previous</p>
+                        <p class="text-[10px] tracking-[0.3em] uppercase text-ice-300/60 group-hover:text-ice-300/70 transition-colors">Previous</p>
                         <p class="font-display text-sm tracking-wider text-silver-300 group-hover:text-ice-300 transition-colors">
                             {{ prev_chapter }}
                         </p>
@@ -124,7 +124,7 @@
                 <a href="/lore/chapter/{{ chapter_to_slug(next_chapter) }}"
                    class="group inline-flex items-center gap-3 text-right">
                     <div>
-                        <p class="text-[10px] tracking-[0.3em] uppercase text-ice-300/40 group-hover:text-ice-300/70 transition-colors">Next</p>
+                        <p class="text-[10px] tracking-[0.3em] uppercase text-ice-300/60 group-hover:text-ice-300/70 transition-colors">Next</p>
                         <p class="font-display text-sm tracking-wider text-silver-300 group-hover:text-ice-300 transition-colors">
                             {{ next_chapter }}
                         </p>

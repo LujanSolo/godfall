@@ -176,12 +176,12 @@ is the classified narrative.
   {% if character.hit_points or character.armor_class or character.proficiency_bonus or character.initiative_bonus or
   character.spell_dc or character.speed or character.passive_perception or character.passive_investigation or
   character.passive_insight %}
-  <div class="mb-6 border border-frost-700/60 bg-frost-800/20">
+  <div class="mb-6 border border-frost-700/60 bg-frost-800/30">
 
     {# Combat stats row #}
     {% if character.hit_points or character.armor_class or character.proficiency_bonus or character.initiative_bonus or
     character.spell_dc or character.speed %}
-    <div class="flex flex-wrap justify-center border-b border-frost-700/40">
+    <div class="flex flex-wrap justify-center border-b border-frost-700/60">
       {% if character.hit_points %}
       <div class="stat-compact">
         <span class="stat-compact-label">HP</span>
@@ -227,19 +227,19 @@ is the classified narrative.
     <div class="flex flex-wrap justify-center">
       {% if character.passive_perception %}
       <div class="stat-compact">
-        <span class="stat-compact-label">P.Perception</span>
+        <span class="stat-compact-label">Passive Perception</span>
         <span class="stat-compact-value">{{ character.passive_perception }}</span>
       </div>
       {% endif %}
       {% if character.passive_investigation %}
       <div class="stat-compact">
-        <span class="stat-compact-label">P.Investigation</span>
+        <span class="stat-compact-label">Passive Investigation</span>
         <span class="stat-compact-value">{{ character.passive_investigation }}</span>
       </div>
       {% endif %}
       {% if character.passive_insight %}
       <div class="stat-compact">
-        <span class="stat-compact-label">P.Insight</span>
+        <span class="stat-compact-label">Passive Insight</span>
         <span class="stat-compact-value">{{ character.passive_insight }}</span>
       </div>
       {% endif %}
@@ -254,7 +254,7 @@ is the classified narrative.
 
     {% if character.languages %}
     <div class="flex-1">
-      <p class="text-[9px] tracking-[0.3em] uppercase text-ice-300/40 mb-2">Languages</p>
+      <p class="text-[9px] tracking-[0.3em] uppercase text-ice-300/60 mb-2">Languages</p>
       <div class="flex flex-wrap gap-1.5">
         {% for lang in character.languages | from_json %}
         <span
@@ -268,7 +268,7 @@ is the classified narrative.
 
     {% if character.senses %}
     <div class="flex-1">
-      <p class="text-[9px] tracking-[0.3em] uppercase text-ice-300/40 mb-2">Senses</p>
+      <p class="text-[9px] tracking-[0.3em] uppercase text-ice-300/60 mb-2">Senses</p>
       <div class="flex flex-wrap gap-1.5">
         {% for sense in character.senses | from_json %}
         <span
@@ -284,7 +284,7 @@ is the classified narrative.
     {% endif %}
     {% if character.resistances %}
     <div class="flex-1">
-      <p class="text-[9px] tracking-[0.3em] uppercase text-ice-300/40 mb-2">Resistances</p>
+      <p class="text-[9px] tracking-[0.3em] uppercase text-ice-300/60 mb-2">Resistances</p>
       <div class="flex flex-wrap gap-1.5">
         {% for res in character.resistances | from_json %}
         <span
