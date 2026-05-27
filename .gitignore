@@ -231,9 +231,5 @@ __marimo__/
 # Character portraits, session photos, lore images, etc.
 app/static/uploads/
 
-# The world map image — too large for git, swappable per project
-app/static/images/world-map.jpg
-app/static/images/world-map.png
-
 # Streamlit
 .streamlit/secrets.toml
