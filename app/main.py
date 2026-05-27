@@ -48,7 +48,7 @@ app = FastAPI(title="Godfall")
 from app.auth import get_current_user, get_current_player
 from app.database import SessionLocal
 from starlette.middleware.base import BaseHTTPMiddleware
-
+import os
 
 class AuthContextMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
@@ -82,6 +82,11 @@ app.mount(
     StaticFiles(directory=str(BASE_DIR / "static")),
     name="static"
 )
+DATA_DIR = os.environ.get("DATA_DIR", "")
+if DATA_DIR:
+    uploads_path = os.path.join(DATA_DIR, "uploads")
+    os.makedirs(uploads_path, exist_ok=True)
+    app.mount("/uploads", StaticFiles(directory=uploads_path), name="uploads")
 
 # --- INCLUDE ROUTERS ---
 app.include_router(characters.router)

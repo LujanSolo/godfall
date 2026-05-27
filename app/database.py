@@ -64,7 +64,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # of the SQLite connection string format.
 # Just accept it, like the Kessel Run being
 # measured in parsecs.
-DATABASE_URL = f"sqlite:///{BASE_DIR / 'godfall.db'}"
+import os
+
+DATA_DIR = os.environ.get("DATA_DIR", ".")
+DB_PATH = os.path.join(DATA_DIR, "godfall.db")
+SQLALCHEMY_DATABASE_URL = f"sqlite:///{DB_PATH}"
 
 # --- CREATE THE ENGINE ---
 # This builds the connection to our database.

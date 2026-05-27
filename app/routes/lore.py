@@ -43,7 +43,7 @@ from app.models import (
     User,
 )
 from app.templating import templates
-
+import os
 # ============================================
 # CHAPTER SLUG HELPERS
 # ============================================
@@ -76,7 +76,11 @@ def slug_to_chapter(slug: str) -> Optional[str]:
 
 # --- CONFIGURATION ---
 BASE_DIR = Path(__file__).resolve().parent.parent
-UPLOAD_DIR = BASE_DIR / "static" / "uploads" / "lore"
+DATA_DIR = os.environ.get("DATA_DIR", "")
+if DATA_DIR:
+    UPLOAD_DIR = Path(DATA_DIR) / "uploads" / "lore"
+else:
+    UPLOAD_DIR = BASE_DIR / "static" / "uploads" / "lore"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 # --- CREATE THE ROUTER ---
@@ -554,7 +558,7 @@ async def lore_upload_images(
 
         image_record = LoreImage(
             lore_id=entry.id,
-            file_path=f"/static/uploads/lore/{unique_name}",
+            file_path=f"/uploads/characters/{unique_name}" if DATA_DIR else f"/static/uploads/characters/{unique_name}",
             caption=caption,
             is_featured=is_featured,
         )

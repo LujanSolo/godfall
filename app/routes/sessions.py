@@ -35,6 +35,7 @@ from app.database import get_db
 from app.models import SessionRecap, SessionImage, User
 from app.templating import templates
 from app.auth import require_dm
+import os
 
 # --- CONFIGURATION ---
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -43,7 +44,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # keeps things organized. session images go
 # in their own bin so we never get them mixed
 # up with character portraits.
-UPLOAD_DIR = BASE_DIR / "static" / "uploads" / "sessions"
+
+DATA_DIR = os.environ.get("DATA_DIR", "")
+if DATA_DIR:
+    UPLOAD_DIR = Path(DATA_DIR) / "uploads" / "sessions"
+else:
+    UPLOAD_DIR = BASE_DIR / "static" / "uploads" / "sessions"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 # --- CREATE THE ROUTER ---
@@ -398,7 +404,7 @@ async def session_upload_images(
 
         image_record = SessionImage(
             session_id=session_recap.id,
-            file_path=f"/static/uploads/sessions/{unique_name}",
+            file_path=f"/uploads/characters/{unique_name}" if DATA_DIR else f"/static/uploads/characters/{unique_name}",
             caption=caption,
             is_featured=is_featured,
         )

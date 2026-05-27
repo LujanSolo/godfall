@@ -88,7 +88,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Where uploaded character images will be
 # stored on disk. We put them in static/ so
 # they're servable as URLs.
-UPLOAD_DIR = BASE_DIR / "static" / "uploads" / "characters"
+import os
+DATA_DIR = os.environ.get("DATA_DIR", "")
+if DATA_DIR:
+    UPLOAD_DIR = Path(DATA_DIR) / "uploads" / "characters"
+else:
+    UPLOAD_DIR = BASE_DIR / "static" / "uploads" / "characters"
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 # Create the upload directory if it doesn't
 # exist yet. parents=True creates any missing
@@ -627,7 +633,7 @@ async def character_upload_images(
         # the static folder so it works as a URL.
         image_record = CharacterImage(
             character_id=character.id,
-            file_path=f"/static/uploads/characters/{unique_name}",
+            file_path=f"/uploads/characters/{unique_name}" if DATA_DIR else f"/static/uploads/characters/{unique_name}",
             caption=caption,
             is_primary=is_primary,
         )

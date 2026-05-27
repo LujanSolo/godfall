@@ -46,10 +46,15 @@ from app.models import TimelineEvent, EventImage, User, LoreEntry, LoreEvent, Se
 # config, like we set up after the great
 # templating refactor.
 from app.templating import templates
-
+import os
 # --- CONFIGURATION ---
 BASE_DIR = Path(__file__).resolve().parent.parent
-UPLOAD_DIR = BASE_DIR / "static" / "uploads" / "timeline"
+
+DATA_DIR = os.environ.get("DATA_DIR", "")
+if DATA_DIR:
+    UPLOAD_DIR = Path(DATA_DIR) / "uploads" / "timeline"
+else:
+    UPLOAD_DIR = BASE_DIR / "static" / "uploads" / "timeline"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 # --- CREATE THE ROUTER ---
@@ -468,7 +473,7 @@ async def event_upload_images(
 
         image_record = EventImage(
             event_id=event.id,
-            file_path=f"/static/uploads/timeline/{unique_name}",
+            file_path=f"/uploads/characters/{unique_name}" if DATA_DIR else f"/static/uploads/characters/{unique_name}",
             caption=caption,
             is_featured=is_featured,
         )
