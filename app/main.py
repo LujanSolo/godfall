@@ -20,7 +20,8 @@ from app.routes import characters, sessions, timeline, lore, map as map_routes, 
 # Centralized templates instance — single
 # source of truth, filters already attached.
 from app.templating import templates
-
+import os
+from pathlib import Path
 # --- CONFIGURATION ---
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -75,6 +76,20 @@ app.add_middleware(AuthContextMiddleware)
 
 # --- CREATE DATABASE TABLES ---
 Base.metadata.create_all(bind=engine)
+
+# On Railway, symlink the uploads directory
+# from the persistent volume into the static
+# folder so existing database paths work
+DATA_DIR = os.environ.get("DATA_DIR", "")
+if DATA_DIR:
+    volume_uploads = Path(DATA_DIR) / "uploads"
+    static_uploads = Path(__file__).resolve().parent / "static" / "uploads"
+    volume_uploads.mkdir(parents=True, exist_ok=True)
+    if static_uploads.exists() and not static_uploads.is_symlink():
+        import shutil
+        shutil.rmtree(static_uploads)
+    if not static_uploads.exists():
+        static_uploads.symlink_to(volume_uploads)
 
 # --- STATIC FILES ---
 app.mount(
