@@ -473,7 +473,7 @@ async def event_upload_images(
 
         image_record = EventImage(
             event_id=event.id,
-            file_path=f"/uploads/characters/{unique_name}" if DATA_DIR else f"/static/uploads/characters/{unique_name}",
+            file_path=f"/uploads/timeline/{unique_name}" if DATA_DIR else f"/static/uploads/timeline/{unique_name}",
             caption=caption,
             is_featured=is_featured,
         )

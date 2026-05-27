@@ -558,7 +558,7 @@ async def lore_upload_images(
 
         image_record = LoreImage(
             lore_id=entry.id,
-            file_path=f"/uploads/characters/{unique_name}" if DATA_DIR else f"/static/uploads/characters/{unique_name}",
+            file_path=f"/uploads/lore/{unique_name}" if DATA_DIR else f"/static/uploads/lore/{unique_name}",
             caption=caption,
             is_featured=is_featured,
         )
